@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mechanic Profile — RepairKar</title>
+<meta name="description" content="View a verified mechanic's profile, services, and reviews on RepairKar.">
+<meta name="robots" content="noindex, follow">
+
+<link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS — compiled via Tailwind CLI. Run `npm run build:css` after adding new classes. -->
+<link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+<link rel="stylesheet" href="../assets/css/navbar.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<!-- Leaflet (sidebar location preview) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
+
+<style>
+  body { font-family: 'Inter', sans-serif; }
+
+  /* Responsive layout: single column + tabs on mobile, two-column
+     always-visible sections on desktop. Kept as real CSS grid
+     rather than pure Tailwind since the mobile/desktop structures
+     diverge meaningfully. */
+  @media (min-width: 768px) {
+    .profile-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    .area-identity { grid-column: 1 / -1; }
+    .area-content  { grid-column: 1; min-width: 0; }
+    .area-sidebar  { grid-column: 2; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .fade-in-up    { animation: fadeInUp 0.4s ease-out both; }
+    .fade-in-up-d1 { animation: fadeInUp 0.4s ease-out 0.08s both; }
+    .fade-in-up-d2 { animation: fadeInUp 0.4s ease-out 0.16s both; }
+    .card-enter    { animation: fadeInUp 0.3s ease-out both; }
+    .pane-enter    { animation: fadeIn 0.2s ease-out both; }
+    .btn-tap       { transition: transform 0.12s ease-out; }
+    .btn-tap:active { transform: scale(0.96); }
+    .tab-underline { transition: transform 0.25s cubic-bezier(0.65,0,0.35,1); }
+    .skeleton      { animation: shimmer 1.4s ease-in-out infinite; }
+    .star-pop      { animation: starPop 0.3s ease-out both; }
+  }
+  /* Keep scrolled-to panes clear of the sticky header. */
+  [data-pane] { scroll-margin-top: 5rem; }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes shimmer { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+  @keyframes starPop { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+</style>
+
+<!--
+  SECURITY NOTE: mechanic name, bio, gig titles/descriptions, and
+  review text below are all untrusted database content supplied by
+  mechanics/users — every one of them is rendered via textContent,
+  never innerHTML.
+-->
+
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased pb-24 md:pb-8">
+
+<!-- ================= HEADER ================= -->
+<header id="site-header" class="sticky top-0 z-50 bg-white border-b border-slate-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- Logo -->
+      <a href="../index.html" class="flex items-center gap-2 shrink-0" aria-label="RepairKar home">
+        <img class="text-2xl w-32 font-extrabold text-brand" src="../assets/images/logo/logo.png" alt="RepairKar">
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-8" aria-label="Main navigation">
+        <a href="dashboard.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Dashboard</a>
+        <a href="home.html" class="relative text-sm font-semibold text-brand transition-colors">Find Mechanics</a>
+        <a href="live-map.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Emergency Help</a>
+        <a href="chat.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Chats</a>
+      </nav>
+
+      <!-- Right actions -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button type="button" id="share-btn" aria-label="Share profile" class="btn-tap w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0 text-slate-600 hover:text-brand transition-colors">
+          <i class="fa-solid fa-share-nodes text-sm" aria-hidden="true"></i>
+        </button>
+
+        <a href="notifications.html" aria-label="Notifications" class="relative shrink-0 w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-brand transition-colors">
+          <i class="fa-solid fa-bell text-sm" aria-hidden="true"></i>
+        </a>
+
+        <!-- Guest action -->
+        <div id="guest-actions" class="hidden md:flex items-center gap-3">
+          <a id="desktop-login" href="../login.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Login</a>
+          <a id="guest-signup" href="../signup.html"
+             class="btn-animated inline-flex items-center justify-center rounded-xl bg-accent hover:bg-accent-dark hover:shadow-lg hover:shadow-accent/30 text-white text-sm font-semibold px-5 py-2.5">
+            Sign Up
+          </a>
+        </div>
+
+        <!-- Account action (Profile Dropdown) -->
+        <div id="account-actions" class="hidden items-center gap-3">
+          <div class="profile-dropdown">
+            <button id="profile-toggle" type="button" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-brand transition-colors" aria-haspopup="true" aria-expanded="false">
+              <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
+                <i id="account-icon" class="fa-regular fa-user text-xs" aria-hidden="true"></i>
+              </span>
+              <span id="account-name"></span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="dropdown-arrow"></i>
+            </button>
+            <div id="profile-dropdown-menu" class="profile-dropdown-menu">
+              <a id="dashboard-link" href="dashboard.html">
+                <i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>
+                Dashboard
+              </a>
+              <a id="view-profile-link" href="profile.html">
+                <i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>
+                My Profile
+              </a>
+              <div class="dropdown-divider"></div>
+              <button id="logout-btn" type="button" class="logout-btn">
+                <i class="fa-solid fa-right-from-bracket text-slate-400" aria-hidden="true"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile menu button -->
+        <button id="mobile-menu-btn" type="button"
+                class="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+                aria-label="Open main menu" aria-expanded="false" aria-controls="mobile-menu">
+          <svg id="icon-open" class="w-6 h-6 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <svg id="icon-close" class="w-6 h-6 hidden transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="md:hidden pb-4">
+      <nav class="flex flex-col gap-1" aria-label="Mobile navigation">
+        <a href="dashboard.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Dashboard</a>
+        <a href="home.html" class="px-3 py-2 rounded-lg text-sm font-semibold text-brand bg-slate-50">Find Mechanics</a>
+        <a href="live-map.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Emergency Help</a>
+        <a href="chat.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Chats</a>
+        <a id="mobile-login" href="../login.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Login</a>
+        <a id="mobile-signup" href="../signup.html" class="btn-animated mt-2 inline-flex items-center justify-center rounded-xl bg-accent text-white text-sm font-semibold px-5 py-2.5">Sign Up</a>
+        <div id="mobile-account-section" class="hidden">
+          <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-brand">
+            <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
+              <i id="mobile-account-icon" class="fa-regular fa-user" aria-hidden="true"></i>
+            </span>
+            <span id="mobile-account-name"></span>
+          </div>
+          <a id="mobile-dashboard-link" href="dashboard.html" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+            <i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>
+            Dashboard
+          </a>
+          <a id="mobile-view-profile-link" href="profile.html" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+            <i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>
+            My Profile
+          </a>
+          <button id="mobile-logout-btn" type="button" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 w-full text-left">
+            <i class="fa-solid fa-right-from-bracket text-red-400" aria-hidden="true"></i>
+            Logout
+          </button>
+        </div>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 py-5">
+
+  <!-- ================= SKELETON ================= -->
+  <div id="skeleton" class="space-y-4">
+    <div class="flex gap-4">
+      <div class="skeleton w-20 h-20 rounded-2xl bg-slate-200 shrink-0"></div>
+      <div class="flex-1 space-y-2 pt-1">
+        <div class="skeleton h-4 w-40 rounded bg-slate-200"></div>
+        <div class="skeleton h-3 w-56 rounded bg-slate-200"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= NOT FOUND ================= -->
+  <div id="not-found-state" class="hidden text-center py-16">
+    <i class="fa-solid fa-triangle-exclamation text-3xl text-slate-300" aria-hidden="true"></i>
+    <p class="mt-3 text-sm font-medium text-slate-600">Mechanic not found.</p>
+    <a href="home.html" class="inline-block mt-4 text-sm text-brand font-medium hover:underline">Back to search</a>
+  </div>
+
+  <!-- ================= PROFILE CONTENT ================= -->
+  <div id="profile-content" class="hidden profile-grid">
+
+    <!-- ---- Identity ---- -->
+    <div class="area-identity fade-in-up-d1 relative flex items-end gap-4 px-1">
+      <span class="relative shrink-0">
+        <img id="profile-photo" src="" alt="" width="88" height="88"
+             class="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover bg-slate-100 border-4 border-white shadow">
+        <span id="online-dot" class="hidden absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white"></span>
+      </span>
+      <div class="min-w-0 flex-1 pb-1">
+        <h1 id="mechanic-name" class="text-lg md:text-xl font-bold text-slate-900 truncate"></h1>
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
+          <span class="inline-flex items-center gap-1 text-xs font-semibold text-amber-500">
+            <i class="fa-solid fa-star" aria-hidden="true"></i>
+            <span id="mechanic-rating"></span>
+          </span>
+          <span id="review-count" class="text-xs text-slate-400"></span>
+          <span id="response-time-pill" class="hidden md:inline-flex items-center gap-1 text-[11px] font-medium bg-slate-100 text-slate-600 rounded-full px-2.5 py-1">
+            <i class="fa-regular fa-clock" aria-hidden="true"></i> <span id="response-time"></span>
+          </span>
+          <span id="member-since-pill" class="hidden md:inline-flex items-center gap-1 text-[11px] font-medium bg-slate-100 text-slate-600 rounded-full px-2.5 py-1">
+            <i class="fa-solid fa-medal" aria-hidden="true"></i> <span id="member-since"></span>
+          </span>
+        </div>
+        <p id="online-status-text" class="md:hidden mt-1 text-xs font-medium text-slate-400"></p>
+      </div>
+    </div>
+
+    <!-- ---- Tabs (mobile only) ---- -->
+    <nav class="area-tabs md:hidden fade-in-up-d2 relative flex border-b border-slate-100" role="tablist" aria-label="Profile sections">
+      <button type="button" data-tab="about" role="tab" aria-selected="true" class="tab-btn flex-1 text-sm font-medium py-3 text-brand">About</button>
+      <button type="button" data-tab="services" role="tab" aria-selected="false" class="tab-btn flex-1 text-sm font-medium py-3 text-slate-500">Services &amp; Gigs</button>
+      <button type="button" data-tab="reviews" role="tab" aria-selected="false" class="tab-btn flex-1 text-sm font-medium py-3 text-slate-500">Reviews</button>
+      <span id="tab-underline" class="tab-underline absolute bottom-0 left-0 w-1/3 h-0.5 bg-brand"></span>
+    </nav>
+
+    <!-- ---- Main content (About / Services / Reviews) ---- -->
+    <div class="area-content space-y-5">
+
+      <!-- About -->
+      <section id="pane-about" data-pane class="pane-enter rounded-2xl bg-white border border-slate-100 p-5 md:block">
+        <h2 class="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-2">
+          <i class="fa-solid fa-user text-brand" aria-hidden="true"></i> About the Technician
+        </h2>
+        <p id="mechanic-bio" class="text-sm text-slate-600 leading-relaxed"></p>
+        <div id="specialty-tags" class="flex flex-wrap gap-2 mt-3"></div>
+      </section>
+
+      <!-- Services -->
+      <section id="pane-services" data-pane class="hidden md:block rounded-2xl bg-white border border-slate-100 p-5">
+        <h2 class="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-3">
+          <i class="fa-solid fa-wrench text-brand" aria-hidden="true"></i> Services Offered
+        </h2>
+        <div id="gigs-list" class="space-y-3"></div>
+        <p id="gigs-empty" class="hidden text-sm text-slate-400 text-center py-4">No services listed yet.</p>
+      </section>
+
+      <!-- Reviews (full list) -->
+      <section id="pane-reviews" data-pane class="hidden md:block rounded-2xl bg-white border border-slate-100 p-5">
+        <h2 class="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-3">
+          <i class="fa-solid fa-comment-dots text-brand" aria-hidden="true"></i> Reviews
+        </h2>
+        <div id="reviews-list" class="space-y-4"></div>
+        <p id="reviews-empty" class="hidden text-sm text-slate-400 text-center py-4">No reviews yet.</p>
+      </section>
+
+    </div>
+
+    <!-- ---- Sidebar (desktop only) ---- -->
+    <aside class="area-sidebar hidden md:block space-y-4">
+
+      <section class="fade-in-up rounded-2xl bg-white border border-slate-100 p-4">
+        <h2 class="text-sm font-semibold text-slate-900 mb-3">Quick Actions</h2>
+        <button type="button" id="book-btn-desktop" class="btn-tap w-full inline-flex items-center justify-center gap-2 rounded-xl bg-accent hover:bg-accent-dark text-white text-sm font-semibold px-4 py-2.5">
+          <i class="fa-regular fa-calendar-check" aria-hidden="true"></i> Book Appointment
+        </button>
+        <button type="button" id="chat-btn-desktop" class="btn-tap w-full inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-semibold px-4 py-2.5 mt-2">
+          <i class="fa-regular fa-comment" aria-hidden="true"></i> <span id="chat-btn-label">Chat</span>
+        </button>
+      </section>
+
+      <section class="fade-in-up-d1 rounded-2xl bg-white border border-slate-100 p-4">
+        <h2 class="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-3">
+          <i class="fa-solid fa-location-dot text-brand" aria-hidden="true"></i> Location
+        </h2>
+        <div id="location-map" class="h-32 rounded-xl bg-slate-100 overflow-hidden"></div>
+        <p id="mechanic-address" class="text-xs text-slate-500 mt-2"></p>
+      </section>
+
+      <section class="fade-in-up-d2 rounded-2xl bg-white border border-slate-100 p-4">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-semibold text-slate-900">Recent Reviews</h2>
+          <button type="button" id="view-all-reviews-btn" class="text-xs text-brand font-medium hover:underline">View All</button>
+        </div>
+        <div id="recent-reviews-teaser" class="space-y-3"></div>
+      </section>
+
+    </aside>
+
+  </div>
+</main>
+
+<!-- ================= STICKY BOTTOM BAR (mobile) ================= -->
+<div id="mobile-action-bar" class="hidden md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-100 px-4 py-3">
+  <div class="flex gap-3 max-w-5xl mx-auto">
+    <button type="button" id="chat-btn-mobile" class="btn-tap flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold px-4 py-2.5">
+      <i class="fa-regular fa-comment" aria-hidden="true"></i> Chat
+    </button>
+    <button type="button" id="book-btn-mobile" class="btn-tap flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-accent hover:bg-accent-dark text-white text-sm font-semibold px-4 py-2.5">
+      <i class="fa-regular fa-calendar-check" aria-hidden="true"></i> Book Now
+    </button>
+  </div>
+</div>
+
+<script>
+(function () {
+
+  const params = new URLSearchParams(window.location.search);
+  const mechanicId = params.get('id');
+
+  const skeleton        = document.getElementById('skeleton');
+  const notFoundState    = document.getElementById('not-found-state');
+  const profileContent   = document.getElementById('profile-content');
+  const mobileActionBar  = document.getElementById('mobile-action-bar');
+
+  const profilePhoto    = document.getElementById('profile-photo');
+  const onlineDot       = document.getElementById('online-dot');
+  const mechanicName    = document.getElementById('mechanic-name');
+  const mechanicRating  = document.getElementById('mechanic-rating');
+  const reviewCount     = document.getElementById('review-count');
+  const responseTime    = document.getElementById('response-time');
+  const responseTimePill = document.getElementById('response-time-pill');
+  const memberSincePill = document.getElementById('member-since-pill');
+  const memberSince     = document.getElementById('member-since');
+  const onlineStatusText = document.getElementById('online-status-text');
+  const mechanicBio     = document.getElementById('mechanic-bio');
+  const specialtyTags   = document.getElementById('specialty-tags');
+  const gigsList        = document.getElementById('gigs-list');
+  const gigsEmpty       = document.getElementById('gigs-empty');
+  const reviewsList      = document.getElementById('reviews-list');
+  const reviewsEmpty     = document.getElementById('reviews-empty');
+  const recentReviewsTeaser = document.getElementById('recent-reviews-teaser');
+  const mechanicAddress = document.getElementById('mechanic-address');
+  const chatBtnLabel    = document.getElementById('chat-btn-label');
+
+  // ---- Guard: missing/invalid mechanic id ----
+  if (!mechanicId || isNaN(Number(mechanicId))) {
+    skeleton.classList.add('hidden');
+    notFoundState.classList.remove('hidden');
+    return;
+  }
+
+  function goToChat() { window.location.href = 'chat.html?mechanic_id=' + encodeURIComponent(mechanicId); }
+  function goToBook(gigId) {
+    window.location.href = 'booking.html?mechanic_id=' + encodeURIComponent(mechanicId) + (gigId ? '&gig_id=' + encodeURIComponent(gigId) : '');
+  }
+
+  document.getElementById('chat-btn-desktop').addEventListener('click', goToChat);
+  document.getElementById('chat-btn-mobile').addEventListener('click', goToChat);
+  document.getElementById('book-btn-desktop').addEventListener('click', function () { goToBook(null); });
+  document.getElementById('book-btn-mobile').addEventListener('click', function () { goToBook(null); });
+
+  document.getElementById('share-btn').addEventListener('click', function () {
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({ title: 'RepairKar Mechanic', url: url }).catch(function () {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).catch(function () {});
+    }
+  });
+
+  // ---- Tabs (mobile only) ----
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const tabUnderline = document.getElementById('tab-underline');
+  const TAB_ORDER = ['about', 'services', 'reviews'];
+
+  function setActiveTab(tabName) {
+    const index = TAB_ORDER.indexOf(tabName);
+    tabButtons.forEach(function (btn) {
+      const isActive = btn.dataset.tab === tabName;
+      btn.classList.toggle('text-brand', isActive);
+      btn.classList.toggle('text-slate-500', !isActive);
+      btn.setAttribute('aria-selected', String(isActive));
+    });
+    tabUnderline.style.transform = 'translateX(' + (index * 100) + '%)';
+
+    document.querySelectorAll('[data-pane]').forEach(function (pane) {
+      const paneTab = pane.id.replace('pane-', '');
+      // 'hidden' controls mobile visibility; the permanent 'md:block'
+      // class already on each pane keeps ALL of them visible at md+
+      // regardless of this toggle — see the .profile-grid CSS comment.
+      pane.classList.toggle('hidden', paneTab !== tabName);
+    });
+  }
+  tabButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () { setActiveTab(btn.dataset.tab); });
+  });
+
+  document.getElementById('view-all-reviews-btn').addEventListener('click', function () {
+    setActiveTab('reviews'); // switches the pane on mobile
+    const pane = document.getElementById('pane-reviews');
+    if (!pane) return;
+
+    // Desktop: every pane is already visible (md:block), so switching tabs
+    // alone changes nothing — scroll to the full list and flash an outline
+    // so the click always has a visible effect.
+    pane.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    pane.style.outline = '2px solid #0f766e';
+    pane.style.outlineOffset = '3px';
+    setTimeout(function () {
+      pane.style.outline = '';
+      pane.style.outlineOffset = '';
+    }, 1500);
+  });
+
+  // ---- Rendering helpers (all untrusted content -> textContent) ----
+  function renderStars(rating, container) {
+    container.innerHTML = '';
+    const rounded = Math.round(rating);
+    for (let i = 0; i < 5; i++) {
+      const star = document.createElement('i');
+      star.className = 'star-pop fa-solid fa-star text-[10px] ' + (i < rounded ? 'text-amber-400' : 'text-slate-200');
+      star.style.animationDelay = (i * 40) + 'ms';
+      star.setAttribute('aria-hidden', 'true');
+      container.appendChild(star);
+    }
+  }
+
+  function renderGig(gig, index) {
+    const card = document.createElement('div');
+    card.className = 'card-enter flex items-start justify-between gap-3 rounded-xl border border-slate-100 p-3.5';
+    card.style.animationDelay = (index * 60) + 'ms';
+
+    const info = document.createElement('div');
+    info.className = 'min-w-0 flex-1';
+    const title = document.createElement('p');
+    title.className = 'text-sm font-semibold text-slate-900';
+    title.textContent = gig.title;   // untrusted — textContent only
+    info.appendChild(title);
+    const desc = document.createElement('p');
+    desc.className = 'text-xs text-slate-500 mt-1';
+    desc.textContent = gig.description;   // untrusted — textContent only
+    info.appendChild(desc);
+    const price = document.createElement('p');
+    price.className = 'text-sm font-bold text-accent mt-1.5';
+    price.textContent = 'Rs. ' + gig.priceMin + (gig.priceMax && gig.priceMax !== gig.priceMin ? '–' + gig.priceMax : '+');
+    info.appendChild(price);
+    card.appendChild(info);
+
+    const bookBtn = document.createElement('button');
+    bookBtn.type = 'button';
+    bookBtn.className = 'btn-tap shrink-0 rounded-lg border border-brand text-brand text-xs font-semibold px-3.5 py-2 hover:bg-brand-light';
+    bookBtn.textContent = 'Book Service';
+    bookBtn.addEventListener('click', function () { goToBook(gig.id); });
+    card.appendChild(bookBtn);
+
+    return card;
+  }
+
+  function renderReview(review, index, compact) {
+    const wrap = document.createElement('div');
+    wrap.className = compact ? 'card-enter' : 'card-enter border-b border-slate-50 last:border-0 pb-4 last:pb-0';
+    wrap.style.animationDelay = (index * 60) + 'ms';
+
+    const header = document.createElement('div');
+    header.className = 'flex items-center justify-between';
+    const starsWrap = document.createElement('div');
+    starsWrap.className = 'flex items-center gap-0.5';
+    renderStars(review.rating, starsWrap);
+    header.appendChild(starsWrap);
+    const date = document.createElement('span');
+    date.className = 'text-[11px] text-slate-400';
+    date.textContent = review.date || '';
+    header.appendChild(date);
+    wrap.appendChild(header);
+
+    // Optional customer-uploaded photo (thumbnail, opens full size in a new tab).
+    if (review.photo) {
+      const photoLink = document.createElement('a');
+      photoLink.href = review.photo;
+      photoLink.target = '_blank';
+      photoLink.rel = 'noopener';
+      photoLink.className = 'inline-block mt-2';
+      const img = document.createElement('img');
+      img.src = review.photo;
+      img.alt = 'Review photo';
+      img.loading = 'lazy';
+      img.width = 64;
+      img.height = 64;
+      img.className = 'w-16 h-16 rounded-xl object-cover border border-slate-200';
+      photoLink.appendChild(img);
+      wrap.appendChild(photoLink);
+    }
+
+    const comment = document.createElement('p');
+    comment.className = 'text-xs text-slate-600 mt-1.5 italic';
+    comment.textContent = '"' + review.comment + '"';   // untrusted — textContent only (quotes added as plain text, not markup)
+    wrap.appendChild(comment);
+
+    const author = document.createElement('p');
+    author.className = 'text-[11px] text-slate-400 mt-1';
+    author.textContent = '— ' + review.reviewerName;   // untrusted — textContent only
+    wrap.appendChild(author);
+
+    return wrap;
+  }
+
+  function renderProfile(data) {
+    if (data.photo) profilePhoto.src = data.photo;
+    mechanicName.textContent = data.shopName || 'Mechanic';   // untrusted — textContent only
+
+    mechanicRating.textContent = (data.rating != null ? data.rating : '—');
+    reviewCount.textContent = '(' + (data.reviewCount || 0) + ' reviews)';
+
+    // Response-time pill — hidden entirely when there is no data to show.
+    if (data.responseTime) {
+      responseTime.textContent = 'Usually replies in ' + data.responseTime;
+      responseTimePill.classList.remove('hidden');
+      responseTimePill.classList.add('md:inline-flex');
+    } else {
+      responseTime.textContent = '';
+      responseTimePill.classList.add('hidden');
+      responseTimePill.classList.remove('md:inline-flex');
+    }
+
+    if (data.memberSince) {
+      memberSince.textContent = 'Member since ' + data.memberSince;
+      memberSincePill.classList.remove('hidden');
+      memberSincePill.classList.add('md:inline-flex');
+    } else {
+      memberSince.textContent = '';
+      memberSincePill.classList.add('hidden');
+      memberSincePill.classList.remove('md:inline-flex');
+    }
+
+    onlineDot.classList.toggle('hidden', !data.isOnline);
+    onlineStatusText.textContent = data.isOnline ? 'Online' : 'Offline';
+    onlineStatusText.classList.toggle('text-green-600', data.isOnline);
+    onlineStatusText.classList.toggle('font-semibold', data.isOnline);
+
+    chatBtnLabel.textContent = 'Chat with ' + (data.shopName ? data.shopName.split(' ')[0] : 'Mechanic'); // first name only, still just text
+
+    mechanicBio.textContent = data.bio || 'No bio provided yet.';   // untrusted — textContent only
+
+    specialtyTags.innerHTML = '';
+    (data.specialties || []).forEach(function (tag) {
+      const chip = document.createElement('span');
+      chip.className = 'text-[11px] font-medium bg-brand-light text-brand rounded-full px-3 py-1';
+      chip.textContent = tag;   // untrusted — textContent only
+      specialtyTags.appendChild(chip);
+    });
+
+    gigsList.innerHTML = '';
+    const gigs = Array.isArray(data.gigs) ? data.gigs : [];
+    if (!gigs.length) {
+      gigsEmpty.classList.remove('hidden');
+    } else {
+      gigs.forEach(function (gig, i) { gigsList.appendChild(renderGig(gig, i)); });
+    }
+
+    reviewsList.innerHTML = '';
+    recentReviewsTeaser.innerHTML = '';
+    const reviews = Array.isArray(data.reviews) ? data.reviews : [];
+    if (!reviews.length) {
+      reviewsEmpty.classList.remove('hidden');
+      recentReviewsTeaser.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">No reviews yet.</p>';
+    } else {
+      reviews.forEach(function (r, i) { reviewsList.appendChild(renderReview(r, i, false)); });
+      reviews.slice(0, 2).forEach(function (r, i) { recentReviewsTeaser.appendChild(renderReview(r, i, true)); });
+    }
+
+    mechanicAddress.textContent = data.address || 'Address not provided';   // untrusted — textContent only
+
+    // Sidebar location preview (Leaflet) — API lat/lng, non-interactive.
+    const mapEl = document.getElementById('location-map');
+    if (mapEl && typeof L !== 'undefined' && typeof data.lat === 'number' && typeof data.lng === 'number') {
+      try {
+        const miniMap = L.map(mapEl, {
+          zoomControl: false,
+          attributionControl: false,
+          dragging: false,
+          scrollWheelZoom: false,
+          doubleClickZoom: false,
+          boxZoom: false,
+          keyboard: false,
+          touchZoom: false
+        }).setView([data.lat, data.lng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(miniMap);
+        L.marker([data.lat, data.lng]).addTo(miniMap);
+        setTimeout(function () { miniMap.invalidateSize(); }, 100);
+      } catch (e) { /* map is non-critical — keep the empty box */ }
+    }
+
+    skeleton.classList.add('hidden');
+    profileContent.classList.remove('hidden');
+    // Show the mobile sticky bar via 'flex' — the permanent 'md:hidden'
+    // class (left untouched) keeps it hidden at desktop widths regardless,
+    // since the sidebar already has its own Book/Chat buttons there.
+    mobileActionBar.classList.remove('hidden');
+    mobileActionBar.classList.add('flex');
+  }
+
+  fetch('../api/get-mechanic-profile.php?id=' + encodeURIComponent(mechanicId), { credentials: 'same-origin' })
+    .then(function (res) {
+      if (res.status === 404) throw new Error('not_found');
+      if (!res.ok) throw new Error('request_failed');
+      return res.json();
+    })
+    .then(function (data) { renderProfile(data); })
+    .catch(function (err) {
+      if (err.message === 'not_found') {
+        skeleton.classList.add('hidden');
+        notFoundState.classList.remove('hidden');
+        return;
+      }
+      // No backend running yet in this environment — render placeholder
+      // data so the layout/animations remain visually testable.
+      renderProfile({
+        shopName: 'Mechanic data unavailable', rating: null, reviewCount: 0,
+        responseTime: null, memberSince: null, isOnline: false,
+        bio: '', specialties: [], gigs: [], reviews: [], address: ''
+      });
+    });
+
+})();
+</script>
+<script src="../assets/js/navbar.js"></script>
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>My Gigs — RepairKar</title>
+<meta name="description" content="Manage your RepairKar services, pricing, and availability.">
+<meta name="robots" content="noindex, follow">
+
+<link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-results-button,
+  input[type="search"]::-webkit-search-results-decoration { -webkit-appearance: none; appearance: none; }
+  .search-wrap { position: relative; }
+  .search-wrap .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 14px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .search-wrap #gig-search {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 16px 12px 44px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .fade-in-up { animation: fadeInUp 0.45s ease-out both; }
+    .delay-1 { animation-delay: 0.08s; }
+    .delay-2 { animation-delay: 0.16s; }
+    .delay-3 { animation-delay: 0.24s; }
+    .gig-card { animation: fadeInUp 0.4s ease-out both; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
+    .gig-card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(15, 118, 110, 0.09); border-color: #c9e7e3; }
+    .btn-tap { transition: transform 0.12s ease, box-shadow 0.12s ease; }
+    .btn-tap:active { transform: scale(0.96); }
+    .status-dot { animation: pulseDot 1.8s ease-in-out infinite; }
+    .toast-in { animation: toastIn 0.3s ease-out both; }
+    .modal-pop { animation: modalPop 0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .modal-backdrop-in { animation: backdropIn 0.18s ease-out both; }
+    .skeleton { position: relative; overflow: hidden; background-color: #e2e8f0; }
+    .skeleton::after {
+      content: "";
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+      animation: shimmer 1.6s ease-in-out infinite;
+    }
+  }
+  .stat-card { padding: 1.25rem 1.4rem; transition: box-shadow 0.2s ease, border-color 0.2s ease; }
+  .stat-card:hover { box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06); border-color: #e2e8f0; }
+  .toggle-gig-btn,
+  .delete-gig-btn { min-height: 42px; transition: background-color 0.15s ease, border-color 0.15s ease; }
+  .toggle-gig-btn i,
+  .delete-gig-btn i,
+  .header-problem i { vertical-align: middle; }
+  .filter-btn { transition: background-color 0.15s ease, color 0.15s ease; min-height: 32px; }
+  #gig-search:focus-visible,
+  .filter-btn:focus-visible,
+  .btn-tap:focus-visible,
+  .toggle-gig-btn:focus-visible,
+  .delete-gig-btn:focus-visible,
+  #delete-gig-cancel:focus-visible,
+  #delete-gig-confirm:focus-visible {
+    outline: 2px solid #0f766e;
+    outline-offset: 2px;
+  }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulseDot { 0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35); } 50% { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); } }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes modalPop { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes shimmer { 100% { transform: translateX(100%); } 0% { transform: translateX(-100%); } }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+<div class="md:flex md:min-h-screen">
+
+  <aside class="hidden md:flex md:flex-col md:w-64 md:shrink-0 bg-white border-r border-slate-100 md:sticky md:top-0 md:h-screen">
+    <div class="flex items-center gap-3 px-5 py-5 border-b border-slate-100">
+      <img id="shop-photo-sidebar" src="../assets/images/placeholders/default-mechnaic-profile.png" alt="" width="40" height="40" class="w-10 h-10 rounded-full object-cover bg-slate-100 shrink-0">
+      <div class="min-w-0">
+        <p id="shop-name-sidebar" class="text-sm font-bold text-slate-900 truncate">Your Workshop</p>
+      </div>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1" aria-label="Mechanic navigation">
+      <a href="dashboard.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-table-cells-large w-4 text-center" aria-hidden="true"></i> Dashboard</a>
+      <a href="jobs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-clipboard-list w-4 text-center" aria-hidden="true"></i> Jobs & Requests</a>
+      <a href="my-gigs.html" aria-current="page" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand"><i class="fa-solid fa-wrench w-4 text-center" aria-hidden="true"></i> My Gigs</a>
+      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"><i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats</a>
+      <a href="earnings.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"><i class="fa-regular fa-credit-card w-4 text-center" aria-hidden="true"></i> Earnings</a>
+      <a href="profile.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"><i class="fa-regular fa-user w-4 text-center" aria-hidden="true"></i> Profile</a>
+    </nav>
+    <div class="px-3 pb-4 space-y-1">
+      <a href="create-gig.html" class="btn-tap flex items-center justify-center gap-2 rounded-xl bg-brand text-white text-sm font-semibold px-3 py-2.5 shadow-sm hover:shadow-md transition-shadow"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>New Gig</span></a>
+      <button type="button" id="logout-btn" class="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"><i class="fa-solid fa-arrow-right-from-bracket w-4 text-center" aria-hidden="true"></i> Logout</button>
+    </div>
+  </aside>
+
+  <div id="drawer-backdrop" class="hidden fixed inset-0 z-40 bg-black/40 md:hidden"></div>
+  <aside id="mobile-drawer" class="hidden fixed inset-y-0 left-0 z-50 w-72 bg-white md:hidden shadow-2xl">
+    <div class="flex items-center justify-between px-4 py-4 border-b border-slate-100"><span class="text-sm font-bold text-slate-900">Menu</span><button type="button" id="close-drawer" aria-label="Close menu" class="w-8 h-8 rounded-full hover:bg-slate-100 transition-colors"><i class="fa-solid fa-xmark text-slate-500" aria-hidden="true"></i></button></div>
+    <nav class="px-3 py-4 space-y-1" aria-label="Mechanic navigation mobile">
+      <a href="dashboard.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-600"><i class="fa-solid fa-table-cells-large w-4 text-center" aria-hidden="true"></i> Dashboard</a>
+      <a href="jobs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-600"><i class="fa-solid fa-clipboard-list w-4 text-center" aria-hidden="true"></i> Jobs & Requests</a>
+      <a href="my-gigs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand"><i class="fa-solid fa-wrench w-4 text-center" aria-hidden="true"></i> My Gigs</a>
+      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-600"><i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats</a>
+      <a href="earnings.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-600"><i class="fa-regular fa-credit-card w-4 text-center" aria-hidden="true"></i> Earnings</a>
+      <a href="profile.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-600"><i class="fa-regular fa-user w-4 text-center" aria-hidden="true"></i> Profile</a>
+    </nav>
+  </aside>
+
+  <div class="flex-1 min-w-0">
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-100">
+      <div class="flex items-center gap-3 px-5 sm:px-6 md:px-10 lg:px-12 py-5">
+        <button type="button" id="open-drawer" aria-label="Open menu" class="md:hidden w-9 h-9 rounded-full hover:bg-slate-100 transition-colors shrink-0"><i class="fa-solid fa-bars text-slate-600" aria-hidden="true"></i></button>
+        <div class="flex-1 py-1 min-w-0"><p class="text-[11px] text-slate-400 font-semibold uppercase tracking-[0.18em]">Services</p><h1 class="text-lg md:text-2xl font-extrabold text-slate-900 leading-tight truncate">My Gigs</h1></div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-5 sm:px-6 md:px-10 lg:px-12 py-8 md:py-10 pb-16">
+      <section class="fade-in-up flex flex-col lg:flex-row lg:items-end justify-between gap-5 mb-8 pt-1">
+        <div><p class="text-sm text-slate-500 max-w-xl leading-relaxed">Keep your services fresh, visible, and easy for nearby customers to book.</p></div>
+        <a href="create-gig.html" class="btn-tap w-full lg:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-accent hover:bg-accent-dark text-white text-sm font-semibold px-5 py-3 shadow-sm hover:shadow-md transition-shadow shrink-0"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add New Gig</a>
+      </section>
+
+      <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-9" aria-label="Gig summary">
+        <div class="stat-card fade-in-up delay-1 rounded-2xl bg-white border border-slate-100"><p class="text-[11px] text-slate-400 uppercase tracking-wide font-semibold">Total gigs</p><p id="total-count" class="text-2xl font-extrabold text-slate-900 mt-1.5">—</p></div>
+        <div class="stat-card fade-in-up delay-1 rounded-2xl bg-white border border-slate-100"><p class="text-[11px] text-slate-400 uppercase tracking-wide font-semibold">Live now</p><p id="live-count" class="text-2xl font-extrabold text-emerald-600 mt-1.5">—</p></div>
+        <div class="stat-card fade-in-up delay-2 rounded-2xl bg-white border border-slate-100"><p class="text-[11px] text-slate-400 uppercase tracking-wide font-semibold">Bookings</p><p class="text-2xl font-extrabold text-slate-900 mt-1.5">—</p></div>
+        <div class="stat-card fade-in-up delay-3 rounded-2xl bg-white border border-slate-100"><p class="text-[11px] text-slate-400 uppercase tracking-wide font-semibold">Avg. rating</p><p class="text-2xl font-extrabold text-slate-900 mt-1.5">—</p></div>
+      </section>
+
+      <section class="fade-in-up delay-2 flex flex-col sm:flex-row gap-3 sm:items-center justify-between mb-7">
+        <div class="search-wrap relative flex-1 max-w-md"><i class="search-icon fa-solid fa-magnifying-glass" aria-hidden="true"></i><label for="gig-search" class="sr-only">Search gigs</label><input id="gig-search" type="search" placeholder="Search your gigs" class="rounded-xl border border-slate-200 bg-white text-sm leading-normal focus:ring-2 focus:ring-brand focus:border-brand focus:outline-none transition-shadow"></div>
+        <div class="inline-flex self-start sm:self-auto rounded-xl bg-white border border-slate-200 p-1.5 gap-1" role="tablist" aria-label="Filter gigs"><button type="button" data-filter="all" aria-selected="true" class="filter-btn rounded-lg bg-brand text-white px-4 py-2 text-xs font-semibold">All</button><button type="button" data-filter="live" aria-selected="false" class="filter-btn rounded-lg text-slate-500 px-4 py-2 text-xs font-semibold hover:bg-slate-50">Live</button><button type="button" data-filter="paused" aria-selected="false" class="filter-btn rounded-lg text-slate-500 px-4 py-2 text-xs font-semibold hover:bg-slate-50">Paused</button></div>
+      </section>
+
+      <section id="gigs-grid" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5" aria-live="polite"></section>
+      <div id="loading-state" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5" aria-label="Loading gigs"><div class="h-72 rounded-2xl skeleton"></div><div class="h-72 rounded-2xl skeleton"></div></div>
+      <div id="empty-state" class="hidden rounded-2xl bg-white border border-slate-100 p-12 md:p-16 text-center"><i class="fa-solid fa-wrench text-3xl text-slate-200" aria-hidden="true"></i><h2 class="font-bold text-slate-900 mt-4">No gigs found</h2><p class="text-sm text-slate-500 mt-2">Try another search or create a new service.</p></div>
+    </main>
+  </div>
+</div>
+
+<div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-50 rounded-xl bg-slate-900 text-white text-sm font-medium px-4 py-3 shadow-lg" role="status"></div>
+
+<div id="delete-gig-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm px-4 modal-backdrop-in">
+  <div class="modal-pop w-full max-w-sm rounded-2xl bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.25)] border border-slate-100 text-center">
+    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+      <i class="fa-solid fa-trash text-red-500 text-lg" aria-hidden="true"></i>
+    </div>
+    <h2 class="mt-4 text-lg font-bold text-slate-900 leading-tight">Delete this gig?</h2>
+    <p class="mt-2 text-sm leading-relaxed text-slate-500">This will remove it from your listings and customers won't be able to book it. This action cannot be undone.</p>
+    <div class="mt-6 flex gap-3">
+      <button type="button" id="delete-gig-cancel" class="btn-tap flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">Cancel</button>
+      <button type="button" id="delete-gig-confirm" class="btn-tap flex-1 rounded-xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-600 transition-colors">Delete gig</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const gigsGrid = document.getElementById('gigs-grid');
+  const loadingState = document.getElementById('loading-state');
+  const searchInput = document.getElementById('gig-search');
+  const emptyState = document.getElementById('empty-state');
+  const totalCount = document.getElementById('total-count');
+  const liveCount = document.getElementById('live-count');
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  const toast = document.getElementById('toast');
+  const deleteGigModal = document.getElementById('delete-gig-modal');
+  const deleteGigConfirm = document.getElementById('delete-gig-confirm');
+  const deleteGigCancel = document.getElementById('delete-gig-cancel');
+  let gigs = [];
+  let activeFilter = 'all';
+  let toastTimer;
+  let pendingDeleteGigId = null;
+
+  function showToast(message) {
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+    toast.classList.add('toast-in');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.add('hidden'); }, 2600);
+  }
+
+  function openDeleteModal(gigId) {
+    pendingDeleteGigId = gigId;
+    deleteGigModal.classList.remove('hidden');
+  }
+
+  function closeDeleteModal() {
+    pendingDeleteGigId = null;
+    deleteGigModal.classList.add('hidden');
+  }
+
+  deleteGigModal.addEventListener('click', function (event) {
+    if (event.target === deleteGigModal) closeDeleteModal();
+  });
+
+  function renderCards() {
+    const term = searchInput.value.trim().toLowerCase();
+    gigsGrid.replaceChildren();
+    let visible = 0;
+    gigs.forEach(function (gig, index) {
+      const status = gig.active ? 'live' : 'paused';
+      const matchesFilter = activeFilter === 'all' || status === activeFilter;
+      const matchesSearch = !term || (gig.title + ' ' + gig.description).toLowerCase().includes(term);
+      if (!matchesFilter || !matchesSearch) return;
+      visible += 1;
+      gigsGrid.appendChild(createGigCard(gig, index));
+    });
+    emptyState.classList.toggle('hidden', visible !== 0);
+  }
+
+  function createGigCard(gig, index) {
+    const card = document.createElement('article');
+    const status = gig.active ? 'live' : 'paused';
+    const price = 'Rs. ' + Number(gig.priceMin).toLocaleString() + (gig.priceMax ? '–' + Number(gig.priceMax).toLocaleString() : '+');
+    card.className = 'gig-card rounded-2xl bg-white border border-slate-100 overflow-hidden';
+    card.style.animationDelay = Math.min(index * 0.07, 0.35) + 's';
+    card.dataset.status = status;
+    card.dataset.title = gig.title;
+
+    const hero = document.createElement('div');
+    hero.className = 'h-32 relative flex items-center justify-center ' + (gig.photo ? 'bg-slate-100' : 'bg-brand-light');
+    if (gig.photo) {
+      const image = document.createElement('img');
+      image.src = '..' + gig.photo;
+      image.alt = '';
+      image.className = 'w-full h-full object-cover';
+      hero.appendChild(image);
+    } else {
+      const icon = document.createElement('i');
+      icon.className = 'fa-solid fa-wrench text-5xl text-brand/30';
+      icon.setAttribute('aria-hidden', 'true');
+      hero.appendChild(icon);
+    }
+    const badge = document.createElement('span');
+    badge.className = 'absolute top-3 left-3 inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold shadow-sm ' + (gig.active ? 'text-emerald-700' : 'text-slate-500');
+    badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full ' + (gig.active ? 'bg-emerald-500 status-dot' : 'bg-slate-400') + '"></span><span>' + (gig.active ? 'Live' : 'Paused') + '</span>';
+    hero.appendChild(badge);
+    card.appendChild(hero);
+
+    const content = document.createElement('div');
+    content.className = 'p-5';
+    const heading = document.createElement('div');
+    heading.className = 'flex items-start justify-between gap-3';
+    heading.innerHTML = '<div><p class="text-[11px] text-brand font-semibold uppercase tracking-wide">Service</p><h2 class="font-bold text-slate-900 mt-1"></h2></div><p class="text-sm font-extrabold text-accent whitespace-nowrap"></p>';
+    heading.querySelector('h2').textContent = gig.title;
+    heading.querySelector('p:last-child').textContent = price;
+    content.appendChild(heading);
+    const description = document.createElement('p');
+    description.className = 'text-sm text-slate-500 mt-2.5 line-clamp-2 leading-relaxed';
+    description.textContent = gig.description;
+    content.appendChild(description);
+    const footer = document.createElement('div');
+    footer.className = 'border-t border-slate-100 mt-4 pt-4 space-y-3.5';
+
+    const metaRow = document.createElement('div');
+    metaRow.className = 'flex items-center justify-between gap-3';
+    metaRow.innerHTML = '<span class="inline-flex items-center gap-1.5 text-xs text-slate-400"><i class="fa-regular fa-clock" aria-hidden="true"></i><span>Created ' + formatDate(gig.createdAt) + '</span></span><a href="create-gig.html" class="text-xs font-semibold text-brand hover:underline">Edit gig</a>';
+    footer.appendChild(metaRow);
+
+    const actionRow = document.createElement('div');
+    actionRow.className = 'flex items-center gap-2';
+
+    const toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'toggle-gig-btn flex-1 inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-semibold ' + (gig.active ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100' : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100');
+    toggleBtn.dataset.gigId = String(gig.id);
+    toggleBtn.dataset.action = gig.active ? 'pause' : 'resume';
+    toggleBtn.innerHTML = '<i class="fa-solid ' + (gig.active ? 'fa-pause' : 'fa-play') + '" aria-hidden="true"></i><span>' + (gig.active ? 'Pause' : 'Resume') + '</span>';
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'delete-gig-btn inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-100';
+    deleteBtn.dataset.gigId = String(gig.id);
+    deleteBtn.innerHTML = '<i class="fa-solid fa-trash" aria-hidden="true"></i><span>Delete</span>';
+
+    actionRow.appendChild(toggleBtn);
+    actionRow.appendChild(deleteBtn);
+    footer.appendChild(actionRow);
+    content.appendChild(footer);
+    card.appendChild(content);
+    return card;
+  }
+
+  function formatDate(value) {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? 'recently' : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  function loadGigs() {
+    fetch('../api/get-my-gigs.php', { credentials: 'same-origin' })
+      .then(function (response) {
+        return response.json().then(function (data) { return { ok: response.ok, data: data }; });
+      })
+      .then(function (result) {
+        if (!result.ok) throw new Error(result.data.message || 'Unable to load your gigs.');
+        gigs = Array.isArray(result.data.gigs) ? result.data.gigs : [];
+        totalCount.textContent = gigs.length;
+        liveCount.textContent = gigs.filter(function (gig) { return gig.active; }).length;
+        loadingState.classList.add('hidden');
+        renderCards();
+      })
+      .catch(function (error) {
+        loadingState.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        emptyState.querySelector('h2').textContent = 'Unable to load gigs';
+        emptyState.querySelector('p').textContent = error.message;
+      });
+  }
+
+  function updateGigStatus(gigId, action) {
+    fetch('../api/update-gig-status.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gig_id: Number(gigId), action: action })
+    })
+      .then(function (response) {
+        return response.json().then(function (data) { return { ok: response.ok, data: data }; });
+      })
+      .then(function (result) {
+        if (!result.ok) throw new Error(result.data.message || 'Unable to update gig.');
+        if (action === 'delete') {
+          gigs = gigs.filter(function (gig) { return String(gig.id) !== String(gigId); });
+        } else {
+          gigs = gigs.map(function (gig) {
+            if (String(gig.id) === String(gigId)) {
+              gig.active = action === 'resume';
+            }
+            return gig;
+          });
+        }
+        totalCount.textContent = gigs.length;
+        liveCount.textContent = gigs.filter(function (gig) { return gig.active; }).length;
+        renderCards();
+        showToast(action === 'delete' ? 'Gig deleted.' : (action === 'pause' ? 'Gig paused.' : 'Gig resumed.'));
+      })
+      .catch(function (error) {
+        showToast(error.message || 'Action failed.');
+      });
+  }
+
+  document.addEventListener('click', function (event) {
+    const toggleBtn = event.target.closest('.toggle-gig-btn');
+    if (toggleBtn) {
+      const action = toggleBtn.dataset.action;
+      const gigId = toggleBtn.dataset.gigId;
+      updateGigStatus(gigId, action);
+      return;
+    }
+
+    const deleteBtn = event.target.closest('.delete-gig-btn');
+    if (deleteBtn) {
+      openDeleteModal(deleteBtn.dataset.gigId);
+      return;
+    }
+  });
+
+  deleteGigCancel.addEventListener('click', closeDeleteModal);
+  deleteGigConfirm.addEventListener('click', function () {
+    if (!pendingDeleteGigId) return;
+    updateGigStatus(pendingDeleteGigId, 'delete');
+    closeDeleteModal();
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !deleteGigModal.classList.contains('hidden')) closeDeleteModal();
+  });
+
+  filterButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      activeFilter = button.dataset.filter;
+      filterButtons.forEach(function (item) {
+        const selected = item === button;
+        item.classList.toggle('bg-brand', selected);
+        item.classList.toggle('text-white', selected);
+        item.classList.toggle('text-slate-500', !selected);
+        item.classList.toggle('hover:bg-slate-50', !selected);
+        item.setAttribute('aria-selected', String(selected));
+      });
+      renderCards();
+    });
+  });
+  searchInput.addEventListener('input', renderCards);
+
+  const drawer = document.getElementById('mobile-drawer');
+  const backdrop = document.getElementById('drawer-backdrop');
+  function closeDrawer() { drawer.classList.add('hidden'); backdrop.classList.add('hidden'); }
+  document.getElementById('open-drawer').addEventListener('click', function () { drawer.classList.remove('hidden'); backdrop.classList.remove('hidden'); });
+  document.getElementById('close-drawer').addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', closeDrawer);
+  document.getElementById('logout-btn').addEventListener('click', function () { window.location.href = '../api/logout.php'; });
+
+  // Role check & load mechanic info into sidebar
+  fetch('../api/current-user.php', { credentials: 'same-origin' })
+    .then(function (res) {
+      if (!res.ok) throw new Error('guest');
+      return res.json();
+    })
+    .then(function (user) {
+      if (user.role === 'user') {
+        window.location.replace('../user/dashboard.html');
+        return;
+      }
+      if (user.role === 'admin') {
+        window.location.replace('../admin/index.php');
+        return;
+      }
+      if (user.role !== 'mechanic') {
+        window.location.replace('../login.html');
+        return;
+      }
+
+      var nameEl  = document.getElementById('shop-name-sidebar');
+      var photoEl = document.getElementById('shop-photo-sidebar');
+      if (nameEl && user.name) nameEl.textContent = user.name;
+      if (photoEl) photoEl.src = user.photo || '../assets/images/placeholders/default-mechnaic-profile.png';
+
+      loadGigs();
+    })
+    .catch(function () {
+      window.location.replace('../login.html');
+    });
+})();
+</script>
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>

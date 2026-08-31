@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help Center - RepairKar</title>
+<meta name="description" content="Get help with RepairKar bookings, chat, locations, calls, and account access.">
+<link rel="icon" type="image/x-icon" href="assets/images/logo/favicon.ico">
+<link rel="stylesheet" href="assets/css/tailwind.min.css">
+<link rel="stylesheet" href="assets/css/loader.css">
+<link rel="stylesheet" href="assets/css/navbar.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<style>
+  body { font-family: Inter, ui-sans-serif, sans-serif; background: #f8fafc; }
+  .faq-item { border: 1px solid #e2e8f0; }
+  .faq-item[open] { border-color: #99d4cc; }
+  .faq-item summary { cursor: pointer; list-style: none; }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary i { transition: transform .15s ease; }
+  .faq-item[open] summary i { transform: rotate(180deg); }
+  .support-card { border: 1px solid #dbe4ea; }
+  .icon-box { width: 44px; height: 44px; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+  .profile-dropdown { position: relative; }
+  .profile-dropdown-menu { position: absolute; top: calc(100% + 8px); right: 0; min-width: 200px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 10px 40px -12px rgba(15,23,42,.18); opacity: 0; visibility: hidden; transform: translateY(-8px); transition: opacity .2s ease, transform .2s ease, visibility .2s ease; z-index: 100; overflow: hidden; }
+  .profile-dropdown-menu.open { opacity: 1; visibility: visible; transform: translateY(0); }
+  .profile-dropdown-menu a, .profile-dropdown-menu button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 16px; font-size: 14px; font-weight: 500; color: #334155; background: none; border: 0; text-align: left; text-decoration: none; }
+  .profile-dropdown-menu a:hover, .profile-dropdown-menu button:hover { background: #f1f5f9; color: #0f766e; }
+  .dropdown-divider { height: 1px; background: #e2e8f0; }
+  .help-header-inner { min-height: 64px; }
+  .help-header-nav { display: flex; align-items: center; gap: 28px; white-space: nowrap; }
+  .help-header-nav a { color: #475569; text-decoration: none; }
+  .help-header-nav a:hover { color: #0f766e; }
+  .help-search-wrap { position: relative; max-width: 680px; }
+  .help-search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+  .help-search-input { display: block; width: 100%; padding: 14px 18px 14px 44px; border-radius: 16px; }
+  .help-hero { min-height: 250px; }
+  .help-main { padding-top: 32px; padding-bottom: 56px; }
+  @media (max-width: 767px) {
+    .help-header-inner { min-height: 60px; }
+    .help-hero { min-height: 0; }
+    .help-main { padding-top: 20px; padding-bottom: 36px; }
+  }
+</style>
+</head>
+<body class="min-h-screen text-slate-800 antialiased">
+<header id="site-header" class="sticky top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="help-header-inner flex items-center justify-between gap-4">
+      <a href="index.html" aria-label="RepairKar home"><img src="assets/images/logo/logo.png" alt="RepairKar" class="w-32"></a>
+      <nav class="help-header-nav hidden text-sm font-medium md:flex" aria-label="Main navigation">
+        <a href="index.html" class="hover:text-brand">Home</a>
+        <a href="user/home.html" class="hover:text-brand">Find Mechanics</a>
+        <a href="signup.html?role=mechanic" class="hover:text-brand">For Mechanics</a>
+        <a id="desktop-login" href="login.html" class="hover:text-brand">Login</a>
+      </nav>
+      <div id="guest-actions" class="hidden items-center gap-3 md:flex"><a id="guest-signup" href="signup.html" class="rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-dark">Sign Up</a></div>
+      <div id="account-actions" class="hidden items-center gap-3">
+        <div class="profile-dropdown">
+          <button id="profile-toggle" type="button" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-brand" aria-haspopup="true" aria-expanded="false">
+            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-light text-brand"><i id="account-icon" class="fa-regular fa-user text-xs" aria-hidden="true"></i></span>
+            <span id="account-name"></span><i id="dropdown-arrow" class="fa-solid fa-chevron-down text-[10px] text-slate-400" aria-hidden="true"></i>
+          </button>
+          <div id="profile-dropdown-menu" class="profile-dropdown-menu">
+            <a id="dashboard-link" href="#"><i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>Dashboard</a>
+            <a id="view-profile-link" href="#"><i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>My Profile</a>
+            <div class="dropdown-divider"></div>
+            <button id="logout-btn" type="button"><i class="fa-solid fa-right-from-bracket text-slate-400" aria-hidden="true"></i>Logout</button>
+          </div>
+        </div>
+      </div>
+      <button id="mobile-menu-btn" type="button" aria-label="Open main menu" aria-expanded="false" aria-controls="mobile-menu" class="md:hidden"><i class="fa-solid fa-bars text-slate-600" aria-hidden="true"></i></button>
+    </div>
+    <div id="mobile-menu" class="border-t border-slate-100 pb-4 pt-3 md:hidden">
+      <nav class="flex flex-col gap-1" aria-label="Mobile navigation">
+        <a href="index.html" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Home</a>
+        <a href="user/home.html" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Find Mechanics</a>
+        <a href="signup.html?role=mechanic" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">For Mechanics</a>
+        <a id="mobile-login" href="login.html" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Login</a>
+        <a id="mobile-signup" href="signup.html" class="rounded-xl bg-accent px-4 py-2.5 text-center text-sm font-semibold text-white">Sign Up</a>
+        <div id="mobile-account-section" class="hidden">
+          <div class="px-3 py-2 text-sm font-semibold text-brand"><i id="mobile-account-icon" class="fa-regular fa-user mr-2" aria-hidden="true"></i><span id="mobile-account-name"></span></div>
+          <a id="mobile-dashboard-link" href="#" class="px-3 py-2 text-sm text-slate-600">Dashboard</a>
+          <a id="mobile-view-profile-link" href="#" class="px-3 py-2 text-sm text-slate-600">My Profile</a>
+          <button id="mobile-logout-btn" type="button" class="w-full px-3 py-2 text-left text-sm text-red-500">Logout</button>
+        </div>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="help-main mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+  <section class="help-hero rounded-3xl bg-brand px-6 py-10 text-white sm:px-10 sm:py-10">
+    <p class="text-xs font-bold uppercase tracking-widest text-white/70">RepairKar support</p>
+    <h1 class="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">How can we help?</h1>
+    <p class="mt-3 max-w-xl text-sm leading-6 text-white/80">Find answers for bookings, conversations, shared files, locations, calls, and account access.</p>
+    <label for="help-search" class="sr-only">Search help topics</label>
+    <div class="help-search-wrap relative mt-6">
+      <i class="help-search-icon fa-solid fa-magnifying-glass text-slate-400" aria-hidden="true"></i>
+      <input id="help-search" type="search" placeholder="Search help topics..." class="help-search-input border-0 bg-white text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:ring-4 focus:ring-white/20">
+    </div>
+  </section>
+
+  <section class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Help categories">
+    <a href="#booking-help" class="support-card rounded-2xl bg-white p-5 hover:border-brand"><span class="icon-box bg-brand-light text-brand"><i class="fa-solid fa-calendar-check" aria-hidden="true"></i></span><h2 class="mt-4 text-sm font-bold text-slate-900">Bookings</h2><p class="mt-1 text-xs leading-5 text-slate-500">Requests, confirmation, and booking status.</p></a>
+    <a href="#chat-help" class="support-card rounded-2xl bg-white p-5 hover:border-brand"><span class="icon-box bg-blue-50 text-blue-600"><i class="fa-solid fa-comments" aria-hidden="true"></i></span><h2 class="mt-4 text-sm font-bold text-slate-900">Chat and files</h2><p class="mt-1 text-xs leading-5 text-slate-500">Messages, photos, documents, and voice notes.</p></a>
+    <a href="#location-help" class="support-card rounded-2xl bg-white p-5 hover:border-brand"><span class="icon-box bg-amber-50 text-amber-600"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span><h2 class="mt-4 text-sm font-bold text-slate-900">Location and calls</h2><p class="mt-1 text-xs leading-5 text-slate-500">GPS sharing and internet voice or video calls.</p></a>
+    <a href="#account-help" class="support-card rounded-2xl bg-white p-5 hover:border-brand"><span class="icon-box bg-slate-100 text-slate-600"><i class="fa-solid fa-user-shield" aria-hidden="true"></i></span><h2 class="mt-4 text-sm font-bold text-slate-900">Account</h2><p class="mt-1 text-xs leading-5 text-slate-500">Login, profile, and mechanic workspace access.</p></a>
+  </section>
+
+  <section class="mt-10 grid gap-8 lg:grid-cols-[1fr_1.5fr]">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-widest text-brand">Quick actions</p>
+      <h2 class="mt-2 text-2xl font-extrabold text-slate-900">Go straight to the right place</h2>
+      <div class="mt-5 space-y-3">
+        <a href="login.html" class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 hover:border-brand"><span class="icon-box bg-brand-light text-brand"><i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i></span><span><strong class="block text-sm text-slate-900">Open your workspace</strong><small class="text-xs text-slate-500">Login to manage bookings and messages.</small></span><i class="fa-solid fa-arrow-right ml-auto text-slate-300" aria-hidden="true"></i></a>
+        <a href="index.html#categories" class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 hover:border-brand"><span class="icon-box bg-orange-50 text-orange-600"><i class="fa-solid fa-wrench" aria-hidden="true"></i></span><span><strong class="block text-sm text-slate-900">Find a service</strong><small class="text-xs text-slate-500">Browse available repair categories.</small></span><i class="fa-solid fa-arrow-right ml-auto text-slate-300" aria-hidden="true"></i></a>
+      </div>
+    </div>
+    <div id="faq-list" class="space-y-3">
+      <p class="text-xs font-bold uppercase tracking-widest text-brand">Frequently asked questions</p>
+      <details id="booking-help" class="faq-item rounded-2xl bg-white p-4">
+        <summary class="flex items-center justify-between gap-4 text-sm font-bold text-slate-900">How do I create a booking?<i class="fa-solid fa-chevron-down text-xs text-slate-400" aria-hidden="true"></i></summary>
+        <p class="faq-answer mt-3 border-t border-slate-100 pt-3 text-sm leading-6 text-slate-500">Choose a mechanic and service, review the details, select your location and schedule, then confirm the booking. The mechanic can review and update the request from the mechanic dashboard.</p>
+      </details>
+      <details class="faq-item rounded-2xl bg-white p-4">
+        <summary class="flex items-center justify-between gap-4 text-sm font-bold text-slate-900">Can I chat before booking?<i class="fa-solid fa-chevron-down text-xs text-slate-400" aria-hidden="true"></i></summary>
+        <p class="faq-answer mt-3 border-t border-slate-100 pt-3 text-sm leading-6 text-slate-500">Yes. Open a mechanic profile and choose chat. The first message creates a pending conversation so you can discuss the repair before placing a confirmed service request.</p>
+      </details>
+      <details id="chat-help" class="faq-item rounded-2xl bg-white p-4">
+        <summary class="flex items-center justify-between gap-4 text-sm font-bold text-slate-900">Why is my sent message duplicated?<i class="fa-solid fa-chevron-down text-xs text-slate-400" aria-hidden="true"></i></summary>
+        <p class="faq-answer mt-3 border-t border-slate-100 pt-3 text-sm leading-6 text-slate-500">Refresh the chat page after updating it. The chat now ignores duplicate server message IDs. Both participants must also be logged in with separate browser sessions.</p>
+      </details>
+      <details class="faq-item rounded-2xl bg-white p-4">
+        <summary class="flex items-center justify-between gap-4 text-sm font-bold text-slate-900">How do I send a photo, video, document, or voice note?<i class="fa-solid fa-chevron-down text-xs text-slate-400" aria-hidden="true"></i></summary>
+        <p class="faq-answer mt-3 border-t border-slate-100 pt-3 text-sm leading-6 text-slate-500">Open a conversation and use the attachment controls beside the message field. Photos and videos preview in the conversation, documents show their filename and size, and voice notes can be recorded with microphone permission.</p>
+      </details>
+      <details id="location-help" class="faq-item rounded-2xl bg-white p-4">
+        <summary class="flex items-center justify-between gap-4 text-sm font-bold text-slate-900">Why is my location inaccurate?<i class="fa-solid fa-chevron-down text-xs text-slate-400" aria-hidden="true"></i></summary>
+        <p class="faq-answer mt-3 border-t border-slate-100 pt-3 text-sm leading-6 text-slate-500">Allow location access for localhost, enable GPS on your device, and retry outdoors if possible. RepairKar requests a fresh high-accuracy position and opens shared coordinates in Google Maps.</p>
+      </details>
+      <details class="faq-item rounded-2xl bg-white p-4">
+        <summary class="flex items-center justify-between gap-4 text-sm font-bold text-slate-900">What is required for voice and video calls?<i class="fa-solid fa-chevron-down text-xs text-slate-400" aria-hidden="true"></i></summary>
+        <p class="faq-answer mt-3 border-t border-slate-100 pt-3 text-sm leading-6 text-slate-500">Both participants must be logged in and inside the same conversation. Calls require localhost or HTTPS, browser microphone or camera permission, and a supported modern browser. Calls use an internet connection, not a phone number.</p>
+      </details>
+      <details id="account-help" class="faq-item rounded-2xl bg-white p-4">
+        <summary class="flex items-center justify-between gap-4 text-sm font-bold text-slate-900">Why can I see an authentication error?<i class="fa-solid fa-chevron-down text-xs text-slate-400" aria-hidden="true"></i></summary>
+        <p class="faq-answer mt-3 border-t border-slate-100 pt-3 text-sm leading-6 text-slate-500">A 401 Unauthorized response means the current browser session is not logged in or has expired. Log in again in that browser. User and mechanic accounts need separate active sessions when testing chat.</p>
+      </details>
+    </div>
+  </section>
+</main>
+<footer class="bg-slate-900 text-slate-300">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 sm:grid-cols-4 gap-8">
+    <div class="col-span-2 sm:col-span-1">
+      <a href="index.html" class="inline-block   px-3 py-1.5">
+        <img src="assets/images/logo/logo.png" alt="RepairKar" class="h-9 w-auto">
+      </a>
+      <p class="mt-3 text-sm text-slate-400">Connecting you with trusted professionals for all your home and vehicle needs.</p>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold text-white">Company</h4>
+      <ul class="mt-3 space-y-2 text-sm">
+        <li><a href="about.html" class="hover:text-white transition-colors">About Us</a></li>
+        <li><a href="careers.html" class="hover:text-white transition-colors">Careers</a></li>
+        <li><a href="contact.html" class="hover:text-white transition-colors">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold text-white">Support</h4>
+      <ul class="mt-3 space-y-2 text-sm">
+        <li><a href="help.html" class="hover:text-white transition-colors">Help Center</a></li>
+        <li><a href="contact.html" class="hover:text-white transition-colors">Contact Support</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold text-white">Legal</h4>
+      <ul class="mt-3 space-y-2 text-sm">
+        <li><a href="terms.html" class="hover:text-white transition-colors">Terms of Service</a></li>
+        <li><a href="privacy.html" class="hover:text-white transition-colors">Privacy Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-xs text-slate-500">
+      <p>&copy; <span id="footer-year"></span> RepairKar. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+<script>
+(function () {
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+  const search = document.getElementById('help-search');
+  const items = Array.from(document.querySelectorAll('.faq-item'));
+  search.addEventListener('input', function () {
+    const query = search.value.trim().toLowerCase();
+    items.forEach(function (item) {
+      const visible = !query || item.textContent.toLowerCase().indexOf(query) !== -1;
+      item.classList.toggle('hidden', !visible);
+    });
+  });
+})();
+</script>
+<script src="assets/js/navbar.js"></script>
+<script src="assets/js/loader.js"></script>
+</body>
+</html>

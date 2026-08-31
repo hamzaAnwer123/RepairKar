@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Roadside Assistance — RepairKar</title>
+<meta name="description" content="Get emergency roadside help fast — find and call the nearest verified mechanic on RepairKar's live map.">
+<meta name="robots" content="noindex, follow">
+
+<link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+<link rel="stylesheet" href="../assets/css/navbar.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+
+<style>
+  html, body { height: 100%; margin: 0; }
+  body { font-family: 'Inter', sans-serif; }
+  #map { height: 100%; width: 100%; background: #e2e8f0; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sheet-in       { animation: sheetIn 0.4s cubic-bezier(0.22,1,0.36,1) both; }
+    .fade-in        { animation: fadeIn 0.3s ease-out both; }
+    .fade-in-up     { animation: fadeInUp 0.35s ease-out both; }
+    .card-enter     { animation: fadeInUp 0.3s ease-out both; }
+    .sos-pulse      { animation: sosPulse 1.8s ease-in-out infinite; }
+    .user-dot-pulse { animation: userDotPulse 2s ease-in-out infinite; }
+    .btn-tap        { transition: transform 0.12s ease-out; }
+    .btn-tap:active { transform: scale(0.96); }
+    .skeleton       { animation: shimmer 1.4s ease-in-out infinite; }
+    .spin-slow      { animation: spin 1s linear infinite; }
+    .badge-pop      { animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+  }
+  @keyframes sheetIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes sosPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45); }
+    50%      { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  }
+  @keyframes userDotPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.6); opacity: 0.35; }
+  }
+  @keyframes shimmer { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+
+  .user-location-marker { position: relative; width: 20px; height: 20px; }
+  .user-location-marker .dot { position: absolute; inset: 0; margin: auto; width: 14px; height: 14px; border-radius: 50%; background: #0F766E; border: 2px solid white; }
+  .user-location-marker .ring { position: absolute; inset: 0; margin: auto; width: 14px; height: 14px; border-radius: 50%; background: #0F766E; }
+
+  /* Mobile bottom sheet collapse. The !important outranks the sheet-in
+     animation's final keyframe (author !important rules beat running
+     CSS animations in the cascade). */
+  #mechanics-panel { transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+  @media (max-width: 767px) {
+    #mechanics-panel.sheet-collapsed { transform: translateY(calc(100% - 28px)) !important; }
+  }
+
+  /* Leaflet popups — sharper corners to match the app's card style */
+  .leaflet-popup-content-wrapper { border-radius: 0.75rem; }
+  .leaflet-popup-content { margin: 12px 14px; }
+</style>
+
+<!--
+  SECURITY NOTE: mechanic names/shop info rendered below come from the
+  database and MUST use textContent, never innerHTML. This page shares
+  the user's live location with the server on every position update —
+  api/get-nearby-mechanics.php must rate-limit these requests and never
+  expose one user's exact location to anyone but the mechanics they
+  contact.
+
+  GEOLOCATION REQUIRES A SECURE CONTEXT: browsers only allow
+  navigator.geolocation on HTTPS or http://localhost — see the
+  checkEnvironmentSupport() function below for the file://-specific
+  diagnostic message this page shows instead of a silent failure.
+-->
+
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased">
+
+<!-- ================= HEADER ================= -->
+<header id="site-header" class="sticky top-0 z-50 bg-white border-b border-slate-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- Logo -->
+      <a href="../index.html" class="flex items-center gap-2 shrink-0" aria-label="RepairKar home">
+        <img class="text-2xl w-32 font-extrabold text-brand" src="../assets/images/logo/logo.png" alt="RepairKar">
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-8" aria-label="Main navigation">
+        <a href="dashboard.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Dashboard</a>
+        <a href="home.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Find Mechanics</a>
+        <a href="live-map.html" class="relative text-sm font-semibold text-brand transition-colors">Emergency Help</a>
+        <a href="chat.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Chats</a>
+      </nav>
+
+      <!-- Right actions -->
+      <div class="flex items-center gap-3">
+        <a href="notifications.html" aria-label="Notifications" class="relative shrink-0 w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-brand transition-colors">
+          <i class="fa-solid fa-bell text-sm" aria-hidden="true"></i>
+        </a>
+
+        <!-- Guest action -->
+        <div id="guest-actions" class="hidden md:flex items-center gap-3">
+          <a id="desktop-login" href="../login.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Login</a>
+          <a id="guest-signup" href="../signup.html"
+             class="btn-animated inline-flex items-center justify-center rounded-xl bg-accent hover:bg-accent-dark hover:shadow-lg hover:shadow-accent/30 text-white text-sm font-semibold px-5 py-2.5">
+            Sign Up
+          </a>
+        </div>
+
+        <!-- Account action (Profile Dropdown) -->
+        <div id="account-actions" class="hidden items-center gap-3">
+          <div class="profile-dropdown">
+            <button id="profile-toggle" type="button" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-brand transition-colors" aria-haspopup="true" aria-expanded="false">
+              <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
+                <i id="account-icon" class="fa-regular fa-user text-xs" aria-hidden="true"></i>
+              </span>
+              <span id="account-name"></span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="dropdown-arrow"></i>
+            </button>
+            <div id="profile-dropdown-menu" class="profile-dropdown-menu">
+              <a id="dashboard-link" href="dashboard.html">
+                <i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>
+                Dashboard
+              </a>
+              <a id="view-profile-link" href="profile.html">
+                <i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>
+                My Profile
+              </a>
+              <div class="dropdown-divider"></div>
+              <button id="logout-btn" type="button" class="logout-btn">
+                <i class="fa-solid fa-right-from-bracket text-slate-400" aria-hidden="true"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile menu button -->
+        <button id="mobile-menu-btn" type="button"
+                class="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+                aria-label="Open main menu" aria-expanded="false" aria-controls="mobile-menu">
+          <svg id="icon-open" class="w-6 h-6 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <svg id="icon-close" class="w-6 h-6 hidden transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="md:hidden pb-4">
+      <nav class="flex flex-col gap-1" aria-label="Mobile navigation">
+        <a href="dashboard.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Dashboard</a>
+        <a href="home.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Find Mechanics</a>
+        <a href="live-map.html" class="px-3 py-2 rounded-lg text-sm font-semibold text-brand bg-slate-50">Emergency Help</a>
+        <a href="chat.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Chats</a>
+        <a id="mobile-login" href="../login.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Login</a>
+        <a id="mobile-signup" href="../signup.html" class="btn-animated mt-2 inline-flex items-center justify-center rounded-xl bg-accent text-white text-sm font-semibold px-5 py-2.5">Sign Up</a>
+        <div id="mobile-account-section" class="hidden">
+          <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-brand">
+            <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
+              <i id="mobile-account-icon" class="fa-regular fa-user" aria-hidden="true"></i>
+            </span>
+            <span id="mobile-account-name"></span>
+          </div>
+          <a id="mobile-dashboard-link" href="dashboard.html" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+            <i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>
+            Dashboard
+          </a>
+          <a id="mobile-view-profile-link" href="profile.html" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+            <i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>
+            My Profile
+          </a>
+          <button id="mobile-logout-btn" type="button" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 w-full text-left">
+            <i class="fa-solid fa-right-from-bracket text-red-400" aria-hidden="true"></i>
+            Logout
+          </button>
+        </div>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<!-- ================= LAYOUT: sidebar (desktop) / stacked (mobile) ================= -->
+<!-- 100dvh keeps the map clear of mobile browser UI bars that 100vh overshoots -->
+<div class="md:flex" style="height: calc(100vh - 64px); height: calc(100dvh - 64px);">
+
+  <!-- ---- Mechanics panel: left sidebar on desktop, bottom sheet on mobile ---- -->
+  <div id="mechanics-panel"
+       class="md:w-80 md:shrink-0 md:h-full md:overflow-y-auto md:border-r md:border-slate-100 md:bg-white md:static
+              fixed bottom-0 inset-x-0 z-30 bg-white rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.08)] md:rounded-none md:shadow-none
+              sheet-in md:animate-none max-h-[70vh] md:max-h-none overflow-y-auto">
+
+    <!-- Grab handle — tap to collapse/expand the sheet (mobile only) -->
+    <button type="button" id="sheet-toggle" aria-expanded="true" aria-controls="panel-body" aria-label="Collapse mechanic list"
+            class="md:hidden w-full pt-3 pb-3">
+      <span id="sheet-handle" class="block w-10 h-1 rounded-full bg-slate-300 mx-auto"></span>
+    </button>
+
+    <div id="panel-body" class="px-4 md:px-5 pt-3 md:pt-5 pb-4">
+
+      <div class="flex items-center justify-between mb-1">
+        <h2 class="text-lg md:text-base font-bold text-slate-900">Nearest Mechanics</h2>
+        <span id="found-count-badge" class="badge-pop hidden text-xs font-semibold bg-brand-light text-brand rounded-full px-2.5 py-1"></span>
+      </div>
+      <p id="search-location-label" class="hidden md:flex items-center gap-1.5 text-xs text-slate-400 mb-3">
+        <i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i> Searching near you
+      </p>
+
+      <!-- SOS button — ABOVE the list, matching the design -->
+      <button type="button" id="sos-btn"
+              class="sos-pulse btn-tap w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-accent hover:bg-accent-dark md:bg-red-600 md:hover:bg-red-700 text-white text-sm font-bold px-5 py-3.5 transition-colors mb-4">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        SOS — Get Help Now
+      </button>
+
+      <div id="mechanics-skeleton" class="space-y-3">
+        <div class="skeleton h-24 rounded-2xl bg-slate-100"></div>
+        <div class="skeleton h-24 rounded-2xl bg-slate-100"></div>
+      </div>
+
+      <div id="mechanics-list" class="hidden space-y-3"></div>
+
+      <div id="mechanics-empty" class="hidden text-center py-6">
+        <i class="fa-solid fa-magnifying-glass text-2xl text-slate-300" aria-hidden="true"></i>
+        <p id="mechanics-empty-text" class="mt-2 text-sm text-slate-500">No mechanics found nearby right now.</p>
+        <p class="mt-1 text-xs text-slate-400">Mechanics appear here while they are online near you.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---- Map ---- -->
+  <div class="flex-1 relative">
+    <!-- isolate keeps Leaflet's high z-index panes (600-1000) contained
+         below the sticky header instead of painting over it -->
+    <div id="map" class="absolute inset-0 z-0 isolate"></div>
+
+    <div id="map-loading" class="absolute inset-0 z-10 bg-slate-100 flex flex-col items-center justify-center">
+      <i class="fa-solid fa-location-crosshairs text-3xl text-brand spin-slow" aria-hidden="true"></i>
+      <p class="mt-3 text-sm text-slate-500">Finding your location…</p>
+    </div>
+
+    <!-- Live fix chip — communicates that tracking is live and how precise the current GPS fix is -->
+    <div id="live-chip" class="hidden flex absolute z-20 top-4 left-4 items-center gap-2 rounded-full bg-white/95 shadow-lg px-3 py-1.5 text-xs font-semibold text-slate-700">
+      <span id="live-dot" class="w-2 h-2 rounded-full bg-green-500 user-dot-pulse shrink-0" aria-hidden="true"></span>
+      Live <span id="live-accuracy" class="font-medium text-slate-400"></span>
+    </div>
+
+    <!-- Top-right on mobile (above the bottom sheet), above the zoom
+         control on desktop — previously it was hidden under the sheet
+         and stacked on top of Leaflet's zoom buttons -->
+    <button type="button" id="recenter-btn" aria-label="Recenter on my location" aria-pressed="true" title="Following your location"
+            class="btn-tap absolute z-20 right-4 top-4 md:top-auto md:bottom-24 w-11 h-11 rounded-full bg-white shadow-lg flex items-center justify-center">
+      <i id="recenter-icon" class="fa-solid fa-location-crosshairs text-brand" aria-hidden="true"></i>
+    </button>
+  </div>
+</div>
+
+<!-- ================= SOS CONFIRM MODAL ================= -->
+<div id="sos-modal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+  <div class="fade-in bg-white rounded-2xl w-full max-w-sm p-5 text-center">
+    <div class="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto">
+      <i class="fa-solid fa-triangle-exclamation text-red-500 text-xl" aria-hidden="true"></i>
+    </div>
+    <h2 class="text-base font-bold text-slate-900 mt-3">Send an emergency request?</h2>
+    <p class="text-sm text-slate-500 mt-1.5">We'll alert the nearest available mechanics with your exact location and ask them to respond immediately.</p>
+    <div class="flex gap-3 mt-5">
+      <button type="button" id="sos-modal-cancel" class="btn-tap flex-1 rounded-xl border border-slate-200 text-slate-700 text-sm font-medium px-4 py-2.5">
+        Cancel
+      </button>
+      <button type="button" id="sos-modal-confirm" class="btn-tap flex-1 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2.5">
+        <span id="sos-confirm-text">Yes, Send SOS</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= LOCATION PROBLEM FALLBACK (with specific reason) ================= -->
+<div id="permission-fallback" class="hidden fixed inset-0 z-40 bg-white flex items-center justify-center p-6 text-center">
+  <div class="max-w-xs mx-auto">
+    <i class="fa-solid fa-location-crosshairs text-3xl text-slate-300" aria-hidden="true"></i>
+    <h2 id="fallback-title" class="text-base font-bold text-slate-900 mt-3">Location access needed</h2>
+    <p id="fallback-message" class="text-sm text-slate-500 mt-1.5">Roadside assistance needs your live location to find nearby mechanics.</p>
+    <button type="button" id="retry-location-btn" class="btn-tap mt-4 rounded-xl bg-brand text-white text-sm font-semibold px-5 py-2.5">
+      Try Again
+    </button>
+    <a href="home.html" class="block mt-3 text-sm text-slate-500 hover:underline">Back to Home</a>
+  </div>
+</div>
+
+<script>
+(function () {
+
+  const REFRESH_INTERVAL_MS = 10000;
+
+  // ---- Styled toast (replaces native alert()) ----
+  let toastTimer = null;
+  function showToast(message, type) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    const isError = (type === 'error' || type === true);
+    toast.className = 'hidden fixed bottom-20 md:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto sm:min-w-[260px] max-w-sm z-[60] rounded-2xl px-4 py-3 text-sm font-medium shadow-xl flex items-center gap-2 ' +
+      (isError ? 'bg-red-500 text-white' : 'bg-slate-900 text-white');
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.add('hidden'); }, 3200);
+  }
+
+  const mapLoading         = document.getElementById('map-loading');
+  const foundCountBadge    = document.getElementById('found-count-badge');
+  const searchLocationLabel = document.getElementById('search-location-label');
+  const mechanicsSkeleton  = document.getElementById('mechanics-skeleton');
+  const mechanicsList      = document.getElementById('mechanics-list');
+  const mechanicsEmpty     = document.getElementById('mechanics-empty');
+  const sosBtn              = document.getElementById('sos-btn');
+  const sosModal            = document.getElementById('sos-modal');
+  const sosModalCancel      = document.getElementById('sos-modal-cancel');
+  const sosModalConfirm     = document.getElementById('sos-modal-confirm');
+  const sosConfirmText      = document.getElementById('sos-confirm-text');
+  const recenterBtn         = document.getElementById('recenter-btn');
+  const recenterIcon        = document.getElementById('recenter-icon');
+  const liveChip            = document.getElementById('live-chip');
+  const liveAccuracy        = document.getElementById('live-accuracy');
+  const sheetToggle         = document.getElementById('sheet-toggle');
+  const mechanicsPanel      = document.getElementById('mechanics-panel');
+  const permissionFallback  = document.getElementById('permission-fallback');
+  const fallbackTitle       = document.getElementById('fallback-title');
+  const fallbackMessage     = document.getElementById('fallback-message');
+  const retryLocationBtn    = document.getElementById('retry-location-btn');
+
+  let map = null;
+  let userMarker = null;
+  let accuracyCircle = null;
+  let mechanicMarkers = {};
+  let userLat = null, userLng = null;
+  let watchId = null;
+  let refreshTimer = null;
+  let mapReady = false;
+
+  // Follow-me: the map pans along as the user moves; dragging the map
+  // pauses it and the recenter button re-enables it.
+  let followUser = true;
+  // Remembers the last rendered payload so a 10s poll that returns the
+  // same data doesn't rebuild the DOM (and re-fetch every card image).
+  let lastRenderedKey = null;
+  let hasRenderedList = false;
+  // Service radius reported by the API — used to explain empty results.
+  let lastSearchRadiusKm = null;
+
+  function checkEnvironmentSupport() {
+    if (!('geolocation' in navigator)) {
+      return { ok: false, title: 'Location not supported', message: 'Your browser does not support location services.' };
+    }
+    if (window.isSecureContext === false) {
+      return {
+        ok: false,
+        title: 'Secure connection required',
+        message: 'Browsers only allow location access on HTTPS or localhost. ' +
+                 (window.location.protocol === 'file:'
+                   ? 'You are opening this file directly — run it through a local server (e.g. VS Code Live Server, or "php -S localhost:8000") instead of double-clicking the HTML file.'
+                   : 'Please access this site over HTTPS.')
+      };
+    }
+    return { ok: true };
+  }
+
+  function showFallback(title, message) {
+    fallbackTitle.textContent = title;
+    fallbackMessage.textContent = message;
+    permissionFallback.classList.remove('hidden');
+    mapLoading.classList.add('hidden');
+  }
+  function hideFallback() { permissionFallback.classList.add('hidden'); }
+
+  function geolocationErrorInfo(err) {
+    switch (err && err.code) {
+      case 1: return { title: 'Location permission denied', message: 'You blocked location access for this site. Enable it in your browser\'s site settings, then try again.' };
+      case 2: return { title: 'Location unavailable', message: 'Your device could not determine your position. Check that location services are turned on.' };
+      case 3: return { title: 'Location request timed out', message: 'Getting your location took too long. Check your connection/GPS signal and try again.' };
+      default: return { title: 'Location access needed', message: 'Roadside assistance needs your live location to find nearby mechanics.' };
+    }
+  }
+
+  function userLocationIcon() {
+    return L.divIcon({
+      className: '',
+      html: '<div class="user-location-marker"><span class="ring user-dot-pulse"></span><span class="dot"></span></div>',
+      iconSize: [20, 20], iconAnchor: [10, 10]
+    });
+  }
+
+  function initMap(lat, lng) {
+    map = L.map('map', { zoomControl: false }).setView([lat, lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
+    }).addTo(map);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+    userMarker = L.marker([lat, lng], { icon: userLocationIcon(), zIndexOffset: 1000 }).addTo(map);
+    accuracyCircle = L.circle([lat, lng], {
+      radius: 30, color: '#0F766E', weight: 1, opacity: 0.4,
+      fillColor: '#0F766E', fillOpacity: 0.08, interactive: false
+    }).addTo(map);
+    // Manual panning pauses follow-me; the recenter button re-enables it.
+    map.on('dragstart', function () { followUser = false; updateRecenterState(); });
+    mapReady = true;
+    updateRecenterState();
+    setTimeout(function () { map.invalidateSize(); }, 100);
+  }
+
+  // Straight-line distance in meters (equirectangular — plenty accurate
+  // at city scale for deciding whether to re-pan).
+  function distanceMeters(aLat, aLng, bLat, bLng) {
+    const R = 6371000, rad = Math.PI / 180;
+    const dLat = (bLat - aLat) * rad, dLng = (bLng - aLng) * rad;
+    const s = Math.sin(dLat / 2) ** 2 + Math.cos(aLat * rad) * Math.cos(bLat * rad) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(s));
+  }
+
+  function updateRecenterState() {
+    if (!recenterIcon) return;
+    recenterIcon.className = 'fa-solid fa-location-crosshairs ' + (followUser ? 'text-brand' : 'text-slate-400');
+    recenterBtn.setAttribute('aria-pressed', followUser ? 'true' : 'false');
+    recenterBtn.title = followUser ? 'Following your location' : 'Follow my location';
+  }
+
+  function updateUserPosition(lat, lng, accuracy) {
+    const prevLat = userLat, prevLng = userLng;
+    userLat = lat; userLng = lng;
+    if (!mapReady) {
+      initMap(lat, lng);
+      mapLoading.classList.add('hidden');
+    } else {
+      userMarker.setLatLng([lat, lng]);
+      if (accuracyCircle) {
+        accuracyCircle.setLatLng([lat, lng]);
+        // The blue circle IS the honesty indicator: it shows the GPS fix's
+        // real accuracy radius (clamped so it stays usable on screen).
+        accuracyCircle.setRadius(Math.min(Math.max(accuracy || 30, 20), 300));
+      }
+      // Pan along only when the user actually moved — GPS jitter would
+      // otherwise keep the map animating on the spot.
+      if (followUser && (prevLat === null || distanceMeters(prevLat, prevLng, lat, lng) >= 15)) {
+        map.setView([lat, lng], map.getZoom(), { animate: true });
+      }
+    }
+    // Live chip — makes the "live" state and fix precision visible. A very
+    // coarse fix (IP-level geolocation) can sit in the wrong city entirely,
+    // so warn loudly instead of silently showing misleading distances.
+    liveChip.classList.remove('hidden');
+    const liveDot = document.getElementById('live-dot');
+    if (accuracy && accuracy > 10000) {
+      liveChip.style.backgroundColor = '#FEF3C7';
+      liveChip.style.color = '#92400E';
+      if (liveDot) liveDot.className = 'w-2 h-2 rounded-full bg-amber-500 user-dot-pulse shrink-0';
+      liveAccuracy.textContent = 'Low precision \u00B1' + (Math.round(accuracy / 100) / 10) + ' km \u2014 enable GPS/Wi-Fi';
+    } else {
+      liveChip.style.backgroundColor = '';
+      liveChip.style.color = '';
+      if (liveDot) liveDot.className = 'w-2 h-2 rounded-full bg-green-500 user-dot-pulse shrink-0';
+      liveAccuracy.textContent = accuracy ? '\u00B1' + Math.round(accuracy) + ' m' : '';
+    }
+  }
+
+  function recenterMap() {
+    if (map && userLat != null) {
+      followUser = true;
+      updateRecenterState();
+      map.setView([userLat, userLng], 15, { animate: true });
+    }
+  }
+  recenterBtn.addEventListener('click', recenterMap);
+
+  // Tap the grab handle to collapse the bottom sheet into a full-screen
+  // map (mobile only — the handle is hidden on desktop).
+  if (sheetToggle) {
+    sheetToggle.addEventListener('click', function () {
+      const collapsed = mechanicsPanel.classList.toggle('sheet-collapsed');
+      sheetToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      sheetToggle.setAttribute('aria-label', collapsed ? 'Expand mechanic list' : 'Collapse mechanic list');
+    });
+  }
+
+  function mechanicIcon(isOnline) {
+    return L.divIcon({
+      className: '',
+      html: '<div style="width:34px;height:34px;border-radius:9999px;background:white;border:2px solid ' +
+            (isOnline ? '#22c55e' : '#94a3b8') +
+            ';display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15);">' +
+            '<i class="fa-solid fa-wrench" style="color:#0F766E;font-size:13px;"></i></div>',
+      iconSize: [34, 34], iconAnchor: [17, 17]
+    });
+  }
+
+  function renderMechanicMarkers(mechanics) {
+    const seenIds = {};
+    mechanics.forEach(function (m) {
+      seenIds[m.id] = true;
+      if (mechanicMarkers[m.id]) {
+        mechanicMarkers[m.id].setLatLng([m.lat, m.lng]);
+        mechanicMarkers[m.id].setPopupContent(buildMechanicPopup(m)); // distance/ETA stay fresh
+      } else {
+        const marker = L.marker([m.lat, m.lng], { icon: mechanicIcon(m.isOnline) }).addTo(map);
+        marker.bindPopup(buildMechanicPopup(m), { closeButton: true, minWidth: 200 });
+        mechanicMarkers[m.id] = marker;
+      }
+    });
+    Object.keys(mechanicMarkers).forEach(function (id) {
+      if (!seenIds[id]) { map.removeLayer(mechanicMarkers[id]); delete mechanicMarkers[id]; }
+    });
+  }
+
+  // Human-friendly distance: meters under 1 km, one decimal above.
+  function formatDistance(km) {
+    if (km === null || km === undefined) return 'Located nearby';
+    if (km < 1) return Math.max(1, Math.round(km * 1000)) + ' m away';
+    return (Math.round(km * 10) / 10) + ' km away';
+  }
+
+  // Popup content for a mechanic marker — built with DOM APIs so the
+  // shop/category strings (untrusted DB content) only ever land in
+  // textContent, never in innerHTML.
+  function buildMechanicPopup(m) {
+    const box = document.createElement('div');
+    const name = document.createElement('p');
+    name.className = 'font-bold text-sm text-slate-900';
+    name.textContent = m.shopName || 'Mechanic';
+    box.appendChild(name);
+
+    const sub = document.createElement('p');
+    sub.className = 'text-xs text-slate-500 mt-0.5';
+    sub.textContent = (m.category ? m.category.replace(/-/g, ' ') : 'Mechanic') +
+      (m.distanceKm !== null && m.distanceKm !== undefined ? ' \u00B7 ' + formatDistance(m.distanceKm) : '');
+    box.appendChild(sub);
+
+    if (m.address) {
+      const address = document.createElement('p');
+      address.className = 'text-xs text-slate-400 mt-1';
+      address.textContent = m.address;
+      box.appendChild(address);
+    }
+
+    const actions = document.createElement('div');
+    actions.className = 'flex gap-2 mt-2.5';
+    const call = document.createElement('a');
+    call.href = 'tel:' + (m.phone || '');
+    call.className = 'flex-1 text-center rounded-lg bg-accent hover:bg-accent-dark text-white text-xs font-semibold px-3 py-2';
+    call.textContent = 'Call';
+    actions.appendChild(call);
+    const msg = document.createElement('a');
+    msg.href = 'chat.html?mechanic_id=' + encodeURIComponent(m.id);
+    msg.className = 'flex-1 text-center rounded-lg border border-brand text-brand hover:bg-brand-light text-xs font-semibold px-3 py-2';
+    msg.textContent = 'Message';
+    actions.appendChild(msg);
+    box.appendChild(actions);
+    return box;
+  }
+
+  // ---- Vertical stacked mechanic row — matches the design (not a horizontal-scroll card) ----
+  function renderMechanicRow(m, index) {
+    const card = document.createElement('div');
+    card.className = 'card-enter cursor-pointer rounded-2xl border border-slate-100 p-4 hover:border-slate-200 hover:shadow-sm transition';
+    card.style.animationDelay = (index * 60) + 'ms';
+
+    // Tapping a card flies the map to that mechanic and opens their popup
+    card.addEventListener('click', function () {
+      const marker = mechanicMarkers[m.id];
+      if (marker && map) {
+        map.setView([m.lat, m.lng], Math.max(map.getZoom(), 16), { animate: true });
+        marker.openPopup();
+      }
+    });
+
+    const topRow = document.createElement('div');
+    topRow.className = 'flex items-start justify-between gap-3';
+
+    const identity = document.createElement('div');
+    identity.className = 'flex items-center gap-3 min-w-0';
+    const avatar = document.createElement('img');
+    avatar.src = m.photo || '../assets/images/placeholders/default-mechnaic-profile.png';
+    avatar.alt = '';
+    avatar.loading = 'lazy';
+    avatar.width = 48; avatar.height = 48;
+    avatar.className = 'w-12 h-12 rounded-full object-cover bg-slate-100 shrink-0';
+    identity.appendChild(avatar);
+
+    const info = document.createElement('div');
+    info.className = 'min-w-0';
+    const name = document.createElement('p');
+    name.className = 'font-semibold text-sm text-slate-900 truncate';
+    name.textContent = m.shopName; // untrusted — textContent only
+    info.appendChild(name);
+    const meta = document.createElement('p');
+    meta.className = 'flex items-center gap-1 text-xs text-slate-500 mt-0.5';
+    const pin = document.createElement('i');
+    pin.className = 'fa-solid fa-location-dot text-[10px]';
+    pin.setAttribute('aria-hidden', 'true');
+    meta.appendChild(pin);
+    meta.appendChild(document.createTextNode(' ' + formatDistance(m.distanceKm)));
+    info.appendChild(meta);
+    identity.appendChild(info);
+    topRow.appendChild(identity);
+
+    if (m.rating != null) {
+      const ratingBadge = document.createElement('span');
+      ratingBadge.className = 'shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-amber-500 bg-amber-50 rounded-full px-2 py-1';
+      const star = document.createElement('i');
+      star.className = 'fa-solid fa-star';
+      star.setAttribute('aria-hidden', 'true');
+      ratingBadge.appendChild(star);
+      ratingBadge.appendChild(document.createTextNode(' ' + m.rating));
+      topRow.appendChild(ratingBadge);
+    }
+    card.appendChild(topRow);
+
+    const etaRow = document.createElement('p');
+    etaRow.className = 'flex items-center gap-1.5 text-xs font-medium text-brand mt-2';
+    const clock = document.createElement('span');
+    clock.className = 'w-1.5 h-1.5 rounded-full bg-green-500';
+    etaRow.appendChild(clock);
+    etaRow.appendChild(document.createTextNode(m.etaMinutes + ' mins ETA'));
+    card.appendChild(etaRow);
+
+    // Primary action alternates Call / Message, matching the design's mix
+    const actionBtn = document.createElement('a');
+    const isMessageStyle = index % 3 === 2;
+    actionBtn.href = isMessageStyle ? ('chat.html?mechanic_id=' + encodeURIComponent(m.id)) : ('tel:' + m.phone);
+    // The card itself opens the map popup — don't let the action buttons
+    // trigger that too (and don't swallow the navigation).
+    actionBtn.addEventListener('click', function (e) { e.stopPropagation(); });
+    actionBtn.className = 'btn-tap mt-3 w-full inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold px-4 py-2.5 ' +
+      (isMessageStyle
+        ? 'border border-brand text-brand hover:bg-brand-light'
+        : 'bg-accent hover:bg-accent-dark text-white');
+    const icon = document.createElement('i');
+    icon.className = 'fa-solid ' + (isMessageStyle ? 'fa-message' : 'fa-phone') + ' text-xs';
+    icon.setAttribute('aria-hidden', 'true');
+    actionBtn.appendChild(icon);
+    actionBtn.appendChild(document.createTextNode(isMessageStyle ? ' Message' : ' Call Mechanic'));
+    card.appendChild(actionBtn);
+
+    return card;
+  }
+
+  function renderMechanicsList(mechanics) {
+    mechanicsSkeleton.classList.add('hidden');
+
+    if (!mechanics.length) {
+      hasRenderedList = false;
+      lastRenderedKey = null;
+      mechanicsList.classList.add('hidden');
+      mechanicsList.innerHTML = '';
+      mechanicsEmpty.classList.remove('hidden');
+      foundCountBadge.classList.add('hidden');
+      // Explain the radius — "another city 155 km away" results are now
+      // filtered out server-side, so an empty list means "nothing within
+      // the service radius", not "nothing exists anywhere".
+      const emptyText = document.getElementById('mechanics-empty-text');
+      if (emptyText) {
+        emptyText.textContent = (lastSearchRadiusKm !== null)
+          ? 'No mechanics online within ' + lastSearchRadiusKm + ' km right now.'
+          : 'No mechanics found nearby right now.';
+      }
+      if (map) renderMechanicMarkers([]); // clear now-stale pins from the map too
+      return;
+    }
+    mechanicsEmpty.classList.add('hidden');
+    hasRenderedList = true;
+
+    // Skip the DOM rebuild when the payload is unchanged — otherwise every
+    // 10s poll re-creates every card (and re-downloads each avatar).
+    const dataKey = JSON.stringify(mechanics);
+    if (dataKey === lastRenderedKey) {
+      if (map) renderMechanicMarkers(mechanics); // markers are cheap to refresh
+      return;
+    }
+    lastRenderedKey = dataKey;
+
+    mechanicsList.innerHTML = '';
+    mechanics.forEach(function (m, i) { mechanicsList.appendChild(renderMechanicRow(m, i)); });
+    mechanicsList.classList.remove('hidden');
+
+    foundCountBadge.textContent = 'Found ' + mechanics.length;
+    foundCountBadge.classList.remove('hidden');
+    foundCountBadge.classList.add('badge-pop');
+
+    if (map) renderMechanicMarkers(mechanics);
+  }
+
+  function fetchNearbyMechanics() {
+    if (userLat == null || userLng == null) return;
+    fetch('../api/get-nearby-mechanics.php?lat=' + userLat + '&lng=' + userLng, { credentials: 'same-origin' })
+      .then(function (res) { if (!res.ok) throw new Error('request_failed'); return res.json(); })
+      .then(function (data) {
+        lastSearchRadiusKm = (data && typeof data.searchRadiusKm === 'number') ? data.searchRadiusKm : null;
+        renderMechanicsList(Array.isArray(data.mechanics) ? data.mechanics : []);
+      })
+      .catch(function () {
+        // Transient network error — keep whatever list is already on
+        // screen instead of wiping it to a misleading "no mechanics
+        // found" state. Only show the empty state if nothing ever loaded.
+        if (!hasRenderedList) renderMechanicsList([]);
+      });
+  }
+
+  function startRefreshLoop() {
+    fetchNearbyMechanics();
+    if (refreshTimer) clearInterval(refreshTimer);
+    refreshTimer = setInterval(fetchNearbyMechanics, REFRESH_INTERVAL_MS);
+  }
+
+  function startWatching() {
+    const support = checkEnvironmentSupport();
+    if (!support.ok) { showFallback(support.title, support.message); return; }
+
+    hideFallback();
+
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        updateUserPosition(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+        if (!refreshTimer) startRefreshLoop();
+      },
+      function (err) { showFallback(geolocationErrorInfo(err).title, geolocationErrorInfo(err).message); },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+
+    if (watchId != null) navigator.geolocation.clearWatch(watchId);
+    watchId = navigator.geolocation.watchPosition(
+      function (pos) {
+        hideFallback();
+        updateUserPosition(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+        if (!refreshTimer) startRefreshLoop();
+      },
+      function (err) {
+        if (userLat == null) showFallback(geolocationErrorInfo(err).title, geolocationErrorInfo(err).message);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
+    );
+  }
+
+  retryLocationBtn.addEventListener('click', function () {
+    hideFallback();
+    mapLoading.classList.remove('hidden');
+    startWatching();
+  });
+
+  sosBtn.addEventListener('click', function () { sosModal.classList.remove('hidden'); });
+  sosModalCancel.addEventListener('click', function () { sosModal.classList.add('hidden'); });
+  sosModalConfirm.addEventListener('click', function () {
+    if (userLat == null) return;
+    sosModalConfirm.disabled = true;
+    sosConfirmText.textContent = 'Sending...';
+
+    fetch('../api/create-booking.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ type: 'emergency', lat: userLat, lng: userLng })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) throw new Error(result.data && result.data.message ? result.data.message : 'Could not send SOS request.');
+        window.location.href = 'booking-status.html?booking_id=' + encodeURIComponent(result.data.booking_id);
+      })
+      .catch(function (err) { sosModal.classList.add('hidden'); showToast(err.message, true); })
+      .finally(function () {
+        sosModalConfirm.disabled = false;
+        sosConfirmText.textContent = 'Yes, Send SOS';
+      });
+  });
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+    } else if (userLat != null) {
+      startRefreshLoop();
+    }
+  });
+
+  window.addEventListener('beforeunload', function () {
+    if (watchId != null) navigator.geolocation.clearWatch(watchId);
+  });
+
+  startWatching();
+})();
+</script>
+<script src="../assets/js/navbar.js"></script>
+
+<!-- Styled toast notification (no native alert boxes) -->
+<div id="toast" class="hidden fixed bottom-20 md:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto sm:min-w-[260px] max-w-sm z-[60] rounded-2xl px-4 py-3 text-sm font-medium shadow-xl flex items-center gap-2" role="status" aria-live="polite"></div>
+
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>

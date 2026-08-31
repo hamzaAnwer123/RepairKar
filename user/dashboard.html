@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>User Dashboard — RepairKar</title>
+<meta name="description" content="Manage your vehicle service requests, roadside emergencies, and bookings on RepairKar.">
+<meta name="robots" content="noindex, follow">
+
+<link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+<link rel="stylesheet" href="../assets/css/navbar.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<style>
+  body { font-family: 'Inter', sans-serif; }
+
+  .hero-banner {
+    background: linear-gradient(135deg, #064e4b 0%, #0F766E 55%, #115e59 100%) !important;
+    color: #ffffff !important;
+  }
+  .safety-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+    color: #ffffff !important;
+  }
+  .bg-teal-50 { background-color: #f0fdfa !important; }
+  .bg-amber-50 { background-color: #fffbeb !important; }
+  .bg-blue-50 { background-color: #eff6ff !important; }
+  .bg-purple-50 { background-color: #faf5ff !important; }
+  .bg-red-50 { background-color: #fef2f2 !important; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .fade-in-up    { animation: fadeInUp 0.4s ease-out both; }
+    .fade-in-up-d1 { animation: fadeInUp 0.4s ease-out 0.08s both; }
+    .fade-in-up-d2 { animation: fadeInUp 0.4s ease-out 0.16s both; }
+    .card-enter    { animation: fadeInUp 0.3s ease-out both; }
+    .btn-tap       { transition: transform 0.12s ease-out, box-shadow 0.15s ease-out; }
+    .btn-tap:active { transform: scale(0.96); }
+    .action-card   { transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, border-color 0.15s ease-out; }
+    .action-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px -8px rgba(15, 118, 110, 0.15); border-color: #0F766E; }
+    .stat-card     { transition: transform 0.15s ease-out, box-shadow 0.15s ease-out; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(15, 23, 42, 0.08); }
+    .skeleton      { animation: shimmer 1.4s ease-in-out infinite; }
+    .drawer-in     { animation: drawerIn 0.25s ease-out both; }
+    .backdrop-in   { animation: fadeIn 0.2s ease-out both; }
+    .pulse-dot     { animation: dotPulse 1.8s ease-in-out infinite; }
+  }
+
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes dotPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  @keyframes shimmer { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+  @keyframes drawerIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased pb-20 md:pb-0">
+
+<div class="md:flex md:min-h-screen">
+
+  <!-- ================= SIDEBAR (desktop) ================= -->
+  <aside class="hidden md:flex md:flex-col md:w-64 md:shrink-0 bg-white border-r border-slate-100 md:sticky md:top-0 md:h-screen z-30">
+    
+    <!-- Brand Logo Header -->
+    <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+      <a href="../index.html" class="flex items-center gap-2" aria-label="RepairKar home">
+        <img class="text-xl w-28 font-extrabold text-brand" src="../assets/images/logo/logo.png" alt="RepairKar">
+      </a>
+      <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-brand-light text-brand">User</span>
+    </div>
+
+    <!-- User Profile Widget in Sidebar -->
+    <div class="flex items-center gap-3 px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+      <div id="sidebar-avatar-wrap" class="w-10 h-10 rounded-xl bg-brand-light text-brand flex items-center justify-center font-bold text-base shrink-0 shadow-sm">
+        <i id="sidebar-avatar-icon" class="fa-regular fa-user" aria-hidden="true"></i>
+      </div>
+      <div class="min-w-0 flex-1">
+        <p id="sidebar-user-name" class="text-sm font-bold text-slate-900 truncate">Loading…</p>
+        <p class="text-[11px] text-brand font-medium flex items-center gap-1">
+          <i class="fa-solid fa-circle-check text-brand text-[10px]" aria-hidden="true"></i> Verified Member
+        </p>
+      </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto" aria-label="User navigation">
+      <a href="dashboard.html" class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold bg-brand-light text-brand shadow-sm">
+        <i class="fa-solid fa-table-cells-large w-4 text-center" aria-hidden="true"></i> Dashboard
+      </a>
+      <a href="home.html" class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-brand transition-colors">
+        <i class="fa-solid fa-magnifying-glass w-4 text-center text-slate-400" aria-hidden="true"></i> Find Mechanics
+      </a>
+      <a href="live-map.html" class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-brand transition-colors">
+        <i class="fa-solid fa-triangle-exclamation w-4 text-center text-amber-500" aria-hidden="true"></i> Emergency Help
+      </a>
+      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-brand transition-colors">
+        <i class="fa-regular fa-comment w-4 text-center text-slate-400" aria-hidden="true"></i> Chats
+      </a>
+      <a href="notifications.html" class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-brand transition-colors">
+        <i class="fa-regular fa-bell w-4 text-center text-slate-400" aria-hidden="true"></i> Notifications
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-brand transition-colors">
+        <i class="fa-regular fa-user w-4 text-center text-slate-400" aria-hidden="true"></i> My Profile
+      </a>
+    </nav>
+
+    <!-- Sidebar Bottom Actions -->
+    <div class="px-3 pb-4 space-y-1.5 border-t border-slate-100 pt-3">
+      <a href="live-map.html" class="btn-tap flex items-center justify-center gap-2 rounded-xl bg-accent hover:bg-accent-dark text-white text-xs font-semibold px-3 py-2.5 shadow-sm transition-colors">
+        <i class="fa-solid fa-location-crosshairs text-xs" aria-hidden="true"></i> Roadside Assistance
+      </a>
+      <a href="../index.html#how-it-works" class="flex items-center gap-3 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+        <i class="fa-regular fa-circle-question w-4 text-center text-slate-400" aria-hidden="true"></i> Help &amp; Support
+      </a>
+      <button type="button" id="sidebar-logout-btn" class="w-full flex items-center gap-3 rounded-xl px-3.5 py-2 text-xs font-medium text-red-500 hover:bg-red-50 transition-colors">
+        <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center text-red-400" aria-hidden="true"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= MOBILE DRAWER ================= -->
+  <div id="mobile-drawer-backdrop" class="hidden md:hidden backdrop-in fixed inset-0 z-50 bg-black/40"></div>
+  <aside id="mobile-drawer" class="hidden md:hidden drawer-in fixed inset-y-0 left-0 z-50 w-72 bg-white flex flex-col shadow-2xl">
+    <div class="flex items-center justify-between px-4 py-4 border-b border-slate-100">
+      <a href="../index.html" class="flex items-center gap-2" aria-label="RepairKar home">
+        <img class="text-xl w-28 font-extrabold text-brand" src="../assets/images/logo/logo.png" alt="RepairKar">
+      </a>
+      <button type="button" id="close-drawer-btn" aria-label="Close menu" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center">
+        <i class="fa-solid fa-xmark text-slate-500" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <!-- Mobile Drawer Profile Header -->
+    <div class="flex items-center gap-3 px-4 py-3.5 border-b border-slate-100 bg-slate-50/60">
+      <div class="w-10 h-10 rounded-xl bg-brand-light text-brand flex items-center justify-center font-bold text-base shrink-0">
+        <i class="fa-regular fa-user" aria-hidden="true"></i>
+      </div>
+      <div class="min-w-0">
+        <p id="drawer-user-name" class="text-sm font-bold text-slate-900 truncate">Loading…</p>
+        <p class="text-[11px] text-brand font-medium">Verified Member</p>
+      </div>
+    </div>
+
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto" aria-label="User navigation (mobile)">
+      <a href="dashboard.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
+        <i class="fa-solid fa-table-cells-large w-4 text-center" aria-hidden="true"></i> Dashboard
+      </a>
+      <a href="home.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-solid fa-magnifying-glass w-4 text-center" aria-hidden="true"></i> Find Mechanics
+      </a>
+      <a href="live-map.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-solid fa-triangle-exclamation w-4 text-center text-amber-500" aria-hidden="true"></i> Emergency Help
+      </a>
+      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats
+      </a>
+      <a href="notifications.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-regular fa-bell w-4 text-center" aria-hidden="true"></i> Notifications
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-regular fa-user w-4 text-center" aria-hidden="true"></i> My Profile
+      </a>
+    </nav>
+
+    <div class="px-3 pb-5 space-y-2 border-t border-slate-100 pt-3">
+      <a href="live-map.html" class="btn-tap block text-center rounded-xl bg-accent text-white text-xs font-semibold px-3 py-2.5">
+        Roadside Emergency SOS
+      </a>
+      <button type="button" id="drawer-logout-btn" class="w-full flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium text-red-500 hover:bg-red-50">
+        <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center" aria-hidden="true"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <div class="flex-1 min-w-0 flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-20 bg-white border-b border-slate-100">
+      <div class="flex items-center justify-between gap-3 px-4 md:px-8 py-3.5">
+        
+        <!-- Mobile Drawer Toggle & Page Title -->
+        <div class="flex items-center gap-3">
+          <button type="button" id="open-drawer-btn" aria-label="Open menu" class="md:hidden w-9 h-9 rounded-xl hover:bg-slate-100 flex items-center justify-center shrink-0 text-slate-600 border border-slate-200">
+            <i class="fa-solid fa-bars text-sm" aria-hidden="true"></i>
+          </button>
+          <div>
+            <h1 class="text-base md:text-xl font-extrabold text-slate-900">User Dashboard</h1>
+            <p class="hidden sm:block text-xs text-slate-500">Welcome back to your vehicle care center</p>
+          </div>
+        </div>
+
+        <!-- Top Right Actions -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          
+          <a href="live-map.html" class="btn-tap hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-accent bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3 py-1.5 rounded-xl transition-colors">
+            <span class="w-2 h-2 rounded-full bg-accent pulse-dot"></span>
+            Emergency SOS
+          </a>
+
+          <a href="notifications.html" aria-label="Notifications" class="btn-tap relative w-9 h-9 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-600 border border-slate-200 transition-colors">
+            <i class="fa-regular fa-bell text-sm" aria-hidden="true"></i>
+            <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-accent"></span>
+          </a>
+
+          <!-- Profile Dropdown in Top Bar -->
+          <div class="profile-dropdown relative">
+            <button id="profile-toggle" type="button" class="btn-tap inline-flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-slate-200 hover:border-brand text-xs font-semibold text-slate-700 bg-white transition-colors" aria-haspopup="true" aria-expanded="false">
+              <span class="w-6 h-6 rounded-lg bg-brand-light text-brand flex items-center justify-center text-xs">
+                <i id="account-icon" class="fa-regular fa-user" aria-hidden="true"></i>
+              </span>
+              <span id="account-name" class="hidden sm:inline font-bold">User</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400" id="dropdown-arrow"></i>
+            </button>
+            <div id="profile-dropdown-menu" class="profile-dropdown-menu">
+              <a id="dashboard-link" href="dashboard.html">
+                <i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>
+                Dashboard
+              </a>
+              <a id="view-profile-link" href="profile.html">
+                <i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>
+                My Profile
+              </a>
+              <div class="dropdown-divider"></div>
+              <button id="logout-btn" type="button" class="logout-btn">
+                <i class="fa-solid fa-right-from-bracket text-slate-400" aria-hidden="true"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Body Area -->
+    <main class="flex-1 px-4 md:px-8 py-6 space-y-6 max-w-7xl">
+
+      <!-- ================= HERO WELCOME BANNER ================= -->
+      <section class="fade-in-up hero-banner rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-lg shadow-brand/10">
+        <i class="fa-solid fa-car-side absolute -right-6 -bottom-6 text-9xl text-white/10 pointer-events-none" aria-hidden="true"></i>
+        
+        <div class="relative z-10 max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm text-xs font-semibold text-white/90 mb-3">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
+            Active 24/7 Roadside Network
+          </div>
+          <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+            Hi, <span id="hero-user-name">Vehicle Owner</span>!
+          </h2>
+          <p class="text-sm text-white/90 mt-2 max-w-xl leading-relaxed">
+            Need vehicle inspection, tire repair, battery jumpstart, or urgent roadside towing? Verified mechanics are ready across your area.
+          </p>
+
+          <div class="flex flex-wrap gap-3 mt-6">
+            <a href="home.html" class="btn-tap inline-flex items-center gap-2 rounded-xl bg-white text-brand text-sm font-bold px-4 py-2.5 shadow-md hover:bg-slate-50 transition-all">
+              <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i> Find a Mechanic
+            </a>
+            <a href="live-map.html" class="btn-tap inline-flex items-center gap-2 rounded-xl bg-accent hover:bg-accent-dark text-white text-sm font-bold px-4 py-2.5 shadow-md transition-all">
+              <i class="fa-solid fa-triangle-exclamation text-xs" aria-hidden="true"></i> Emergency Roadside SOS
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= STATS / OVERVIEW CARDS ================= -->
+      <section class="fade-in-up-d1 grid grid-cols-2 lg:grid-cols-4 gap-4" aria-label="Account Overview">
+        
+        <div class="stat-card bg-white border border-slate-100 rounded-2xl p-4 md:p-5 flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-teal-50 text-brand flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-clock-rotate-left text-lg"></i>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-slate-500">Active Bookings</p>
+            <p class="text-xl font-extrabold text-slate-900 mt-0.5">0</p>
+          </div>
+        </div>
+
+        <div class="stat-card bg-white border border-slate-100 rounded-2xl p-4 md:p-5 flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-amber-50 text-accent flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-location-crosshairs text-lg"></i>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-slate-500">Live Assistance</p>
+            <p class="text-xl font-extrabold text-slate-900 mt-0.5">24/7</p>
+          </div>
+        </div>
+
+        <div class="stat-card bg-white border border-slate-100 rounded-2xl p-4 md:p-5 flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            <i class="fa-regular fa-comments text-lg"></i>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-slate-500">Chat Messages</p>
+            <p class="text-xl font-extrabold text-slate-900 mt-0.5">Ready</p>
+          </div>
+        </div>
+
+        <div class="stat-card bg-white border border-slate-100 rounded-2xl p-4 md:p-5 flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-shield-halved text-lg"></i>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-slate-500">Verified Pros</p>
+            <p class="text-xl font-extrabold text-slate-900 mt-0.5">100%</p>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= QUICK ACTIONS ================= -->
+      <section class="fade-in-up-d2">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-base font-bold text-slate-900">What would you like to do?</h3>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          <a href="home.html" class="action-card rounded-2xl bg-white border border-slate-100 p-5 flex flex-col justify-between">
+            <div>
+              <span class="w-11 h-11 rounded-xl bg-teal-50 text-brand flex items-center justify-center text-lg">
+                <i class="fa-solid fa-wrench" aria-hidden="true"></i>
+              </span>
+              <h4 class="text-sm font-bold text-slate-900 mt-4">Browse Mechanics</h4>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">Search top-rated mechanics by category, price, and customer reviews.</p>
+            </div>
+            <span class="inline-flex items-center gap-1 text-xs font-bold text-brand mt-4">
+              Explore Services <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </span>
+          </a>
+
+          <a href="live-map.html" class="action-card rounded-2xl bg-white border border-slate-100 p-5 flex flex-col justify-between">
+            <div>
+              <span class="w-11 h-11 rounded-xl bg-red-50 text-red-500 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>
+              </span>
+              <h4 class="text-sm font-bold text-slate-900 mt-4">Roadside Emergency</h4>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">Share your GPS location with mechanics for immediate on-spot recovery.</p>
+            </div>
+            <span class="inline-flex items-center gap-1 text-xs font-bold text-red-500 mt-4">
+              Open Live Map <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </span>
+          </a>
+
+          <a href="chat.html" class="action-card rounded-2xl bg-white border border-slate-100 p-5 flex flex-col justify-between">
+            <div>
+              <span class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+                <i class="fa-regular fa-comments" aria-hidden="true"></i>
+              </span>
+              <h4 class="text-sm font-bold text-slate-900 mt-4">Direct Messaging</h4>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">Discuss repair details, send photos, and get instant quotes.</p>
+            </div>
+            <span class="inline-flex items-center gap-1 text-xs font-bold text-blue-600 mt-4">
+              Open Chats <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </span>
+          </a>
+
+          <a href="my-reviews.html" class="action-card rounded-2xl bg-white border border-slate-100 p-5 flex flex-col justify-between">
+            <div>
+              <span class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-star" aria-hidden="true"></i>
+              </span>
+              <h4 class="text-sm font-bold text-slate-900 mt-4">My Reviews</h4>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">See every review you posted and remove the ones you changed your mind about.</p>
+            </div>
+            <span class="inline-flex items-center gap-1 text-xs font-bold text-amber-600 mt-4">
+              Manage Reviews <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </span>
+          </a>
+
+          <a href="profile.html" class="action-card rounded-2xl bg-white border border-slate-100 p-5 flex flex-col justify-between">
+            <div>
+              <span class="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg">
+                <i class="fa-regular fa-user" aria-hidden="true"></i>
+              </span>
+              <h4 class="text-sm font-bold text-slate-900 mt-4">Profile &amp; Settings</h4>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">Update contact information, saved addresses, and notification preferences.</p>
+            </div>
+            <span class="inline-flex items-center gap-1 text-xs font-bold text-purple-600 mt-4">
+              View Profile <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </span>
+          </a>
+
+        </div>
+      </section>
+
+      <!-- ================= RECENT ACTIVITY & TIPS ================= -->
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Recent Bookings / Services -->
+        <div class="lg:col-span-2 bg-white border border-slate-100 rounded-3xl p-5 md:p-6 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Recent Service Activity</h3>
+              <p class="text-xs text-slate-400 mt-0.5">Your latest booked repairs and service requests</p>
+            </div>
+            <a href="home.html" class="text-xs font-bold text-brand hover:underline">New Booking</a>
+          </div>
+
+          <!-- Empty State -->
+          <div class="text-center py-8 px-4 bg-slate-50/60 rounded-2xl border border-dashed border-slate-200">
+            <div class="w-14 h-14 rounded-2xl bg-white text-slate-400 flex items-center justify-center mx-auto mb-3 shadow-sm">
+              <i class="fa-regular fa-calendar-check text-2xl"></i>
+            </div>
+            <h4 class="text-sm font-bold text-slate-800">No active bookings right now</h4>
+            <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Whenever you book a mechanic or call for roadside rescue, your active status will appear here.</p>
+            <a href="home.html" class="btn-tap inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-xl bg-brand text-white text-xs font-semibold shadow-sm">
+              <i class="fa-solid fa-plus text-xs"></i> Book a Repair Service
+            </a>
+          </div>
+        </div>
+
+        <!-- Roadside Safety & Tips -->
+        <div class="safety-card text-white rounded-3xl p-5 md:p-6 flex flex-col justify-between shadow-lg">
+          <div>
+            <div class="flex items-center gap-2 text-accent text-xs font-bold uppercase tracking-wider mb-2">
+              <i class="fa-solid fa-shield-heart"></i> Safety First
+            </div>
+            <h3 class="text-lg font-bold text-white">Roadside Safety Guide</h3>
+            <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+              If your vehicle breaks down on the highway:
+            </p>
+            
+            <ul class="mt-4 space-y-2.5 text-xs text-slate-300">
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-circle-check text-accent mt-0.5 shrink-0"></i>
+                <span>Turn on hazard warning lights immediately.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-circle-check text-accent mt-0.5 shrink-0"></i>
+                <span>Pull over to the nearest shoulder safely.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i class="fa-solid fa-circle-check text-accent mt-0.5 shrink-0"></i>
+                <span>Use the RepairKar SOS map to share exact GPS coords.</span>
+              </li>
+            </ul>
+          </div>
+
+          <a href="live-map.html" class="btn-tap mt-6 w-full text-center py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/15 transition-colors">
+            Emergency SOS Hotline
+          </a>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ================= MOBILE BOTTOM STICKY NAV ================= -->
+<nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-100" aria-label="Primary Mobile Navigation">
+  <div class="max-w-5xl mx-auto grid grid-cols-5 text-center">
+    <a href="dashboard.html" class="flex flex-col items-center gap-1 py-2.5 text-brand">
+      <i class="fa-solid fa-table-cells-large text-base" aria-hidden="true"></i>
+      <span class="text-[10px] font-semibold">Dashboard</span>
+    </a>
+    <a href="home.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-brand">
+      <i class="fa-solid fa-wrench text-base" aria-hidden="true"></i>
+      <span class="text-[10px] font-medium">Mechanics</span>
+    </a>
+    <a href="live-map.html" class="flex flex-col items-center gap-1 py-2.5 text-accent hover:text-accent-dark">
+      <i class="fa-solid fa-location-crosshairs text-base" aria-hidden="true"></i>
+      <span class="text-[10px] font-bold">SOS</span>
+    </a>
+    <a href="chat.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-brand">
+      <i class="fa-regular fa-comment text-base" aria-hidden="true"></i>
+      <span class="text-[10px] font-medium">Chats</span>
+    </a>
+    <a href="profile.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-brand">
+      <i class="fa-regular fa-user text-base" aria-hidden="true"></i>
+      <span class="text-[10px] font-medium">Profile</span>
+    </a>
+  </div>
+</nav>
+
+<script>
+(function () {
+  // Mobile drawer controls
+  const openDrawerBtn = document.getElementById('open-drawer-btn');
+  const closeDrawerBtn = document.getElementById('close-drawer-btn');
+  const mobileDrawer = document.getElementById('mobile-drawer');
+  const mobileDrawerBackdrop = document.getElementById('mobile-drawer-backdrop');
+
+  function openDrawer() {
+    if (mobileDrawer) mobileDrawer.classList.remove('hidden');
+    if (mobileDrawerBackdrop) mobileDrawerBackdrop.classList.remove('hidden');
+  }
+
+  function closeDrawer() {
+    if (mobileDrawer) mobileDrawer.classList.add('hidden');
+    if (mobileDrawerBackdrop) mobileDrawerBackdrop.classList.add('hidden');
+  }
+
+  if (openDrawerBtn) openDrawerBtn.addEventListener('click', openDrawer);
+  if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', closeDrawer);
+  if (mobileDrawerBackdrop) mobileDrawerBackdrop.addEventListener('click', closeDrawer);
+
+  // Load User Identity & Enforce Role Protection
+  const sidebarUserName = document.getElementById('sidebar-user-name');
+  const drawerUserName = document.getElementById('drawer-user-name');
+  const heroUserName = document.getElementById('hero-user-name');
+  const accountName = document.getElementById('account-name');
+
+  fetch('../api/current-user.php', { credentials: 'same-origin' })
+    .then(function (res) {
+      if (!res.ok) throw new Error('guest');
+      return res.json();
+    })
+    .then(function (data) {
+      if (data.role === 'mechanic') {
+        window.location.replace('../mechanic/dashboard.html');
+        return;
+      }
+      if (data.role === 'admin') {
+        window.location.replace('../admin/index.php');
+        return;
+      }
+      if (data.role !== 'user') {
+        window.location.replace('../login.html');
+        return;
+      }
+      const name = data.name || 'User';
+      if (sidebarUserName) sidebarUserName.textContent = name;
+      if (drawerUserName) drawerUserName.textContent = name;
+      if (heroUserName) heroUserName.textContent = name;
+      if (accountName) accountName.textContent = name;
+    })
+    .catch(function () {
+      window.location.replace('../login.html');
+    });
+
+  // Logout Handlers
+  function doLogout() {
+    fetch('../api/logout.php', { method: 'POST', credentials: 'same-origin' })
+      .then(function () { window.location.href = '../index.html'; })
+      .catch(function () { window.location.href = '../login.html'; });
+  }
+
+  const sidebarLogoutBtn = document.getElementById('sidebar-logout-btn');
+  const drawerLogoutBtn = document.getElementById('drawer-logout-btn');
+  if (sidebarLogoutBtn) sidebarLogoutBtn.addEventListener('click', doLogout);
+  if (drawerLogoutBtn) drawerLogoutBtn.addEventListener('click', doLogout);
+
+})();
+</script>
+<script src="../assets/js/navbar.js"></script>
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>

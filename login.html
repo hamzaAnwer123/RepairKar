@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — RepairKar</title>
+<meta name="robots" content="noindex, follow">
+<meta name="description" content="Log in to your RepairKar account.">
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/images/logo/favicon.ico">
+<!-- Tailwind CSS (locally downloaded build) -->
+<link rel="stylesheet" href="assets/css/tailwind.min.css">
+<link rel="stylesheet" href="assets/css/loader.css">
+<!-- Font Awesome (already loaded via CDN in index.html; included here so this page also renders standalone) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+      crossorigin="anonymous" referrerpolicy="no-referrer">
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center bg-[#F7F7F5] text-gray-800 font-sans p-6">
+
+   <a href="" class="flex items-center gap-2 shrink-0" aria-label="RepairKar home">
+        <img class="text-2xl w-32 font-extrabold text-brand" src="assets/images/logo/logo.png" alt="RepairKar">
+      </a>
+
+  <main class="w-full max-w-[400px] bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+    <h1 class="text-xl font-bold mb-1">Log in</h1>
+    <p class="text-sm text-gray-500 mb-6">Enter your email and password to continue.</p>
+
+    <form id="login-form" novalidate>
+
+      <!-- Email field -->
+      <div class="mb-[18px]" id="email-field">
+        <label for="email" class="block text-[13px] font-semibold mb-1.5 text-gray-800">Email address</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          autocomplete="email"
+          placeholder="you@example.com"
+          aria-describedby="email-error"
+          class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-[15px] outline-none text-gray-800 transition-colors focus:border-teal-700 focus:ring-2 focus:ring-teal-100">
+        <p class="text-xs text-red-700 mt-1.5 hidden" id="email-error">Enter a valid email address.</p>
+      </div>
+
+      <!-- Password field -->
+      <div class="mb-[18px]">
+        <label for="password" class="block text-[13px] font-semibold mb-1.5 text-gray-800">Password</label>
+        <div id="password-group"
+          class="flex items-stretch border border-gray-200 rounded-lg overflow-hidden transition-colors focus-within:border-teal-700 focus-within:ring-2 focus-within:ring-teal-100">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            autocomplete="current-password"
+            aria-describedby="password-error"
+            class="flex-1 border-none outline-none px-3 py-2.5 text-[15px] bg-transparent text-gray-800 min-w-0"
+            required>
+          <button type="button" id="toggle-password" aria-label="Show password" aria-pressed="false"
+            class="border-l border-gray-200 px-3.5 flex items-center justify-center text-gray-500 hover:text-teal-700 transition-colors">
+            <i class="fa-solid fa-eye text-[15px]" id="toggle-password-icon" aria-hidden="true"></i>
+          </button>
+        </div>
+        <p class="text-xs text-red-700 mt-1.5 hidden" id="password-error">Enter your password.</p>
+      </div>
+
+      <div class="text-right mb-5">
+        <a href="forgot-password.html" class="text-[13px] text-teal-700 font-semibold hover:underline">Forgot password?</a>
+      </div>
+
+      <button type="submit" id="submit-btn" disabled
+        class="w-full py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed text-white rounded-lg text-[15px] font-bold flex items-center justify-center gap-2 transition-colors">
+        <span id="spinner" class="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin" style="display:none" aria-hidden="true"></span>
+        <span id="btn-label">Login</span>
+      </button>
+
+      <div id="form-error" role="alert" style="display:none"
+        class="items-start gap-2 mt-4 px-3 py-2.5 bg-red-50 border border-red-300 rounded-lg text-red-700 text-[13px]">
+        <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+        <span id="form-error-text"></span>
+      </div>
+    </form>
+
+  </main>
+
+  <p class="text-center mt-5 text-sm text-gray-500">Don't have an account? <a href="signup.html" class="text-teal-700 font-bold hover:underline">Sign Up</a></p>
+
+  <script>
+    // ---- RepairKar login form: validation + submit handling ----
+    // No inline event handlers anywhere; all wiring done here via addEventListener.
+
+    (function () {
+      const form = document.getElementById('login-form');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const emailError = document.getElementById('email-error');
+      const passwordError = document.getElementById('password-error');
+      const submitBtn = document.getElementById('submit-btn');
+      const btnLabel = document.getElementById('btn-label');
+      const spinner = document.getElementById('spinner');
+      const togglePasswordBtn = document.getElementById('toggle-password');
+      const togglePasswordIcon = document.getElementById('toggle-password-icon');
+      const formError = document.getElementById('form-error');
+      const formErrorText = document.getElementById('form-error-text');
+      const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      function isIdentifierValid() {
+        return EMAIL_REGEX.test(emailInput.value.trim());
+      }
+
+      function isPasswordValid() {
+        return passwordInput.value.length > 0;
+      }
+
+      function updateSubmitState() {
+        submitBtn.disabled = !(isIdentifierValid() && isPasswordValid());
+      }
+
+      function showFieldError(el) {
+        el.classList.remove('hidden');
+      }
+
+      function hideFieldError(el) {
+        el.classList.add('hidden');
+      }
+
+      function hideFormError() {
+        formError.style.display = 'none';
+        formErrorText.textContent = '';
+      }
+
+      function showFormError(message) {
+        // Use textContent (never innerHTML) to avoid injecting markup from the API response.
+        formErrorText.textContent = message;
+        formError.style.display = 'flex';
+      }
+
+      // Live validation as the user types.
+      emailInput.addEventListener('input', function () {
+        hideFormError();
+        if (emailInput.value.trim().length === 0 || EMAIL_REGEX.test(emailInput.value.trim())) {
+          hideFieldError(emailError);
+        }
+        updateSubmitState();
+      });
+
+      emailInput.addEventListener('blur', function () {
+        if (emailInput.value.trim().length > 0 && !EMAIL_REGEX.test(emailInput.value.trim())) {
+          showFieldError(emailError);
+        }
+      });
+
+      passwordInput.addEventListener('input', function () {
+        hideFormError();
+        if (isPasswordValid()) {
+          hideFieldError(passwordError);
+        }
+        updateSubmitState();
+      });
+
+      passwordInput.addEventListener('blur', function () {
+        if (!isPasswordValid()) {
+          showFieldError(passwordError);
+        }
+      });
+
+      // Show / hide password toggle.
+      togglePasswordBtn.addEventListener('click', function () {
+        const isHidden = passwordInput.getAttribute('type') === 'password';
+        passwordInput.setAttribute('type', isHidden ? 'text' : 'password');
+        togglePasswordIcon.classList.toggle('fa-eye', !isHidden);
+        togglePasswordIcon.classList.toggle('fa-eye-slash', isHidden);
+        togglePasswordBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+        togglePasswordBtn.setAttribute('aria-pressed', String(isHidden));
+      });
+
+      function setLoading(isLoading) {
+        submitBtn.disabled = isLoading;
+        spinner.style.display = isLoading ? 'inline-block' : 'none';
+        btnLabel.textContent = isLoading ? 'Logging in…' : 'Login';
+      }
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        hideFormError();
+
+        // Final client-side check before hitting the network.
+        // This is UX only — the server independently re-validates everything.
+        if (!isIdentifierValid()) {
+          showFieldError(emailError);
+          emailInput.focus();
+          return;
+        }
+        if (!isPasswordValid()) {
+          showFieldError(passwordError);
+          passwordInput.focus();
+          return;
+        }
+
+        setLoading(true);
+
+        const payload = { login_type: 'email', email: emailInput.value.trim(), password: passwordInput.value };
+
+        fetch('api/login.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'same-origin', // ensure the HttpOnly session cookie is set/sent
+          body: JSON.stringify(payload)
+        })
+          .then(function (response) {
+            if (response.ok) {
+              // Session cookie is set server-side (HttpOnly) — nothing to store client-side.
+              return response.json().then(function (data) {
+                // If a redirect was specified (e.g. from booking-status), honour it.
+                var params = new URLSearchParams(window.location.search);
+                var redirectTo = params.get('redirect');
+                if (redirectTo) {
+                  // Safety: only allow same-origin relative paths
+                  if (redirectTo.startsWith('/') || redirectTo.startsWith('mechanic/') || redirectTo.startsWith('user/') || redirectTo.startsWith('admin/')) {
+                    window.location.href = redirectTo;
+                    return;
+                  }
+                }
+                if (data.role === 'mechanic') {
+                  window.location.href = 'mechanic/dashboard.html';
+                } else if (data.role === 'user') {
+                  window.location.href = 'user/dashboard.html';
+                } else if (data.role === 'admin') {
+                  window.location.href = 'admin/index.php';
+                } else {
+                  showFormError('Invalid login details');
+                  setLoading(false);
+                }
+              });
+            }
+            // Deliberately generic: never reveal whether the email or password was wrong.
+            showFormError('Invalid login details');
+            setLoading(false);
+          })
+          .catch(function () {
+            showFormError('Invalid login details');
+            setLoading(false);
+          });
+      });
+
+      // Initialize button state on load.
+      updateSubmitState();
+    })();
+  </script>
+
+<script src="assets/js/loader.js"></script>
+</body>
+</html>

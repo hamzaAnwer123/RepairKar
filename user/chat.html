@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Chats — RepairKar</title>
+<meta name="description" content="Chat with verified mechanics on RepairKar — share photos, locations, and messages.">
+<meta name="robots" content="noindex, follow">
+
+<link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS — compiled via Tailwind CLI. Run `npm run build:css` after adding new classes. -->
+<link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<style>
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #eef2f5;
+    color: #0f172a;
+  }
+
+  #conversations-panel,
+  #chat-panel {
+    background: #f7f9fb;
+  }
+
+  #conversations-panel {
+    border-right: 1px solid #e5e7eb;
+  }
+
+  .row-enter {
+    border-radius: 18px;
+    border: 1px solid transparent;
+  }
+
+  .row-enter:hover {
+    background: #f1f5f9;
+  }
+
+  .row-enter.bg-brand-light {
+    background: #edf8f7 !important;
+    border-color: #dfeceb;
+  }
+
+  #conversations-list {
+    padding: 10px 12px 16px;
+  }
+
+  #messages-scroll {
+    background: #edf1f4;
+  }
+
+  #chat-panel { position: relative; }
+
+  .scroll-latest-btn {
+    position: absolute;
+    right: 22px;
+    bottom: 78px;
+    z-index: 10;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    background: rgba(255,255,255,0.96);
+    border: 1px solid #dbe4ea;
+    box-shadow: 0 4px 14px rgba(15,23,42,0.16);
+  }
+
+  #messages-list {
+    padding-top: 10px;
+    padding-bottom: 18px;
+  }
+
+  .message-bubble {
+    max-width: 72%;
+    border-radius: 22px;
+    padding: 12px 14px 10px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
+
+  .message-bubble.self {
+    background: linear-gradient(135deg, #0f766e, #0f9a94);
+    color: #ffffff;
+    border-bottom-right-radius: 8px;
+  }
+
+  .message-bubble.other {
+    background: rgba(255,255,255,0.85);
+    color: #1f2937;
+    border: 1px solid rgba(148,163,184,0.18);
+    border-bottom-left-radius: 8px;
+  }
+
+  .message-bubble .time-stamp {
+    font-size: 10px;
+    opacity: 0.72;
+    margin-top: 8px;
+    display: block;
+  }
+
+    .message-bubble.self .time-stamp { color: rgba(255,255,255,0.85); }
+  .message-bubble.other .time-stamp { color: #64748b; }
+
+  .tick {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 2px;
+    font-size: 11px;
+    line-height: 1;
+    opacity: 0.7;
+  }
+  .tick.read {
+    opacity: 1;
+    color: #3b82f6;
+  }
+  .tick-group {
+    display: inline-flex;
+    align-items: center;
+    gap: -2px;
+  }
+
+  .media-preview {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+  }
+
+  .media-preview img {
+    display: block;
+    max-width: 100%;
+    max-height: 320px;
+    object-fit: contain;
+  }
+
+  .media-download {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    background: rgba(15, 23, 42, 0.78);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
+  }
+
+  #message-form {
+    background: #f4f6f8;
+    border-top: 1px solid #e5e7eb;
+    padding: 12px 14px 15px;
+  }
+
+  #message-input {
+    background: rgba(255,255,255,0.75);
+    border: 1.5px solid #bfd2db;
+    border-radius: 999px;
+    padding: 12px 18px;
+    font-size: 14px;
+    box-shadow: inset 0 0 0 0 rgba(0,0,0,0);
+  }
+
+  #message-input:focus {
+    border-color: #2cb3a8;
+    box-shadow: 0 0 0 3px rgba(34,197,94,0.09);
+    background: #fff;
+  }
+
+  #send-btn {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    box-shadow: 0 8px 18px rgba(249,115,22,0.25);
+  }
+
+  #attach-btn, #share-location-btn {
+    background: transparent;
+    color: #64748b;
+  }
+
+  #attach-btn:hover, #share-location-btn:hover {
+    background: #e2e8f0;
+  }
+
+  .chat-row {
+    display: flex;
+    margin-bottom: 10px;
+  }
+
+  .chat-row.self { justify-content: flex-end; }
+  .chat-row.other { justify-content: flex-start; }
+
+</style>
+
+<!--
+  SECURITY NOTE: every message body, mechanic name, and booking
+  reference rendered below is untrusted content — MUST use
+  textContent, never innerHTML. api/get-messages.php and
+  api/send-message.php verify the logged-in user is an actual
+  participant in each conversation's booking before returning/accepting
+  any message.
+-->
+
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased h-screen overflow-hidden">
+
+<div class="md:flex md:h-screen">
+
+  <!-- ================= SIDEBAR (desktop) ================= -->
+  <aside class="hidden md:flex md:flex-col md:w-64 md:shrink-0 bg-white border-r border-slate-100">
+    <div class="flex items-center gap-3 px-5 py-5 border-b border-slate-100">
+      <div id="user-avatar-wrap" class="w-10 h-10 rounded-full bg-brand-light text-brand flex items-center justify-center font-bold text-sm shrink-0">
+        <i class="fa-regular fa-user" aria-hidden="true"></i>
+      </div>
+      <div class="min-w-0">
+        <p id="user-name-sidebar" class="text-sm font-bold text-slate-900 truncate">Loading…</p>
+        <p class="text-[11px] text-brand font-medium flex items-center gap-1">
+          <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Verified Member
+        </p>
+      </div>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1" aria-label="User navigation">
+      <a href="dashboard.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-solid fa-table-cells-large w-4 text-center" aria-hidden="true"></i> Dashboard
+      </a>
+      <a href="home.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-solid fa-wrench w-4 text-center" aria-hidden="true"></i> Find Mechanics
+      </a>
+      <a href="live-map.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-solid fa-triangle-exclamation w-4 text-center text-amber-500" aria-hidden="true"></i> Emergency Help
+      </a>
+      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
+        <i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats
+      </a>
+      <a href="notifications.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-regular fa-bell w-4 text-center" aria-hidden="true"></i> Notifications
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-regular fa-user w-4 text-center" aria-hidden="true"></i> Profile
+      </a>
+    </nav>
+    <div class="px-3 pb-4">
+      <button type="button" id="sidebar-logout-btn" class="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50">
+        <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center" aria-hidden="true"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= MOBILE DRAWER ================= -->
+  <div id="mobile-drawer-backdrop" class="hidden md:hidden backdrop-in fixed inset-0 z-50 bg-black/40"></div>
+  <aside id="mobile-drawer" class="hidden md:hidden drawer-in fixed inset-y-0 left-0 z-50 w-72 bg-white flex flex-col">
+    <div class="flex items-center justify-between px-4 py-4 border-b border-slate-100">
+      <span class="text-sm font-bold text-slate-900">Menu</span>
+      <button type="button" id="close-drawer-btn" aria-label="Close menu" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center">
+        <i class="fa-solid fa-xmark text-slate-500" aria-hidden="true"></i>
+      </button>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1" aria-label="User navigation (mobile)">
+      <a href="dashboard.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
+        <i class="fa-solid fa-table-cells-large w-4 text-center" aria-hidden="true"></i> Dashboard
+      </a>
+      <a href="home.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
+        <i class="fa-solid fa-wrench w-4 text-center" aria-hidden="true"></i> Find Mechanics
+      </a>
+      <a href="live-map.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
+        <i class="fa-solid fa-triangle-exclamation w-4 text-center text-amber-500" aria-hidden="true"></i> Emergency Help
+      </a>
+      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
+        <i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats
+      </a>
+      <a href="notifications.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
+        <i class="fa-regular fa-bell w-4 text-center" aria-hidden="true"></i> Notifications
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
+        <i class="fa-regular fa-user w-4 text-center" aria-hidden="true"></i> Profile
+      </a>
+    </nav>
+    <div class="px-3 pb-4">
+      <button type="button" id="drawer-logout-btn" class="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50">
+        <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center" aria-hidden="true"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= CONVERSATIONS LIST ================= -->
+  <div id="conversations-panel" class="h-screen w-full md:w-80 md:shrink-0 md:border-r md:border-slate-100 flex flex-col bg-white">
+    <header class="shrink-0 border-b border-slate-100">
+      <div class="flex items-center gap-3 px-4 py-3">
+        <button type="button" id="open-drawer-btn" aria-label="Open menu" class="md:hidden w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-bars text-slate-600" aria-hidden="true"></i>
+        </button>
+        <h1 class="text-base font-bold text-slate-900">Chats</h1>
+      </div>
+      <div class="px-4 pb-3">
+        <label for="conversation-search" class="sr-only">Search conversations</label>
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" aria-hidden="true"></i>
+          <input type="text" id="conversation-search" placeholder="Search conversations…"
+                 class="w-full rounded-xl bg-slate-100 pl-9 pr-4 py-2 text-sm focus:ring-2 focus:ring-brand focus:outline-none">
+        </div>
+      </div>
+    </header>
+
+    <div id="conversations-skeleton" class="flex-1 overflow-y-auto px-2 py-2 space-y-2">
+      <div class="skeleton h-16 rounded-2xl bg-slate-100"></div>
+      <div class="skeleton h-16 rounded-2xl bg-slate-100"></div>
+      <div class="skeleton h-16 rounded-2xl bg-slate-100"></div>
+    </div>
+
+    <div id="conversations-list" class="hidden flex-1 overflow-y-auto px-2 py-2 space-y-1"></div>
+
+    <div id="conversations-empty" class="hidden flex-1 flex flex-col items-center justify-center px-6 text-center">
+      <i class="fa-regular fa-comments text-3xl text-slate-300" aria-hidden="true"></i>
+      <p class="mt-3 text-sm text-slate-500">No conversations yet.</p>
+      <a href="home.html" class="btn-tap mt-4 px-4 py-2 rounded-xl bg-brand text-white text-xs font-semibold">Browse Mechanics</a>
+    </div>
+  </div>
+
+  <!-- ================= ACTIVE CHAT ================= -->
+  <div id="chat-panel" class="hidden h-screen md:flex flex-1 min-w-0 flex-col">
+    <header class="shrink-0 bg-white border-b border-slate-100">
+      <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+        <button type="button" id="back-to-list-btn" aria-label="Back to conversations" class="md:hidden w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-arrow-left text-slate-600" aria-hidden="true"></i>
+        </button>
+        <img id="active-mechanic-photo" src="../assets/images/placeholders/default-mechnaic-profile.png" alt="" width="36" height="36" class="w-9 h-9 rounded-full object-cover bg-slate-100 shrink-0">
+        <div class="min-w-0 flex-1">
+          <p id="active-mechanic-name" class="font-semibold text-sm text-slate-900 truncate"></p>
+          <p id="active-booking-ref" class="text-xs text-slate-400"></p>
+        </div>
+        <button type="button" id="voice-call-btn" aria-label="Start voice call" class="btn-tap w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0"><i class="fa-solid fa-phone text-slate-500 text-sm" aria-hidden="true"></i></button>
+        <button type="button" id="video-call-btn" aria-label="Start video call" class="btn-tap w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0"><i class="fa-solid fa-video text-slate-500 text-sm" aria-hidden="true"></i></button>
+      </div>
+    </header>
+
+    <main id="messages-scroll" class="flex-1 overflow-y-auto">
+      <div class="max-w-3xl mx-auto px-4 py-4">
+        <div id="messages-list" class="space-y-3"></div>
+      </div>
+    </main>
+    <button type="button" id="scroll-latest-btn" class="scroll-latest-btn hidden" aria-label="Go to latest message" title="Go to latest message">
+      <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+    </button>
+
+    <footer class="shrink-0 bg-white border-t border-slate-100">
+      <div id="attachment-error" class="hidden max-w-3xl mx-auto px-4 pt-2 text-xs text-red-600"></div>
+      <form id="message-form" class="w-full px-3 py-2.5 flex items-end gap-2">
+        <button type="button" id="attach-btn" aria-label="Attach photo" class="btn-tap w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-camera text-slate-500" aria-hidden="true"></i>
+        </button>
+        <input type="file" id="attach-input" accept="image/*" class="hidden">
+        <button type="button" id="video-attach-btn" aria-label="Attach video" class="btn-tap w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0"><i class="fa-solid fa-film text-slate-500" aria-hidden="true"></i></button>
+        <input type="file" id="video-input" accept="video/*" class="hidden">
+        <button type="button" id="document-attach-btn" aria-label="Attach document" class="btn-tap w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0"><i class="fa-solid fa-file-lines text-slate-500" aria-hidden="true"></i></button>
+        <input type="file" id="document-input" accept=".pdf,.txt,.doc,.docx,.xls,.xlsx,application/pdf,text/plain" class="hidden">
+        <button type="button" id="voice-note-btn" aria-label="Record voice message" class="btn-tap w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0"><i class="fa-solid fa-microphone text-slate-500" aria-hidden="true"></i></button>
+
+        <button type="button" id="share-location-btn" aria-label="Share location" class="btn-tap w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-location-dot text-slate-500" aria-hidden="true"></i>
+        </button>
+        <button type="button" id="live-location-btn" aria-label="Share live location" class="btn-tap w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0"><i class="fa-solid fa-location-crosshairs text-slate-500" aria-hidden="true"></i></button>
+
+        <label for="message-input" class="sr-only">Type a message</label>
+                 <textarea id="message-input" rows="1" placeholder="Type a message…"
+                  class="flex-1 resize-none rounded-2xl border border-slate-200 px-4 py-2.5 text-sm max-h-28 overflow-y-hidden focus:ring-2 focus:ring-brand focus:border-brand focus:outline-none"></textarea>
+
+        <button type="submit" id="send-btn" aria-label="Send message"
+                class="btn-tap w-10 h-10 rounded-full bg-accent hover:bg-accent-dark disabled:opacity-50 disabled:cursor-not-allowed text-white flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-paper-plane text-sm" aria-hidden="true"></i>
+        </button>
+      </form>
+    </footer>
+  </div>
+
+  <div id="call-overlay" class="hidden fixed inset-0 z-50 bg-slate-950/80 items-center justify-center p-4">
+    <div class="w-full max-w-lg rounded-2xl bg-white p-4 shadow-2xl">
+      <div class="flex items-center justify-between"><strong id="call-status">Calling…</strong><button type="button" id="end-call-btn" class="rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white">End</button></div>
+      <video id="remote-video" class="mt-4 aspect-video w-full rounded-xl bg-slate-900 object-cover" autoplay playsinline></video>
+      <video id="local-video" class="mt-3 h-24 w-36 rounded-lg bg-slate-900 object-cover" autoplay muted playsinline></video>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= LIVE LOCATION DURATION PICKER (styled, no native prompt) ================= -->
+<div id="live-location-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+  <div class="fade-in-up w-full max-w-sm rounded-2xl bg-white p-6 border border-slate-100 sm:rounded-2xl">
+    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-light">
+      <i class="fa-solid fa-location-crosshairs text-brand text-lg" aria-hidden="true"></i>
+    </div>
+    <h2 class="mt-4 text-lg font-bold text-slate-900 text-center">Share Live Location</h2>
+    <p class="mt-1.5 text-sm text-slate-500 text-center">Choose how long the other person can see your location updates.</p>
+    <div class="mt-5 grid gap-2.5">
+      <button type="button" class="duration-option w-full rounded-xl border border-slate-200 bg-white px-4 py-3 flex items-center justify-between hover:bg-slate-50 text-left transition-colors" data-minutes="15">
+        <span class="text-sm font-semibold text-slate-800">15 minutes</span>
+        <span class="text-xs text-slate-400">Quick check-in</span>
+      </button>
+      <button type="button" class="duration-option w-full rounded-xl border border-slate-200 bg-white px-4 py-3 flex items-center justify-between hover:bg-slate-50 text-left transition-colors" data-minutes="60">
+        <span class="text-sm font-semibold text-slate-800">1 hour</span>
+        <span class="text-xs text-slate-400">Recommended</span>
+      </button>
+      <button type="button" class="duration-option w-full rounded-xl border border-brand bg-brand-light px-4 py-3 flex items-center justify-between hover:bg-brand-light text-left transition-colors" data-minutes="480">
+        <span class="text-sm font-semibold text-brand">8 hours</span>
+        <span class="text-xs text-brand-dark">Long job / shift</span>
+      </button>
+    </div>
+    <button type="button" id="live-location-cancel" class="btn-tap mt-4 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
+  </div>
+</div>
+
+<script>
+(function () {
+
+  const CONVERSATIONS_POLL_MS = 5000;
+  const MESSAGES_POLL_MS = 2500;
+  const MAX_ATTACHMENT_MB = 5;
+
+  const params = new URLSearchParams(window.location.search);
+  const bookingIdParam = params.get('booking_id') ? parseInt(params.get('booking_id')) : null;
+  const mechanicIdParam = params.get('mechanic_id') ? parseInt(params.get('mechanic_id')) : null;
+
+  const openDrawerBtn  = document.getElementById('open-drawer-btn');
+  const closeDrawerBtn = document.getElementById('close-drawer-btn');
+  const mobileDrawer    = document.getElementById('mobile-drawer');
+  const drawerBackdrop  = document.getElementById('mobile-drawer-backdrop');
+
+  const conversationsPanel  = document.getElementById('conversations-panel');
+  const conversationsSkeleton = document.getElementById('conversations-skeleton');
+  const conversationsList    = document.getElementById('conversations-list');
+  const conversationsEmpty   = document.getElementById('conversations-empty');
+  const conversationSearch   = document.getElementById('conversation-search');
+
+  const chatPanel            = document.getElementById('chat-panel');
+  const backToListBtn         = document.getElementById('back-to-list-btn');
+  const activeMechanicPhoto  = document.getElementById('active-mechanic-photo');
+  const activeMechanicName   = document.getElementById('active-mechanic-name');
+  const activeBookingRef     = document.getElementById('active-booking-ref');
+  const messagesScroll       = document.getElementById('messages-scroll');
+  const messagesList         = document.getElementById('messages-list');
+  const scrollLatestBtn      = document.getElementById('scroll-latest-btn');
+  const messageForm          = document.getElementById('message-form');
+  const messageInput         = document.getElementById('message-input');
+  const sendBtn              = document.getElementById('send-btn');
+  const attachBtn            = document.getElementById('attach-btn');
+  const attachInput          = document.getElementById('attach-input');
+  const videoAttachBtn       = document.getElementById('video-attach-btn');
+  const videoInput            = document.getElementById('video-input');
+  const documentAttachBtn    = document.getElementById('document-attach-btn');
+  const documentInput         = document.getElementById('document-input');
+  const voiceNoteBtn          = document.getElementById('voice-note-btn');
+  const voiceCallBtn          = document.getElementById('voice-call-btn');
+  const videoCallBtn          = document.getElementById('video-call-btn');
+  const callOverlay           = document.getElementById('call-overlay');
+  const callStatus            = document.getElementById('call-status');
+  const endCallBtn            = document.getElementById('end-call-btn');
+  const localVideo             = document.getElementById('local-video');
+  const remoteVideo            = document.getElementById('remote-video');
+  const attachmentError      = document.getElementById('attachment-error');
+  const shareLocationBtn     = document.getElementById('share-location-btn');
+  const liveLocationBtn      = document.getElementById('live-location-btn');
+
+  let allConversations = [];
+  let activeBookingId = bookingIdParam;
+  let conversationsTimer = null;
+  let messagesTimer = null;
+  let lastMessageId = 0;
+  const renderedMessageIds = new Set();
+  let isNearBottom = true;
+  let pendingMechanicInfo = null;
+
+  // ---- Mobile drawer ----
+  function openDrawer() { mobileDrawer.classList.remove('hidden'); drawerBackdrop.classList.remove('hidden'); }
+  function closeDrawer() { mobileDrawer.classList.add('hidden'); drawerBackdrop.classList.add('hidden'); }
+  openDrawerBtn.addEventListener('click', openDrawer);
+  closeDrawerBtn.addEventListener('click', closeDrawer);
+  drawerBackdrop.addEventListener('click', closeDrawer);
+
+  // ---- Auth guard & Load User Identity for sidebar ----
+  // Guests are redirected to the login page (with a return URL so they
+  // come back here after logging in). Mechanics/admins are routed to their
+  // own chat/dashboard pages.
+  var isAuthenticated = false;
+  var userChatLoginUrl = '../login.html?redirect=' + encodeURIComponent('user/chat.html' + window.location.search);
+
+  fetch('../api/current-user.php', { credentials: 'same-origin' })
+    .then(function (res) { if (!res.ok) throw new Error('guest'); return res.json(); })
+    .then(function (data) {
+      if (data.role === 'mechanic') { window.location.replace('../mechanic/chat.html'); return; }
+      if (data.role === 'admin') { window.location.replace('../admin/index.php'); return; }
+
+      isAuthenticated = true;
+      document.getElementById('user-name-sidebar').textContent = data.name || 'User';
+      if (data.photo) {
+        const avatarWrap = document.getElementById('user-avatar-wrap');
+        const img = document.createElement('img');
+        img.src = data.photo;
+        img.alt = '';
+        img.className = 'w-10 h-10 rounded-full object-cover';
+        avatarWrap.textContent = '';   // remove the fallback icon
+        avatarWrap.appendChild(img);
+      }
+      startConversationsPolling();
+    })
+    .catch(function () { window.location.replace(userChatLoginUrl); });
+
+  // ---- Render one conversation row ----
+  function renderConversationRow(conv, index) {
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.dataset.bookingId = conv.bookingId;
+    row.className = 'row-enter w-full text-left flex items-center gap-3 rounded-2xl px-3 py-2.5 ' +
+      (String(conv.bookingId) === String(activeBookingId) ? 'bg-brand-light' : '');
+
+    const avatarWrap = document.createElement('span');
+    avatarWrap.className = 'relative shrink-0';
+    const avatar = document.createElement('img');
+    avatar.src = conv.userPhoto || '../assets/images/placeholders/default-mechnaic-profile.png';
+    avatar.alt = '';
+    avatar.width = 44; avatar.height = 44;
+    avatar.className = 'w-11 h-11 rounded-full object-cover bg-slate-100';
+    avatarWrap.appendChild(avatar);
+    if (conv.userOnline) {
+      const dot = document.createElement('span');
+      dot.className = 'absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white';
+      avatarWrap.appendChild(dot);
+    }
+    row.appendChild(avatarWrap);
+
+    const info = document.createElement('div');
+    info.className = 'min-w-0 flex-1';
+    const topRow = document.createElement('div');
+    topRow.className = 'flex items-center justify-between gap-2';
+    const name = document.createElement('p');
+    name.className = 'text-sm font-semibold text-slate-900 truncate';
+    name.textContent = conv.userName;   // untrusted — textContent only
+    topRow.appendChild(name);
+    const time = document.createElement('span');
+    time.className = 'text-[11px] text-slate-400 shrink-0';
+    time.textContent = conv.lastMessageTime || '';
+    topRow.appendChild(time);
+    info.appendChild(topRow);
+
+    const bottomRow = document.createElement('div');
+    bottomRow.className = 'flex items-center justify-between gap-2';
+    const preview = document.createElement('p');
+    preview.className = 'text-xs text-slate-500 truncate ' + (conv.unreadCount > 0 ? 'font-semibold text-slate-700' : '');
+    const previewIcon = document.createElement('i');
+    previewIcon.className = conversationTypeIcon(conv.lastMessageType);
+    previewIcon.setAttribute('aria-hidden', 'true');
+    preview.appendChild(previewIcon);
+    preview.appendChild(document.createTextNode(' ' + (conv.lastMessagePreview || '')));
+    bottomRow.appendChild(preview);
+    if (conv.unreadCount > 0) {
+      const badge = document.createElement('span');
+      badge.className = 'unread-badge shrink-0 text-[10px] font-bold bg-accent text-white rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1';
+      badge.textContent = conv.unreadCount;
+      bottomRow.appendChild(badge);
+    }
+    info.appendChild(bottomRow);
+    row.appendChild(info);
+
+    row.addEventListener('click', function () { openConversation(conv); });
+    return row;
+  }
+
+  function conversationTypeIcon(type) {
+    const icons = { image: 'fa-solid fa-image', video: 'fa-solid fa-video', document: 'fa-solid fa-download', audio: 'fa-solid fa-microphone', location: 'fa-solid fa-location-dot', live_location: 'fa-solid fa-location-crosshairs' };
+    return icons[type] || 'fa-regular fa-comment';
+  }
+
+  function renderConversationsList(filterText) {
+    conversationsList.innerHTML = '';
+    const filtered = filterText
+      ? allConversations.filter(function (c) { return c.userName.toLowerCase().indexOf(filterText.toLowerCase()) !== -1; })
+      : allConversations;
+
+    if (!filtered.length) {
+      conversationsList.classList.add('hidden');
+      conversationsEmpty.classList.remove('hidden');
+      return;
+    }
+    conversationsEmpty.classList.add('hidden');
+    filtered.forEach(function (conv, i) { conversationsList.appendChild(renderConversationRow(conv, i)); });
+    conversationsList.classList.remove('hidden');
+  }
+
+  conversationSearch.addEventListener('input', function () {
+    renderConversationsList(conversationSearch.value.trim());
+  });
+
+  function markConversationRead() {
+    if (activeBookingId == null) return;
+    fetch('../api/mark-messages-read.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ booking_id: activeBookingId })
+    }).then(function () { fetchConversations(); }).catch(function () {});
+  }
+
+  function updateReadTicks() {
+    document.querySelectorAll('.tick-group[data-message-id]').forEach(function (group) {
+      const ticks = group.querySelectorAll('.tick');
+      if (ticks.length === 2 && !ticks[1].classList.contains('read')) {
+        ticks[1].classList.add('read');
+      }
+    });
+  }
+
+  function renderNoBookingState(mechanic) {
+    pendingMechanicInfo = mechanic || pendingMechanicInfo;
+    if (!pendingMechanicInfo) return;
+
+    activeMechanicName.textContent = pendingMechanicInfo.name || 'Mechanic';
+    activeBookingRef.textContent = 'Start a conversation';
+    if (pendingMechanicInfo.photo) activeMechanicPhoto.src = pendingMechanicInfo.photo;
+
+    conversationsPanel.classList.add('hidden');
+    conversationsPanel.classList.remove('md:flex');
+    chatPanel.classList.remove('hidden');
+    chatPanel.classList.add('flex');
+
+    messagesList.innerHTML = '';
+    messageInput.placeholder = 'Type a message…';
+    messageInput.removeAttribute('disabled');
+    sendBtn.removeAttribute('disabled');
+    attachBtn.removeAttribute('disabled');
+    shareLocationBtn.removeAttribute('disabled');
+  }
+
+  function fetchMechanicInfoById(mechanicId) {
+    if (!mechanicId) return Promise.resolve(null);
+    return fetch('../api/get-mechanic-profile.php?id=' + encodeURIComponent(mechanicId), { credentials: 'same-origin' })
+      .then(function (res) { if (!res.ok) throw new Error('failed'); return res.json(); })
+      .then(function (data) {
+        const mechanic = {
+          name: data.shopName || data.shop_name || 'Mechanic',
+          photo: data.photo || data.shop_photo_path || '../assets/images/placeholders/default-mechnaic-profile.png',
+          phone: data.phone || null,
+        };
+        pendingMechanicInfo = mechanic;
+        renderNoBookingState(mechanic);
+        return mechanic;
+      })
+      .catch(function () {
+        pendingMechanicInfo = { name: 'Mechanic', photo: '../assets/images/placeholders/default-mechnaic-profile.png', phone: null };
+        renderNoBookingState(pendingMechanicInfo);
+        return pendingMechanicInfo;
+      });
+  }
+
+  function fetchConversations() {
+    fetch('../api/get-conversations.php', { credentials: 'same-origin' })
+      .then(function (res) { if (!res.ok) throw new Error('failed'); return res.json(); })
+      .then(function (data) {
+        allConversations = Array.isArray(data.conversations) ? data.conversations : [];
+        conversationsSkeleton.classList.add('hidden');
+        renderConversationsList(conversationSearch.value.trim());
+
+        if (activeBookingId != null) {
+          const found = allConversations.find(function (c) {
+            return String(c.bookingId) === String(activeBookingId);
+          });
+          if (found && !messagesTimer) openConversation(found);
+          return;
+        }
+
+        // A direct link from a mechanic profile must select that mechanic,
+        // not whichever conversation happens to be first in the list.
+        if (mechanicIdParam != null) {
+          const matchingConversation = allConversations.find(function (c) {
+            return String(c.mechanicId) === String(mechanicIdParam);
+          });
+          if (matchingConversation) {
+            openConversation(matchingConversation);
+          } else if (!pendingMechanicInfo) {
+            fetchMechanicInfoById(mechanicIdParam);
+          }
+          return;
+        }
+
+        if (allConversations.length > 0) {
+          openConversation(allConversations[0]);
+        } else {
+        }
+      })
+      .catch(function () {
+        conversationsSkeleton.classList.add('hidden');
+        renderConversationsList('');
+        if (!activeBookingId && mechanicIdParam && !pendingMechanicInfo) {
+          fetchMechanicInfoById(mechanicIdParam);
+        }
+      });
+  }
+
+  function startConversationsPolling() {
+    fetchConversations();
+    conversationsTimer = setInterval(fetchConversations, CONVERSATIONS_POLL_MS);
+  }
+
+  // ---- Open a conversation ----
+  function openConversation(conv) {
+    activeBookingId = conv.bookingId;
+    lastMessageId = 0;
+    renderedMessageIds.clear();
+    messagesList.innerHTML = '';
+    stopMessagesPolling();
+
+    activeMechanicName.textContent = conv.userName;   // untrusted — textContent only
+    activeBookingRef.textContent = 'Booking #' + conv.bookingId;
+    if (conv.userPhoto) activeMechanicPhoto.src = conv.userPhoto;
+
+    conversationsPanel.classList.add('hidden');
+    conversationsPanel.classList.remove('md:hidden');
+    conversationsPanel.classList.add('md:flex');
+    chatPanel.classList.remove('hidden');
+    chatPanel.classList.add('flex');
+
+    renderConversationsList(conversationSearch.value.trim()); // refresh highlight
+    startMessagesPolling();
+    markConversationRead();
+    startSignalPolling();
+  }
+
+  backToListBtn.addEventListener('click', function () {
+    chatPanel.classList.add('hidden');
+    chatPanel.classList.remove('flex');
+    conversationsPanel.classList.remove('hidden');
+    stopMessagesPolling();
+    stopSignalPolling();
+  });
+
+  // ---- Scroll helpers ----
+  function scrollToBottom(smooth) {
+    if (typeof messagesScroll.scrollTo === 'function') {
+      try {
+        messagesScroll.scrollTo({ top: messagesScroll.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+        return;
+      } catch (e) {}
+    }
+    messagesScroll.scrollTop = messagesScroll.scrollHeight;
+  }
+
+  messagesScroll.addEventListener('scroll', function () {
+    const threshold = 80;
+    isNearBottom = messagesScroll.scrollHeight - messagesScroll.scrollTop - messagesScroll.clientHeight < threshold;
+    scrollLatestBtn.classList.toggle('hidden', isNearBottom);
+  });
+
+  scrollLatestBtn.addEventListener('click', function () {
+    scrollToBottom(true);
+    scrollLatestBtn.classList.add('hidden');
+  });
+
+  // ---- Message Bubble Renderer (User's own messages on the right) ----
+  function renderMessage(msg) {
+    const isSelf = msg.senderRole === 'user';
+    const wrap = document.createElement('div');
+    wrap.className = 'chat-row ' + (isSelf ? 'self' : 'other');
+
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble ' + (isSelf ? 'self' : 'other');
+
+    if (msg.type === 'image') {
+      const media = document.createElement('span');
+      media.className = 'media-preview';
+      const img = document.createElement('img');
+      img.src = assetUrl(msg.content);
+      img.alt = 'Shared photo';
+      img.className = 'rounded-xl mb-1.5';
+      img.loading = 'lazy';
+      media.appendChild(img);
+      media.appendChild(createMediaDownloadButton(msg.content, msg.originalFilename || 'photo'));
+      bubble.appendChild(media);
+    } else if (msg.type === 'video') {
+      const video = document.createElement('video');
+      video.src = assetUrl(msg.content);
+      video.controls = true;
+      video.className = 'rounded-xl max-w-full mb-1.5';
+      bubble.appendChild(video);
+      bubble.appendChild(createDownloadLink(msg.content, msg.originalFilename || 'video'));
+    } else if (msg.type === 'audio') {
+      const audio = document.createElement('audio');
+      audio.src = assetUrl(msg.content);
+      audio.controls = true;
+      audio.className = 'max-w-full';
+      bubble.appendChild(audio);
+      bubble.appendChild(createDownloadLink(msg.content, msg.originalFilename || 'voice-note'));
+    } else if (msg.type === 'document') {
+      const link = document.createElement('a');
+      link.href = assetUrl(msg.content);
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.className = 'flex items-center gap-2 text-inherit no-underline font-medium';
+      const fileIcon = document.createElement('i');
+      fileIcon.className = 'fa-solid fa-file-lines';
+      fileIcon.setAttribute('aria-hidden', 'true');
+      const fileLabel = document.createElement('span');
+      fileLabel.textContent = (msg.originalFilename || 'Open document') + (msg.fileSize ? ' (' + (msg.fileSize / 1048576).toFixed(1) + ' MB)' : '');
+      link.appendChild(fileIcon);
+      link.appendChild(fileLabel);
+      bubble.appendChild(link);
+      link.download = msg.originalFilename || '';
+    } else if (msg.type === 'location') {
+      const map = document.createElement('iframe');
+      map.src = 'https://www.google.com/maps?q=' + encodeURIComponent(msg.lat + ',' + msg.lng) + '&z=15&output=embed';
+      map.title = 'Shared location on Google Maps';
+      map.loading = 'lazy';
+      map.referrerPolicy = 'no-referrer-when-downgrade';
+      map.className = 'w-full h-36 rounded-xl mb-2 border-0';
+      bubble.appendChild(map);
+      const locWrap = document.createElement('a');
+      locWrap.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(msg.lat + ',' + msg.lng);
+      locWrap.target = '_blank';
+      locWrap.rel = 'noopener noreferrer';
+      locWrap.className = 'flex items-center gap-2 text-inherit no-underline';
+      const icon = document.createElement('i');
+      icon.className = 'fa-solid fa-location-dot ' + (isSelf ? 'text-white' : 'text-brand');
+      icon.setAttribute('aria-hidden', 'true');
+      const text = document.createElement('span');
+      text.className = 'text-sm font-medium';
+      text.textContent = msg.address || 'Shared location';   // untrusted — textContent only
+      locWrap.appendChild(icon);
+      locWrap.appendChild(text);
+      bubble.appendChild(locWrap);
+    } else if (msg.type === 'live_location') {
+      const map = document.createElement('iframe');
+      map.src = 'https://www.google.com/maps?q=' + encodeURIComponent(msg.lat + ',' + msg.lng) + '&z=15&output=embed';
+      map.title = 'Live location on Google Maps';
+      map.loading = 'lazy';
+      map.referrerPolicy = 'no-referrer-when-downgrade';
+      map.className = 'w-full h-36 rounded-xl mb-2 border-0';
+      bubble.appendChild(map);
+      const locWrap = document.createElement('a');
+      locWrap.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(msg.lat + ',' + msg.lng);
+      locWrap.target = '_blank'; locWrap.rel = 'noopener noreferrer';
+      locWrap.className = 'flex items-center gap-2 text-inherit no-underline';
+      const icon = document.createElement('i'); icon.className = 'fa-solid fa-location-crosshairs'; icon.setAttribute('aria-hidden', 'true');
+      const text = document.createElement('span'); text.className = 'text-sm font-medium'; text.textContent = 'Live location';
+      locWrap.appendChild(icon); locWrap.appendChild(text); bubble.appendChild(locWrap);
+    } else {
+      const text = document.createElement('p');
+      text.className = 'text-sm whitespace-pre-wrap break-words';
+      text.textContent = msg.content;   // untrusted — textContent only
+      bubble.appendChild(text);
+    }
+
+    const time = document.createElement('span');
+    time.className = 'time-stamp';
+    time.textContent = formatTime(msg.createdAt);
+    bubble.appendChild(time);
+
+    // ---- Double tick marks (WhatsApp-style) for own messages ----
+    if (isSelf) {
+      const tickGroup = document.createElement('span');
+      tickGroup.className = 'tick-group';
+      tickGroup.setAttribute('data-message-id', msg.id);
+      const tick1 = document.createElement('span');
+      tick1.className = 'tick';
+      tick1.textContent = '✓';
+      const tick2 = document.createElement('span');
+      tick2.className = 'tick' + (msg.readAt ? ' read' : '');
+      tick2.textContent = '✓';
+      tickGroup.appendChild(tick1);
+      tickGroup.appendChild(tick2);
+      bubble.appendChild(tickGroup);
+    }
+
+    wrap.appendChild(bubble);
+    return wrap;
+  }
+
+  function assetUrl(path) {
+    if (!path) return '';
+    if (/^https?:\/\//i.test(path)) return path;
+    if (path.indexOf('/assets/') === 0) return '..' + path;
+    return path;
+  }
+
+  function createDownloadLink(path, filename) {
+    const link = document.createElement('a');
+    link.href = assetUrl(path);
+    link.download = filename;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.className = 'mt-2 inline-flex items-center gap-1 text-xs font-semibold underline';
+    const icon = document.createElement('i');
+    icon.className = 'fa-solid fa-download';
+    icon.setAttribute('aria-hidden', 'true');
+    const label = document.createElement('span');
+    label.textContent = 'Download';
+    link.appendChild(icon);
+    link.appendChild(label);
+    return link;
+  }
+
+  function createMediaDownloadButton(path, filename) {
+    const link = document.createElement('a');
+    link.href = assetUrl(path);
+    link.download = filename;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.className = 'media-download';
+    link.setAttribute('aria-label', 'Download attachment');
+    const icon = document.createElement('i');
+    icon.className = 'fa-solid fa-download';
+    icon.setAttribute('aria-hidden', 'true');
+    link.appendChild(icon);
+    return link;
+  }
+
+  function formatTime(iso) {
+    try { return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+    catch (e) { return ''; }
+  }
+
+  function appendMessages(list) {
+    const frag = document.createDocumentFragment();
+    let hasNewFromOther = false;
+    list.forEach(function (msg) {
+      if (renderedMessageIds.has(String(msg.id))) return;
+      renderedMessageIds.add(String(msg.id));
+      frag.appendChild(renderMessage(msg));
+      if (msg.id > lastMessageId) lastMessageId = msg.id;
+      // New message from the other party means they've seen our previous messages
+      if (msg.senderRole !== 'user') hasNewFromOther = true;
+    });
+    messagesList.appendChild(frag);
+    if (hasNewFromOther) updateReadTicks();
+    scrollLatestBtn.classList.toggle('hidden', isNearBottom);
+  }
+
+  function pollMessages() {
+    if (activeBookingId == null && !mechanicIdParam) return;
+    const url = (activeBookingId != null
+      ? '../api/get-messages.php?booking_id=' + encodeURIComponent(activeBookingId)
+      : '../api/get-messages.php?mechanic_id=' + encodeURIComponent(mechanicIdParam)) +
+      (lastMessageId ? '&after=' + lastMessageId : '');
+    fetch(url, { credentials: 'same-origin' })
+      .then(function (res) { if (!res.ok) throw new Error('failed'); return res.json(); })
+      .then(function (data) {
+        if (data.mechanic) {
+          activeMechanicName.textContent = data.mechanic.name;
+          if (data.mechanic.photo) activeMechanicPhoto.src = data.mechanic.photo;
+        }
+        if (data.booking_id != null) {
+          activeBookingId = data.booking_id;
+        }
+        if (Array.isArray(data.messages) && data.messages.length) {
+          appendMessages(data.messages);
+          markConversationRead();
+          if (isNearBottom) scrollToBottom(lastMessageId !== 0);
+        }
+      })
+      .catch(function () {});
+  }
+
+  function startMessagesPolling() {
+    if (messagesTimer) return;
+    pollMessages();
+    messagesTimer = setInterval(pollMessages, MESSAGES_POLL_MS);
+  }
+  function stopMessagesPolling() {
+    if (messagesTimer) { clearInterval(messagesTimer); messagesTimer = null; }
+  }
+
+  // ---- Send text ----
+  function handleSendResult(result) {
+    if (result && result.booking_id != null) {
+      const isNewConversation = activeBookingId == null;
+      activeBookingId = result.booking_id;
+      activeBookingRef.textContent = 'Booking #' + activeBookingId;
+      if (isNewConversation) {
+        fetchConversations();
+        startMessagesPolling();
+      }
+    }
+    pollMessages();
+  }
+
+  messageInput.addEventListener('input', function () {
+    messageInput.style.height = 'auto';
+    messageInput.style.height = Math.min(messageInput.scrollHeight, 112) + 'px';
+  });
+
+  // Enter sends the message; Shift+Enter inserts a newline.
+  messageInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (messageForm.requestSubmit) {
+        messageForm.requestSubmit();
+      } else {
+        messageForm.dispatchEvent(new Event('submit', { cancelable: true }));
+      }
+    }
+  });
+
+  messageForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const content = messageInput.value.trim();
+    if (!content) return;
+
+        messageInput.value = '';
+    messageInput.style.height = 'auto';
+    sendBtn.disabled = true;
+
+    const payload = {
+      type: 'text',
+      content: content
+    };
+    if (activeBookingId != null) payload.booking_id = activeBookingId;
+    if (mechanicIdParam != null) payload.mechanic_id = mechanicIdParam;
+
+    fetch('../api/send-message.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(payload)
+    })
+            .then(function (res) { if (!res.ok) throw new Error('failed'); return res.json(); })
+      .then(function (result) { handleSendResult(result); sendBtn.disabled = false; })
+      .catch(function () {
+        sendBtn.disabled = false;
+        attachmentError.textContent = 'Could not send message. Please try again.';
+        attachmentError.classList.remove('hidden');
+      });
+  });
+
+  // ---- Attach photo ----
+  attachBtn.addEventListener('click', function () { attachInput.click(); });
+  attachInput.addEventListener('change', function () {
+    attachmentError.classList.add('hidden');
+    const file = attachInput.files && attachInput.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      attachmentError.textContent = 'Please select an image file.';
+      attachmentError.classList.remove('hidden');
+      attachInput.value = '';
+      return;
+    }
+    if (file.size > MAX_ATTACHMENT_MB * 1024 * 1024) {
+      attachmentError.textContent = 'Image must be smaller than ' + MAX_ATTACHMENT_MB + 'MB.';
+      attachmentError.classList.remove('hidden');
+      attachInput.value = '';
+      return;
+    }
+
+    const formData = new FormData();
+    if (activeBookingId != null) formData.append('booking_id', activeBookingId);
+    if (mechanicIdParam != null) formData.append('mechanic_id', mechanicIdParam);
+    formData.append('type', 'image');
+    formData.append('image', file);
+
+    fetch('../api/send-message.php', { method: 'POST', credentials: 'same-origin', body: formData })
+      .then(function (res) { if (!res.ok) throw new Error('failed'); return res.json(); })
+      .then(handleSendResult)
+      .catch(function () {
+        attachmentError.textContent = 'Could not send photo. Please try again.';
+        attachmentError.classList.remove('hidden');
+      })
+      .finally(function () { attachInput.value = ''; });
+  });
+
+  function uploadFile(input, type) {
+    const file = input.files && input.files[0];
+    if (!file || activeBookingId == null && mechanicIdParam == null) return;
+    const maxBytes = type === 'document' ? 10 * 1024 * 1024 : 25 * 1024 * 1024;
+    if (file.size > maxBytes) { attachmentError.textContent = 'File is too large.'; attachmentError.classList.remove('hidden'); input.value = ''; return; }
+    const formData = new FormData();
+    if (activeBookingId != null) formData.append('booking_id', activeBookingId);
+    if (mechanicIdParam != null) formData.append('mechanic_id', mechanicIdParam);
+    formData.append('type', type);
+    formData.append('image', file);
+    fetch('../api/send-message.php', { method: 'POST', credentials: 'same-origin', body: formData })
+      .then(function (res) { if (!res.ok) throw new Error('failed'); return res.json(); })
+      .then(handleSendResult)
+      .catch(function () { attachmentError.textContent = 'Could not send file. Please try again.'; attachmentError.classList.remove('hidden'); })
+      .finally(function () { input.value = ''; });
+  }
+  videoAttachBtn.addEventListener('click', function () { videoInput.click(); });
+  documentAttachBtn.addEventListener('click', function () { documentInput.click(); });
+  videoInput.addEventListener('change', function () { uploadFile(videoInput, 'video'); });
+  documentInput.addEventListener('change', function () { uploadFile(documentInput, 'document'); });
+
+  let voiceRecorder = null;
+  let voiceChunks = [];
+  voiceNoteBtn.addEventListener('click', function () {
+    if (voiceRecorder && voiceRecorder.state === 'recording') { voiceRecorder.stop(); return; }
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      voiceChunks = [];
+      voiceRecorder = new MediaRecorder(stream);
+      voiceRecorder.ondataavailable = function (event) { if (event.data.size) voiceChunks.push(event.data); };
+            voiceRecorder.onstop = function () {
+        stream.getTracks().forEach(function (track) { track.stop(); });
+        voiceNoteBtn.classList.remove('text-red-500');
+        const input = new DataTransfer();
+        const file = new File([new Blob(voiceChunks, { type: voiceRecorder.mimeType || 'audio/webm' })], 'voice-note.webm', { type: voiceRecorder.mimeType || 'audio/webm' });
+        input.items.add(file);
+        const formData = new FormData();
+        if (activeBookingId != null) formData.append('booking_id', activeBookingId);
+        if (mechanicIdParam != null) formData.append('mechanic_id', mechanicIdParam);
+        formData.append('type', 'audio'); formData.append('image', file);
+        fetch('../api/send-message.php', { method: 'POST', credentials: 'same-origin', body: formData }).then(function (res) { if (!res.ok) throw new Error('failed'); return res.json(); }).then(handleSendResult).catch(function () { attachmentError.textContent = 'Could not send voice note.'; attachmentError.classList.remove('hidden'); });
+      };
+      voiceRecorder.start();
+      voiceNoteBtn.classList.add('text-red-500');
+    }).catch(function () { attachmentError.textContent = 'Microphone permission is required.'; attachmentError.classList.remove('hidden'); });
+  });
+
+  let callPeer = null;
+  let callStream = null;
+  let signalCursor = 0;
+  let signalTimer = null;
+
+  function sendCallSignal(type, payload) {
+    if (activeBookingId == null) return Promise.resolve();
+    return fetch('../api/call-signal.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ booking_id: activeBookingId, signal_type: type, payload: payload }) });
+  }
+  function createCallPeer(mode) {
+    callPeer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    callPeer.onicecandidate = function (event) { if (event.candidate) sendCallSignal('ice', event.candidate.toJSON()); };
+    callPeer.ontrack = function (event) { remoteVideo.srcObject = event.streams[0]; };
+    callStream.getTracks().forEach(function (track) { callPeer.addTrack(track, callStream); });
+    if (mode === 'video') localVideo.srcObject = callStream;
+    else { localVideo.srcObject = null; localVideo.classList.add('hidden'); }
+  }
+  async function startCall(mode) {
+    if (activeBookingId == null || callPeer) return;
+    if (!window.RTCPeerConnection || !navigator.mediaDevices) { attachmentError.textContent = 'Calling is not supported by this browser.'; attachmentError.classList.remove('hidden'); return; }
+    try {
+      callStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: mode === 'video' });
+      callOverlay.classList.remove('hidden'); callOverlay.classList.add('flex'); callStatus.textContent = mode === 'video' ? 'Starting video call…' : 'Starting voice call…';
+      createCallPeer(mode);
+      const offer = await callPeer.createOffer(); await callPeer.setLocalDescription(offer); await sendCallSignal('offer', { description: offer, mode: mode });
+      startSignalPolling();
+    } catch (error) { endCall(); attachmentError.textContent = 'Camera or microphone permission is required.'; attachmentError.classList.remove('hidden'); }
+  }
+  async function handleCallSignal(signal) {
+    try {
+      if (signal.type === 'hangup') { endCall(false); return; }
+      if (signal.type === 'offer') {
+        if (callPeer) return;
+        const mode = signal.payload.mode || 'voice';
+        callStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: mode === 'video' });
+        callOverlay.classList.remove('hidden'); callOverlay.classList.add('flex'); callStatus.textContent = mode === 'video' ? 'Incoming video call' : 'Incoming voice call';
+        createCallPeer(mode); await callPeer.setRemoteDescription(signal.payload.description); const answer = await callPeer.createAnswer(); await callPeer.setLocalDescription(answer); await sendCallSignal('answer', { description: answer });
+      } else if (signal.type === 'answer' && callPeer) await callPeer.setRemoteDescription(signal.payload.description);
+      else if (signal.type === 'ice' && callPeer) await callPeer.addIceCandidate(signal.payload);
+    } catch (error) {
+      endCall(false);
+      attachmentError.textContent = 'Could not establish the call. Check your camera/microphone permissions.';
+      attachmentError.classList.remove('hidden');
+    }
+  }
+  function startSignalPolling() {
+    if (signalTimer) return;
+    signalTimer = setInterval(function () { if (activeBookingId == null) return; fetch('../api/call-signal.php?booking_id=' + encodeURIComponent(activeBookingId) + '&after=' + signalCursor, { credentials: 'same-origin' }).then(function (res) { return res.json(); }).then(function (data) { (data.signals || []).forEach(function (signal) { signalCursor = Math.max(signalCursor, signal.id); handleCallSignal(signal).catch(function () {}); }); }).catch(function () {}); }, 1500);
+  }
+  function stopSignalPolling() {
+    if (signalTimer) { clearInterval(signalTimer); signalTimer = null; }
+  }
+  function endCall(notify) {
+    if (notify !== false && activeBookingId != null) sendCallSignal('hangup', {});
+    stopSignalPolling();
+    if (callPeer) callPeer.close(); callPeer = null;
+    if (callStream) callStream.getTracks().forEach(function (track) { track.stop(); }); callStream = null;
+    localVideo.srcObject = null; remoteVideo.srcObject = null; localVideo.classList.remove('hidden'); callOverlay.classList.add('hidden'); callOverlay.classList.remove('flex');
+  }
+  voiceCallBtn.addEventListener('click', function () { startCall('voice'); });
+  videoCallBtn.addEventListener('click', function () { startCall('video'); });
+  endCallBtn.addEventListener('click', function () { endCall(true); });
+
+  // ---- Share location ----
+  shareLocationBtn.addEventListener('click', function () {
+    if (!navigator.geolocation) {
+      attachmentError.textContent = 'Location services are not available.';
+      attachmentError.classList.remove('hidden');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        const payload = {
+          type: 'location',
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          address: 'Live user location'
+        };
+        if (activeBookingId != null) payload.booking_id = activeBookingId;
+        if (mechanicIdParam != null) payload.mechanic_id = mechanicIdParam;
+
+        fetch('../api/send-message.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload)
+        })
+          .then(function (res) { if (!res.ok) throw new Error('failed'); return res.json(); })
+          .then(handleSendResult)
+          .catch(function () {
+            attachmentError.textContent = 'Could not share location.';
+            attachmentError.classList.remove('hidden');
+          });
+      },
+      function () {
+        attachmentError.textContent = 'Could not access location.';
+        attachmentError.classList.remove('hidden');
+      },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+    );
+  });
+
+  let liveWatchId = null;
+  let liveLocationMessageId = null;
+  const liveLocationModal = document.getElementById('live-location-modal');
+  const liveLocationCancel = document.getElementById('live-location-cancel');
+
+  function startLiveLocation(minutes) {
+    navigator.geolocation.getCurrentPosition(function (position) {
+      const payload = { type: 'live_location', lat: position.coords.latitude, lng: position.coords.longitude, address: 'Live location', duration_minutes: minutes };
+      if (activeBookingId != null) payload.booking_id = activeBookingId;
+      if (mechanicIdParam != null) payload.mechanic_id = mechanicIdParam;
+      fetch('../api/send-message.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(payload) }).then(function (res) { if (!res.ok) throw new Error('failed'); return res.json(); }).then(function (result) {
+        liveLocationMessageId = result.message_id;
+        liveWatchId = navigator.geolocation.watchPosition(function (next) { fetch('../api/update-live-location.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ message_id: liveLocationMessageId, lat: next.coords.latitude, lng: next.coords.longitude, address: 'Live location' }) }).catch(function () {}); });
+        handleSendResult(result);
+      }).catch(function () { attachmentError.textContent = 'Could not share live location.'; attachmentError.classList.remove('hidden'); });
+    }, function () { attachmentError.textContent = 'Could not access your current location. Enable GPS/location permission and try again.'; attachmentError.classList.remove('hidden'); }, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
+  }
+
+  liveLocationBtn.addEventListener('click', function () {
+    if (!navigator.geolocation) { attachmentError.textContent = 'Location services are not available.'; attachmentError.classList.remove('hidden'); return; }
+    if (liveLocationModal) liveLocationModal.classList.remove('hidden');
+  });
+
+  if (liveLocationModal) {
+    liveLocationModal.querySelectorAll('.duration-option').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        liveLocationModal.classList.add('hidden');
+        startLiveLocation(parseInt(btn.dataset.minutes, 10));
+      });
+    });
+    if (liveLocationCancel) liveLocationCancel.addEventListener('click', function () { liveLocationModal.classList.add('hidden'); });
+    liveLocationModal.addEventListener('click', function (e) { if (e.target === liveLocationModal) liveLocationModal.classList.add('hidden'); });
+  }
+
+  // ---- Logout ----
+  function doLogout() {
+    fetch('../api/logout.php', { method: 'POST', credentials: 'same-origin' })
+      .then(function () { window.location.href = '../index.html'; })
+      .catch(function () { window.location.href = '../login.html'; });
+  }
+  document.getElementById('sidebar-logout-btn').addEventListener('click', doLogout);
+  document.getElementById('drawer-logout-btn').addEventListener('click', doLogout);
+
+  // Conversations only start after the auth guard confirms the visitor is
+  // logged in (they are started inside the auth check's success handler).
+  // The visibility handler still resumes polling for authenticated users.
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      if (conversationsTimer) { clearInterval(conversationsTimer); conversationsTimer = null; }
+      stopMessagesPolling();
+    } else {
+      if (isAuthenticated) startConversationsPolling();
+      if (activeBookingId != null) startMessagesPolling();
+    }
+  });
+
+  if (isAuthenticated) startConversationsPolling();
+})();
+</script>
+
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>

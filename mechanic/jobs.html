@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jobs & Requests — RepairKar</title>
+  <meta name="description" content="Manage all your incoming requests, active jobs, and completed bookings on RepairKar.">
+  <link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .badge-pending   { background: #fef9c3; color: #854d0e; }
+    .badge-accepted  { background: #dcfce7; color: #166534; }
+    .badge-en_route  { background: #e0e7ff; color: #3730a3; }
+    .badge-completed { background: #dcfce7; color: #15803d; }
+    .badge-cancelled { background: #fee2e2; color: #991b1b; }
+    @keyframes sk-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .skeleton { animation: sk-pulse 1.4s ease-in-out infinite; }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .fade-in-up { animation: fadeInUp .3s ease-out both; }
+    .btn-tap:active { transform: scale(0.97); }
+    .btn-tap { transition: transform 0.12s ease-out, background-color 0.15s ease; }
+    .tab-btn.active { background-color: #0f766e; color: #ffffff; }
+    .tab-btn { transition: background-color 0.15s ease, color 0.15s ease; }
+    .stat-card { transition: box-shadow 0.2s ease, transform 0.2s ease; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.04); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+<div class="md:flex md:min-h-screen">
+
+  <!-- ================= SIDEBAR (desktop) ================= -->
+  <aside class="hidden md:flex md:flex-col md:w-64 md:shrink-0 bg-white border-r border-slate-100 md:sticky md:top-0 md:h-screen">
+    <div class="flex items-center gap-3 px-5 py-5 border-b border-slate-100">
+      <div id="sidebar-avatar-skeleton" class="skeleton w-10 h-10 rounded-full bg-slate-200 shrink-0"></div>
+      <img id="shop-photo" src="" alt="" width="40" height="40" class="hidden w-10 h-10 rounded-full object-cover bg-slate-100 shrink-0">
+      <div class="min-w-0">
+        <p id="shop-name" class="text-sm font-bold text-slate-900 truncate">Loading…</p>
+      </div>
+    </div>
+
+    <nav class="flex-1 px-3 py-4 space-y-1" aria-label="Mechanic navigation">
+      <a href="dashboard.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+        <i class="fa-solid fa-table-cells-large w-4 text-center" aria-hidden="true"></i> Dashboard
+      </a>
+      <a href="jobs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
+        <i class="fa-solid fa-clipboard-list w-4 text-center" aria-hidden="true"></i> Jobs & Requests
+      </a>
+      <a href="my-gigs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+        <i class="fa-solid fa-wrench w-4 text-center" aria-hidden="true"></i> My Gigs
+      </a>
+      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+        <i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats
+      </a>
+      <a href="earnings.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+        <i class="fa-regular fa-credit-card w-4 text-center" aria-hidden="true"></i> Earnings
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+        <i class="fa-regular fa-user w-4 text-center" aria-hidden="true"></i> Profile
+      </a>
+    </nav>
+
+    <div class="px-3 pb-4 space-y-1">
+      <a href="create-gig.html" class="btn-tap block text-center rounded-xl bg-brand text-white text-sm font-semibold px-3 py-2.5 shadow-sm">
+        New Service Request
+      </a>
+      <button type="button" id="logout-btn" class="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+        <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center" aria-hidden="true"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= MOBILE DRAWER ================= -->
+  <div id="mobile-drawer-backdrop" class="hidden md:hidden fixed inset-0 z-50 bg-black/40"></div>
+  <aside id="mobile-drawer" class="hidden md:hidden fixed inset-y-0 left-0 z-50 w-72 bg-white flex flex-col shadow-2xl">
+    <div class="flex items-center justify-between px-4 py-4 border-b border-slate-100">
+      <span class="text-sm font-bold text-slate-900">Menu</span>
+      <button type="button" id="close-drawer-btn" aria-label="Close menu" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center">
+        <i class="fa-solid fa-xmark text-slate-500" aria-hidden="true"></i>
+      </button>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1" aria-label="Mechanic navigation mobile">
+      <a href="dashboard.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-600">
+        <i class="fa-solid fa-table-cells-large w-4 text-center" aria-hidden="true"></i> Dashboard
+      </a>
+      <a href="jobs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
+        <i class="fa-solid fa-clipboard-list w-4 text-center" aria-hidden="true"></i> Jobs & Requests
+      </a>
+      <a href="my-gigs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-600">
+        <i class="fa-solid fa-wrench w-4 text-center" aria-hidden="true"></i> My Gigs
+      </a>
+      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-600">
+        <i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats
+      </a>
+      <a href="earnings.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-600">
+        <i class="fa-regular fa-credit-card w-4 text-center" aria-hidden="true"></i> Earnings
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-600">
+        <i class="fa-regular fa-user w-4 text-center" aria-hidden="true"></i> Profile
+      </a>
+    </nav>
+    <div class="px-3 pb-4">
+      <button type="button" id="logout-btn-mobile" class="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-500">
+        <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center" aria-hidden="true"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <div class="flex-1 min-w-0">
+
+    <!-- Top bar -->
+    <header class="sticky top-0 z-30 bg-white border-b border-slate-100">
+      <div class="flex items-center gap-3 px-4 md:px-8 py-4">
+        <button type="button" id="open-drawer-btn" aria-label="Open menu" class="md:hidden w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-bars text-slate-600" aria-hidden="true"></i>
+        </button>
+        <div class="flex-1 min-w-0">
+          <h1 class="text-lg md:text-xl font-extrabold text-slate-900 truncate">Jobs & Requests</h1>
+          <p class="text-xs text-slate-500 hidden sm:block">Manage all customer bookings, active jobs, and completed services.</p>
+        </div>
+        <a href="dashboard.html" class="btn-tap inline-flex items-center gap-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2">
+          <i class="fa-solid fa-arrow-left"></i> Dashboard
+        </a>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 md:px-8 py-6 space-y-6">
+
+      <!-- Summary Metrics Cards -->
+      <section class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
+        <div class="stat-card rounded-2xl bg-white border border-slate-100 p-4">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Total Jobs</p>
+            <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-xs"><i class="fa-solid fa-clipboard-list"></i></span>
+          </div>
+          <p id="stat-total" class="text-2xl font-extrabold text-slate-900 mt-2">0</p>
+        </div>
+
+        <div class="stat-card rounded-2xl bg-white border border-slate-100 p-4">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-600">Pending</p>
+            <span class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs"><i class="fa-solid fa-clock"></i></span>
+          </div>
+          <p id="stat-pending" class="text-2xl font-extrabold text-amber-600 mt-2">0</p>
+        </div>
+
+        <div class="stat-card rounded-2xl bg-white border border-slate-100 p-4">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-brand">Active</p>
+            <span class="w-7 h-7 rounded-lg bg-brand-light text-brand flex items-center justify-center text-xs"><i class="fa-solid fa-gears"></i></span>
+          </div>
+          <p id="stat-active" class="text-2xl font-extrabold text-brand mt-2">0</p>
+        </div>
+
+        <div class="stat-card rounded-2xl bg-white border border-slate-100 p-4">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-green-600">Completed</p>
+            <span class="w-7 h-7 rounded-lg bg-green-50 text-green-600 flex items-center justify-center text-xs"><i class="fa-solid fa-circle-check"></i></span>
+          </div>
+          <p id="stat-completed" class="text-2xl font-extrabold text-green-600 mt-2">0</p>
+        </div>
+      </section>
+
+      <!-- Search & Filters Toolbar -->
+      <section class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+        <!-- Filter Tabs -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 bg-white border border-slate-100 p-1.5 rounded-2xl shadow-sm" role="tablist">
+          <button type="button" class="tab-btn active px-3.5 py-1.5 rounded-xl text-xs font-semibold" data-status="all">
+            All <span id="tab-badge-all" class="ml-1 opacity-80">(0)</span>
+          </button>
+          <button type="button" class="tab-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50" data-status="pending">
+            Requests <span id="tab-badge-pending" class="ml-1 opacity-80">(0)</span>
+          </button>
+          <button type="button" class="tab-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50" data-status="active">
+            Active <span id="tab-badge-active" class="ml-1 opacity-80">(0)</span>
+          </button>
+          <button type="button" class="tab-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50" data-status="completed">
+            Completed <span id="tab-badge-completed" class="ml-1 opacity-80">(0)</span>
+          </button>
+          <button type="button" class="tab-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50" data-status="cancelled">
+            Cancelled <span id="tab-badge-cancelled" class="ml-1 opacity-80">(0)</span>
+          </button>
+        </div>
+
+        <!-- Search input -->
+        <div class="relative min-w-[220px]">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" aria-hidden="true"></i>
+          <input type="search" id="search-input" placeholder="Search customer, service..."
+            class="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand">
+        </div>
+      </section>
+
+      <!-- Loading skeleton -->
+      <div id="skeleton-list" class="space-y-3">
+        <div class="skeleton h-32 rounded-2xl bg-slate-200"></div>
+        <div class="skeleton h-32 rounded-2xl bg-slate-200"></div>
+        <div class="skeleton h-32 rounded-2xl bg-slate-200"></div>
+      </div>
+
+      <!-- Jobs List Grid -->
+      <div id="jobs-list" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="hidden rounded-2xl bg-white border border-slate-100 p-12 text-center">
+        <div class="w-14 h-14 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center text-2xl mb-3">
+          <i class="fa-regular fa-folder-open" aria-hidden="true"></i>
+        </div>
+        <h3 class="text-sm font-bold text-slate-900">No jobs found</h3>
+        <p id="empty-msg" class="text-xs text-slate-500 mt-1">There are no bookings matching your current filter.</p>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+(function () {
+  var activeStatus = 'all';
+  var searchQuery = '';
+  var pollTimer = null;
+
+  // ---- Styled toast (replaces native alert()) ----
+  var toastTimer = null;
+  function showToast(message, type) {
+    var toast = document.getElementById('toast');
+    if (!toast) return;
+    var isError = (type === 'error' || type === true);
+    toast.className = 'hidden fixed bottom-20 md:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto sm:min-w-[260px] max-w-sm z-[60] rounded-2xl px-4 py-3 text-sm font-medium shadow-xl flex items-center gap-2 ' +
+      (isError ? 'bg-red-500 text-white' : 'bg-slate-900 text-white');
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.add('hidden'); }, 3200);
+  }
+
+  var skeletonList = document.getElementById('skeleton-list');
+  var jobsList     = document.getElementById('jobs-list');
+  var emptyState   = document.getElementById('empty-state');
+  var emptyMsg     = document.getElementById('empty-msg');
+  var searchInput  = document.getElementById('search-input');
+
+  var shopPhoto = document.getElementById('shop-photo');
+  var shopName  = document.getElementById('shop-name');
+  var sidebarAvatarSkeleton = document.getElementById('sidebar-avatar-skeleton');
+
+  var openDrawerBtn  = document.getElementById('open-drawer-btn');
+  var closeDrawerBtn = document.getElementById('close-drawer-btn');
+  var mobileDrawer   = document.getElementById('mobile-drawer');
+  var drawerBackdrop = document.getElementById('mobile-drawer-backdrop');
+
+  function openDrawer() {
+    mobileDrawer.classList.remove('hidden');
+    drawerBackdrop.classList.remove('hidden');
+  }
+  function closeDrawer() {
+    mobileDrawer.classList.add('hidden');
+    drawerBackdrop.classList.add('hidden');
+  }
+  if (openDrawerBtn) openDrawerBtn.addEventListener('click', openDrawer);
+  if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', closeDrawer);
+  if (drawerBackdrop) drawerBackdrop.addEventListener('click', closeDrawer);
+
+  var logoutBtn = document.getElementById('logout-btn');
+  var logoutBtnMobile = document.getElementById('logout-btn-mobile');
+  function doLogout() {
+    fetch('../api/logout.php', { method: 'POST', credentials: 'same-origin' })
+      .finally(function () { window.location.replace('../login.html'); });
+  }
+  if (logoutBtn) logoutBtn.addEventListener('click', doLogout);
+  if (logoutBtnMobile) logoutBtnMobile.addEventListener('click', doLogout);
+
+  // Read initial filter from URL if present (e.g. jobs.html?status=pending)
+  var urlParams = new URLSearchParams(window.location.search);
+  var initialStatus = urlParams.get('status');
+  if (initialStatus && ['all', 'pending', 'active', 'completed', 'cancelled'].indexOf(initialStatus) !== -1) {
+    activeStatus = initialStatus;
+    document.querySelectorAll('.tab-btn').forEach(function (b) {
+      if (b.dataset.status === activeStatus) {
+        b.classList.add('active');
+        b.classList.remove('text-slate-600', 'hover:bg-slate-50');
+      } else {
+        b.classList.remove('active', 'bg-brand', 'text-white');
+        b.classList.add('text-slate-600', 'hover:bg-slate-50');
+      }
+    });
+  }
+
+  // Tab buttons
+  document.querySelectorAll('.tab-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.tab-btn').forEach(function (b) {
+        b.classList.remove('active', 'bg-brand', 'text-white');
+        b.classList.add('text-slate-600', 'hover:bg-slate-50');
+      });
+      btn.classList.add('active');
+      btn.classList.remove('text-slate-600', 'hover:bg-slate-50');
+      activeStatus = btn.dataset.status;
+      loadJobs();
+    });
+  });
+
+  // Search input debounce
+  var searchTimer = null;
+  searchInput.addEventListener('input', function () {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function () {
+      searchQuery = searchInput.value.trim();
+      loadJobs();
+    }, 300);
+  });
+
+  function fmtDate(str) {
+    if (!str) return '—';
+    try {
+      return new Date(str).toLocaleString('en-US', {
+        day: 'numeric', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    } catch (e) { return str; }
+  }
+
+  var STATUS_INFO = {
+    pending:   { label: 'Pending Request', badgeClass: 'badge-pending', dot: 'bg-amber-500' },
+    accepted:  { label: 'Accepted',        badgeClass: 'badge-accepted', dot: 'bg-green-500' },
+    en_route:  { label: 'En Route',        badgeClass: 'badge-en_route', dot: 'bg-blue-500' },
+    completed: { label: 'Completed',       badgeClass: 'badge-completed', dot: 'bg-green-600' },
+    cancelled: { label: 'Cancelled',       badgeClass: 'badge-cancelled', dot: 'bg-red-500' },
+  };
+
+  function updateStatus(bookingId, newStatus, btn) {
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+    }
+    fetch('../api/update-booking-status.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ booking_id: bookingId, status: newStatus })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.status || data.success) {
+          loadJobs();
+        } else {
+          showToast(data.message || 'Could not update status.', true);
+          if (btn) btn.disabled = false;
+        }
+      })
+      .catch(function () {
+        showToast('Network error. Please try again.', true);
+        if (btn) btn.disabled = false;
+      });
+  }
+
+  function renderJobCard(job, index) {
+    var card = document.createElement('div');
+    card.className = 'fade-in-up rounded-2xl bg-white border border-slate-100 p-5 shadow-sm space-y-3.5';
+    card.style.animationDelay = (index * 40) + 'ms';
+
+    var statusCfg = STATUS_INFO[job.status] || { label: job.status, badgeClass: 'badge-pending', dot: 'bg-slate-400' };
+
+    // Header: Customer + Status Badge
+    var header = document.createElement('div');
+    header.className = 'flex items-start justify-between gap-3';
+
+    var customerWrap = document.createElement('div');
+    customerWrap.className = 'flex items-center gap-3 min-w-0';
+
+    var avatar = document.createElement('div');
+    avatar.className = 'w-10 h-10 rounded-full bg-brand-light text-brand flex items-center justify-center font-bold text-sm shrink-0';
+    avatar.textContent = (job.userName ? job.userName.charAt(0).toUpperCase() : 'C');
+    customerWrap.appendChild(avatar);
+
+    var nameBlock = document.createElement('div');
+    nameBlock.className = 'min-w-0';
+    var name = document.createElement('p');
+    name.className = 'text-sm font-bold text-slate-900 truncate';
+    name.textContent = job.userName;
+    var phone = document.createElement('p');
+    phone.className = 'text-xs text-slate-400 mt-0.5';
+    if (job.userPhone) {
+      // Icon element + text node — keeps the untrusted phone number out of innerHTML.
+      var phoneIcon = document.createElement('i');
+      phoneIcon.className = 'fa-solid fa-phone text-[10px] mr-1';
+      phoneIcon.setAttribute('aria-hidden', 'true');
+      phone.appendChild(phoneIcon);
+      phone.appendChild(document.createTextNode(job.userPhone));
+    } else {
+      phone.textContent = 'No phone provided';
+    }
+    nameBlock.appendChild(name);
+    nameBlock.appendChild(phone);
+    customerWrap.appendChild(nameBlock);
+    header.appendChild(customerWrap);
+
+    var badge = document.createElement('span');
+    badge.className = 'shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ' + statusCfg.badgeClass;
+    badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full ' + statusCfg.dot + '"></span> ' + statusCfg.label;
+    header.appendChild(badge);
+    card.appendChild(header);
+
+    // Service Description
+    var desc = document.createElement('p');
+    desc.className = 'text-sm font-semibold text-slate-800';
+    desc.textContent = job.description;
+    card.appendChild(desc);
+
+    // Meta details: Location & Time
+    var meta = document.createElement('div');
+    meta.className = 'space-y-1.5 text-xs text-slate-500 bg-slate-50 rounded-xl p-3';
+
+    var locRow = document.createElement('div');
+    locRow.className = 'flex items-center gap-2';
+    locRow.innerHTML = '<i class="fa-solid fa-location-dot text-green-500 w-3.5 text-center"></i> <span class="truncate">' + (job.address || 'Address not specified') + '</span>';
+    meta.appendChild(locRow);
+
+    var dateRow = document.createElement('div');
+    dateRow.className = 'flex items-center gap-2';
+    dateRow.innerHTML = '<i class="fa-regular fa-clock text-slate-400 w-3.5 text-center"></i> <span>Booked: ' + fmtDate(job.createdAt) + '</span>';
+    meta.appendChild(dateRow);
+
+    if (job.scheduledTime) {
+      var schedRow = document.createElement('div');
+      schedRow.className = 'flex items-center gap-2 text-amber-700 font-medium';
+      schedRow.innerHTML = '<i class="fa-regular fa-calendar-days w-3.5 text-center"></i> <span>Scheduled: ' + fmtDate(job.scheduledTime) + '</span>';
+      meta.appendChild(schedRow);
+    }
+
+    card.appendChild(meta);
+
+    // Review Snippet if Completed
+    if (job.status === 'completed' && job.rating) {
+      var reviewBlock = document.createElement('div');
+      reviewBlock.className = 'rounded-xl bg-amber-50/60 border border-amber-100 p-2.5 text-xs';
+      var stars = '';
+      for (var s = 1; s <= 5; s++) {
+        stars += '<i class="fa-solid fa-star ' + (s <= job.rating ? 'text-amber-400' : 'text-slate-200') + ' text-[10px]"></i> ';
+      }
+      reviewBlock.innerHTML = '<div class="flex items-center gap-1.5 font-bold text-amber-800">' + stars + ' <span>' + job.rating + '/5</span></div>' +
+        (job.reviewComment ? '<p class="text-slate-600 mt-1 italic">“' + job.reviewComment + '”</p>' : '');
+      card.appendChild(reviewBlock);
+    }
+
+    // Actions row
+    var actions = document.createElement('div');
+    actions.className = 'flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100';
+
+    if (job.status === 'pending') {
+      var acceptBtn = document.createElement('button');
+      acceptBtn.type = 'button';
+      acceptBtn.className = 'btn-tap flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand hover:bg-brand-dark text-white text-xs font-semibold px-3 py-2';
+      acceptBtn.innerHTML = '<i class="fa-solid fa-check"></i> Accept';
+      acceptBtn.onclick = function () { updateStatus(job.id, 'accepted', acceptBtn); };
+      actions.appendChild(acceptBtn);
+
+      var declineBtn = document.createElement('button');
+      declineBtn.type = 'button';
+      declineBtn.className = 'btn-tap rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold px-3 py-2';
+      declineBtn.innerHTML = '<i class="fa-solid fa-xmark"></i> Decline';
+      declineBtn.onclick = function () { updateStatus(job.id, 'cancelled', declineBtn); };
+      actions.appendChild(declineBtn);
+    } else if (job.status === 'accepted') {
+      var enRouteBtn = document.createElement('button');
+      enRouteBtn.type = 'button';
+      enRouteBtn.className = 'btn-tap inline-flex items-center justify-center gap-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2';
+      enRouteBtn.innerHTML = '<i class="fa-solid fa-car-side"></i> En Route';
+      enRouteBtn.onclick = function () { updateStatus(job.id, 'en_route', enRouteBtn); };
+      actions.appendChild(enRouteBtn);
+
+      var completeBtn = document.createElement('button');
+      completeBtn.type = 'button';
+      completeBtn.className = 'btn-tap flex-1 inline-flex items-center justify-center gap-1 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-2';
+      completeBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Mark Complete';
+      completeBtn.onclick = function () { updateStatus(job.id, 'completed', completeBtn); };
+      actions.appendChild(completeBtn);
+
+      var chatBtn = document.createElement('a');
+      chatBtn.href = 'chat.html?booking_id=' + encodeURIComponent(job.id);
+      chatBtn.className = 'btn-tap rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold px-2.5 py-2';
+      chatBtn.innerHTML = '<i class="fa-solid fa-comment text-brand"></i>';
+      actions.appendChild(chatBtn);
+    } else if (job.status === 'en_route') {
+      var completeBtn2 = document.createElement('button');
+      completeBtn2.type = 'button';
+      completeBtn2.className = 'btn-tap flex-1 inline-flex items-center justify-center gap-1 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-2';
+      completeBtn2.innerHTML = '<i class="fa-solid fa-circle-check"></i> Mark Complete';
+      completeBtn2.onclick = function () { updateStatus(job.id, 'completed', completeBtn2); };
+      actions.appendChild(completeBtn2);
+
+      var chatBtn2 = document.createElement('a');
+      chatBtn2.href = 'chat.html?booking_id=' + encodeURIComponent(job.id);
+      chatBtn2.className = 'btn-tap rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold px-2.5 py-2';
+      chatBtn2.innerHTML = '<i class="fa-solid fa-comment text-brand"></i>';
+      actions.appendChild(chatBtn2);
+    } else if (job.status === 'completed') {
+      var chatBtn3 = document.createElement('a');
+      chatBtn3.href = 'chat.html?booking_id=' + encodeURIComponent(job.id);
+      chatBtn3.className = 'btn-tap rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold px-3 py-2 inline-flex items-center gap-1.5';
+      chatBtn3.innerHTML = '<i class="fa-solid fa-comment text-brand"></i> Chat';
+      actions.appendChild(chatBtn3);
+    }
+
+    var detailsBtn = document.createElement('a');
+    detailsBtn.href = 'booking-status.html?booking_id=' + encodeURIComponent(job.id);
+    detailsBtn.className = 'btn-tap inline-flex items-center justify-center gap-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2';
+    detailsBtn.innerHTML = '<i class="fa-solid fa-eye"></i> Details';
+    actions.appendChild(detailsBtn);
+
+    card.appendChild(actions);
+    return card;
+  }
+
+  function renderJobs(bookings, counts) {
+    skeletonList.classList.add('hidden');
+    jobsList.innerHTML = '';
+
+    // Update Counts Badges & Summary Stats
+    if (counts) {
+      document.getElementById('stat-total').textContent     = counts.all || 0;
+      document.getElementById('stat-pending').textContent   = counts.pending || 0;
+      document.getElementById('stat-active').textContent    = counts.active || 0;
+      document.getElementById('stat-completed').textContent = counts.completed || 0;
+
+      document.getElementById('tab-badge-all').textContent       = '(' + (counts.all || 0) + ')';
+      document.getElementById('tab-badge-pending').textContent   = '(' + (counts.pending || 0) + ')';
+      document.getElementById('tab-badge-active').textContent    = '(' + (counts.active || 0) + ')';
+      document.getElementById('tab-badge-completed').textContent = '(' + (counts.completed || 0) + ')';
+      document.getElementById('tab-badge-cancelled').textContent = '(' + (counts.cancelled || 0) + ')';
+    }
+
+    if (!bookings.length) {
+      jobsList.classList.add('hidden');
+      emptyState.classList.remove('hidden');
+      if (searchQuery) {
+        emptyMsg.textContent = 'No jobs found matching "' + searchQuery + '".';
+      } else if (activeStatus === 'pending') {
+        emptyMsg.textContent = 'No pending job requests right now.';
+      } else if (activeStatus === 'active') {
+        emptyMsg.textContent = 'No active or in-progress jobs at the moment.';
+      } else if (activeStatus === 'completed') {
+        emptyMsg.textContent = 'No completed jobs yet.';
+      } else {
+        emptyMsg.textContent = 'There are no bookings matching your filter.';
+      }
+      return;
+    }
+
+    emptyState.classList.add('hidden');
+    bookings.forEach(function (job, idx) {
+      jobsList.appendChild(renderJobCard(job, idx));
+    });
+    jobsList.classList.remove('hidden');
+  }
+
+  function loadJobs() {
+    var params = new URLSearchParams();
+    if (activeStatus !== 'all') params.set('status', activeStatus);
+    if (searchQuery) params.set('q', searchQuery);
+
+    fetch('../api/get-mechanic-jobs.php?' + params.toString(), { credentials: 'same-origin' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('Failed to load jobs');
+        return res.json();
+      })
+      .then(function (data) {
+        renderJobs(Array.isArray(data.bookings) ? data.bookings : [], data.counts || null);
+      })
+      .catch(function () {
+        renderJobs([], null);
+      });
+  }
+
+  // Auth & Profile Check
+  fetch('../api/current-user.php', { credentials: 'same-origin' })
+    .then(function (res) {
+      if (!res.ok) throw new Error('guest');
+      return res.json();
+    })
+    .then(function (user) {
+      if (user.role !== 'mechanic') {
+        window.location.replace('../login.html');
+        return;
+      }
+      if (shopName) shopName.textContent = user.name || 'Your Workshop';
+      if (sidebarAvatarSkeleton) sidebarAvatarSkeleton.classList.add('hidden');
+      if (shopPhoto) {
+        shopPhoto.src = user.photo || '../assets/images/placeholders/default-mechnaic-profile.png';
+        shopPhoto.classList.remove('hidden');
+      }
+
+      loadJobs();
+      pollTimer = setInterval(loadJobs, 10000);
+    })
+    .catch(function () {
+      window.location.replace('../login.html?redirect=' + encodeURIComponent('mechanic/jobs.html'));
+    });
+})();
+</script>
+
+<!-- Styled toast notification (no native alert boxes) -->
+<div id="toast" class="hidden fixed bottom-20 md:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto sm:min-w-[260px] max-w-sm z-[60] rounded-2xl px-4 py-3 text-sm font-medium shadow-xl flex items-center gap-2" role="status" aria-live="polite"></div>
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help Center - RepairKar</title>
+<meta name="description" content="Help for RepairKar mechanics managing services, bookings, and customers.">
+<meta name="robots" content="noindex, follow">
+<link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+<link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<style>
+  body { font-family: Inter, ui-sans-serif, sans-serif; }
+  .faq-item { border: 1px solid #e2e8f0; }
+  .faq-item[open] { border-color: #99d4cc; }
+  .faq-item summary { cursor: pointer; list-style: none; }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary i { transition: transform .15s ease; }
+  .faq-item[open] summary i { transform: rotate(180deg); }
+</style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 antialiased">
+<header class="sticky top-0 z-40 border-b border-slate-100 bg-white">
+  <div class="mx-auto flex max-w-5xl items-center gap-3 px-4 py-4 sm:px-6">
+    <a href="dashboard.html" aria-label="Back to dashboard" class="flex h-9 w-9 items-center justify-center rounded-full hover:bg-slate-100">
+      <i class="fa-solid fa-arrow-left text-slate-600" aria-hidden="true"></i>
+    </a>
+    <div class="flex-1">
+      <p class="text-[11px] font-semibold uppercase tracking-wide text-brand">Mechanic workspace</p>
+      <h1 class="text-lg font-extrabold text-slate-900">Help Center</h1>
+    </div>
+    <a href="../index.html" aria-label="Home" title="Home" class="flex h-9 w-9 items-center justify-center rounded-full hover:bg-slate-100">
+      <i class="fa-solid fa-house text-slate-600" aria-hidden="true"></i>
+    </a>
+  </div>
+</header>
+
+<main class="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:px-6 md:py-8">
+  <section class="rounded-2xl bg-brand px-16 py-10 text-white sm:px-10 sm:py-12">
+    <p class="text-xs font-bold uppercase tracking-widest text-white/70">RepairKar support</p>
+    <h2 class="mt-2 text-2xl font-extrabold sm:text-3xl">Run your mechanic workspace smoothly</h2>
+    <p class="mt-3 max-w-2xl text-sm leading-6 text-white/80">Find answers about availability, service listings, booking requests, customer chat, and account settings.</p>
+  </section>
+
+  <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Help categories">
+    <a href="#requests" class="rounded-2xl border border-slate-200 bg-white p-5 hover:border-brand"><span class="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-light text-brand"><i class="fa-solid fa-calendar-check" aria-hidden="true"></i></span><h2 class="mt-4 text-sm font-bold text-slate-900">Requests</h2><p class="mt-1 text-xs leading-5 text-slate-500">Accept, decline, and track customer bookings.</p></a>
+    <a href="#services" class="rounded-2xl border border-slate-200 bg-white p-5 hover:border-brand"><span class="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-orange-600"><i class="fa-solid fa-wrench" aria-hidden="true"></i></span><h2 class="mt-4 text-sm font-bold text-slate-900">Services</h2><p class="mt-1 text-xs leading-5 text-slate-500">Create and manage your service listings.</p></a>
+    <a href="#chat" class="rounded-2xl border border-slate-200 bg-white p-5 hover:border-brand"><span class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><i class="fa-solid fa-comments" aria-hidden="true"></i></span><h2 class="mt-4 text-sm font-bold text-slate-900">Customer chat</h2><p class="mt-1 text-xs leading-5 text-slate-500">Keep conversations and service details together.</p></a>
+    <a href="#account" class="rounded-2xl border border-slate-200 bg-white p-5 hover:border-brand"><span class="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-600"><i class="fa-solid fa-user-gear" aria-hidden="true"></i></span><h2 class="mt-4 text-sm font-bold text-slate-900">Account</h2><p class="mt-1 text-xs leading-5 text-slate-500">Update your profile and availability.</p></a>
+  </section>
+
+  <section class="space-y-3" aria-label="Frequently asked questions">
+    <p class="text-xs font-bold uppercase tracking-widest text-brand">Frequently asked questions</p>
+    <details id="requests" class="faq-item rounded-2xl bg-white p-5">
+      <summary class="flex items-center justify-between gap-4 text-sm font-bold text-slate-900">How do I receive booking requests?<i class="fa-solid fa-chevron-down text-xs text-slate-400" aria-hidden="true"></i></summary>
+      <p class="mt-3 border-t border-slate-100 pt-3 text-sm leading-6 text-slate-500">Turn your availability switch on from the dashboard. Keep the page open while working so RepairKar can refresh nearby pending requests. Review the address and service before accepting.</p>
+    </details>
+    <details class="faq-item rounded-2xl bg-white p-5">
+      <summary class="flex items-center justify-between gap-4 text-sm font-bold text-slate-900">What happens after I accept a request?<i class="fa-solid fa-chevron-down text-xs text-slate-400" aria-hidden="true"></i></summary>
+      <p class="mt-3 border-t border-slate-100 pt-3 text-sm leading-6 text-slate-500">The booking moves to Accepted. Use chat or the call controls to coordinate with the customer, then mark it En Route when you are travelling and Completed after the repair is finished.</p>
+    </details>
+    <details id="services" class="faq-item rounded-2xl bg-white p-5">
+      <summary class="flex items-center justify-between gap-4 text-sm font-bold text-slate-900">How do I manage my services?<i class="fa-solid fa-chevron-down text-xs text-slate-400" aria-hidden="true"></i></summary>
+      <p class="mt-3 border-t border-slate-100 pt-3 text-sm leading-6 text-slate-500">Open My Gigs to add, edit, or deactivate a service. Use an accurate title, description, price range, and category so customers can choose the right repair.</p>
+    </details>
+    <details id="chat" class="faq-item rounded-2xl bg-white p-5">
+      <summary class="flex items-center justify-between gap-4 text-sm font-bold text-slate-900">Can I share files or location in chat?<i class="fa-solid fa-chevron-down text-xs text-slate-400" aria-hidden="true"></i></summary>
+      <p class="mt-3 border-t border-slate-100 pt-3 text-sm leading-6 text-slate-500">Yes. Open the conversation connected to the booking to exchange messages, photos, documents, voice notes, and location details. Keep sensitive account information out of chat.</p>
+    </details>
+    <details id="account" class="faq-item rounded-2xl bg-white p-5">
+      <summary class="flex items-center justify-between gap-4 text-sm font-bold text-slate-900">How do I update my mechanic profile?<i class="fa-solid fa-chevron-down text-xs text-slate-400" aria-hidden="true"></i></summary>
+      <p class="mt-3 border-t border-slate-100 pt-3 text-sm leading-6 text-slate-500">Open Profile to update your workshop name, category, bio, photo, contact details, and location. Accurate information helps customers find and contact you.</p>
+    </details>
+  </section>
+
+  <section class="flex flex-col items-start justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 sm:flex-row sm:items-center">
+    <div><h2 class="text-sm font-bold text-slate-900">Need more help?</h2><p class="mt-1 text-xs text-slate-500">Contact RepairKar support for account or booking issues.</p></div>
+    <a href="../contact.html" class="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark"><i class="fa-regular fa-envelope" aria-hidden="true"></i>Contact support</a>
+  </section>
+</main>
+<script>
+(function () {
+  const items = Array.from(document.querySelectorAll('.faq-item'));
+  const query = new URLSearchParams(window.location.search).get('topic');
+  if (query) {
+    const target = document.getElementById(query);
+    if (target) target.open = true;
+  }
+  items.forEach(function (item) {
+    item.addEventListener('toggle', function () {
+      if (item.open) items.forEach(function (other) { if (other !== item) other.open = false; });
+    });
+  });
+}());
+</script>
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>

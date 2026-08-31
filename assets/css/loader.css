@@ -1,0 +1,145 @@
+/* ==========================================================================
+   RepairKar — Global Page Loading Screen & Transition Styles
+   ========================================================================== */
+
+/* Top Slim Progress Bar */
+#rk-page-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, #0F766E, #14B8A6, #F97316);
+  z-index: 100000;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+  pointer-events: none;
+  box-shadow: 0 0 10px rgba(20, 184, 166, 0.6);
+}
+
+/* Fullscreen Loader Overlay */
+#rk-page-loader {
+  position: fixed;
+  inset: 0;
+  background: #ffffff;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+  opacity: 1;
+  visibility: visible;
+  user-select: none;
+}
+
+#rk-page-loader.loaded {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Loader Container */
+.rk-loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Animated Logo & Spinner */
+.rk-loader-spinner-wrapper {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.rk-loader-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid #E6F4F2;
+  border-top-color: #0F766E;
+  border-right-color: #14B8A6;
+  animation: rk-spin 0.9s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+}
+
+.rk-loader-ring-outer {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px dashed rgba(249, 115, 22, 0.35);
+  animation: rk-spin-reverse 3s linear infinite;
+}
+
+.rk-loader-icon {
+  font-size: 24px;
+  color: #0F766E;
+  animation: rk-pulse 1.6s ease-in-out infinite;
+}
+
+.rk-loader-brand {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0F766E;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.rk-loader-brand span {
+  color: #F97316;
+}
+
+.rk-loader-text {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #64748B;
+  margin-top: 0.35rem;
+  letter-spacing: 0.01em;
+}
+
+/* Subtle pulse dots */
+.rk-loader-dots {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 2px;
+}
+
+.rk-loader-dots span {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #64748B;
+  animation: rk-dot-bounce 1.2s infinite ease-in-out both;
+}
+
+.rk-loader-dots span:nth-child(1) { animation-delay: -0.32s; }
+.rk-loader-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes rk-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes rk-spin-reverse {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes rk-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.15); opacity: 1; color: #14B8A6; }
+}
+
+@keyframes rk-dot-bounce {
+  0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}

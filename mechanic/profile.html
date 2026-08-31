@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>My Profile — RepairKar</title>
+<meta name="description" content="Manage your RepairKar shop profile, services, and account settings.">
+<meta name="robots" content="noindex, follow">
+
+<link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS — compiled via Tailwind CLI. Run `npm run build:css` after adding new classes. -->
+<link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<style>
+  body { font-family: 'Inter', sans-serif; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .fade-in-up    { animation: fadeInUp 0.4s ease-out both; }
+    .fade-in-up-d1 { animation: fadeInUp 0.4s ease-out 0.08s both; }
+    .fade-in-up-d2 { animation: fadeInUp 0.4s ease-out 0.16s both; }
+    .row-hover     { transition: background-color 0.12s ease-out; }
+    .chevron-hover { transition: transform 0.15s ease-out; }
+    .row-hover:hover .chevron-hover { transform: translateX(2px); }
+    .btn-tap       { transition: transform 0.12s ease-out; }
+    .btn-tap:active { transform: scale(0.97); }
+    .toggle-thumb  { transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), background-color 0.2s ease-out; }
+    .skeleton      { animation: shimmer 1.4s ease-in-out infinite; }
+    .save-flash    { animation: saveFlash 0.6s ease-out; }
+    .drawer-in     { animation: drawerIn 0.25s ease-out both; }
+    .backdrop-in   { animation: fadeIn 0.2s ease-out both; }
+    .toast-in      { animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+  }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes shimmer { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+  @keyframes saveFlash { 0% { background-color: rgb(230 244 242); } 100% { background-color: transparent; } }
+  @keyframes drawerIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+</style>
+
+<!--
+  SECURITY NOTE: shop name/bio below are the mechanic's OWN input, still
+  rendered via textContent, never innerHTML. Bank/payout details are
+  sensitive — must be transmitted over HTTPS only and never logged in
+  plaintext server-side. api/update-mechanic-profile.php must
+  re-validate every field server-side regardless of client-side checks.
+-->
+
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+<div class="md:flex md:min-h-screen">
+
+  <!-- ================= SIDEBAR (desktop) ================= -->
+  <aside class="hidden md:flex md:flex-col md:w-64 md:shrink-0 bg-white border-r border-slate-100 md:sticky md:top-0 md:h-screen">
+    <div class="flex items-center gap-3 px-5 py-5 border-b border-slate-100">
+      <img id="shop-photo-sidebar" src="../assets/images/placeholders/default-mechnaic-profile.png" alt="" width="40" height="40" class="w-10 h-10 rounded-full object-cover bg-slate-100 shrink-0">
+      <div class="min-w-0">
+        <p id="shop-name-sidebar" class="text-sm font-bold text-slate-900 truncate">Your Shop</p>
+      </div>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1" aria-label="Mechanic navigation">
+      <a href="dashboard.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-solid fa-table-cells-large w-4 text-center" aria-hidden="true"></i> Dashboard
+      </a>
+      <a href="jobs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-solid fa-clipboard-list w-4 text-center" aria-hidden="true"></i> Jobs & Requests
+      </a>
+      <a href="my-gigs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-solid fa-wrench w-4 text-center" aria-hidden="true"></i> My Gigs
+      </a>
+      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats
+      </a>
+      <a href="earnings.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-regular fa-credit-card w-4 text-center" aria-hidden="true"></i> Earnings
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
+        <i class="fa-regular fa-user w-4 text-center" aria-hidden="true"></i> Profile
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ================= MOBILE DRAWER ================= -->
+  <div id="mobile-drawer-backdrop" class="hidden md:hidden backdrop-in fixed inset-0 z-50 bg-black/40"></div>
+  <aside id="mobile-drawer" class="hidden md:hidden drawer-in fixed inset-y-0 left-0 z-50 w-72 bg-white flex flex-col">
+    <div class="flex items-center justify-between px-4 py-4 border-b border-slate-100">
+      <span class="text-sm font-bold text-slate-900">Menu</span>
+      <button type="button" id="close-drawer-btn" aria-label="Close menu" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center">
+        <i class="fa-solid fa-xmark text-slate-500" aria-hidden="true"></i>
+      </button>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1" aria-label="Mechanic navigation (mobile)">
+      <a href="dashboard.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
+        <i class="fa-solid fa-table-cells-large w-4 text-center" aria-hidden="true"></i> Dashboard
+      </a>
+      <a href="jobs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
+        <i class="fa-solid fa-clipboard-list w-4 text-center" aria-hidden="true"></i> Jobs & Requests
+      </a>
+      <a href="my-gigs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
+        <i class="fa-solid fa-wrench w-4 text-center" aria-hidden="true"></i> My Gigs
+      </a>
+      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
+        <i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats
+      </a>
+      <a href="earnings.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
+        <i class="fa-regular fa-credit-card w-4 text-center" aria-hidden="true"></i> Earnings
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
+        <i class="fa-regular fa-user w-4 text-center" aria-hidden="true"></i> Profile
+      </a>
+    </nav>
+    <div class="px-3 pb-4">
+      <button type="button" id="logout-btn-mobile" class="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-500">
+        <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center" aria-hidden="true"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <div class="flex-1 min-w-0">
+
+    <header class="sticky top-0 z-30 bg-white border-b border-slate-100">
+      <div class="flex items-center justify-between gap-3 px-4 md:px-8 py-3.5">
+        <div class="flex items-center gap-3">
+          <button type="button" id="open-drawer-btn" aria-label="Open menu" class="md:hidden w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-bars text-slate-600" aria-hidden="true"></i>
+          </button>
+          <h1 class="text-lg md:text-2xl font-extrabold text-slate-900">My Profile</h1>
+        </div>
+        <div class="flex items-center gap-2 sm:gap-3">
+          <a href="dashboard.html" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-brand px-3 py-1.5 rounded-lg border border-slate-200 hover:border-brand transition-colors">
+            <i class="fa-solid fa-table-columns text-xs text-slate-400"></i>
+            Dashboard
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="px-4 md:px-8 py-5 md:py-6 max-w-2xl space-y-5 pb-16">
+
+      <!-- ---- Shop identity ---- -->
+      <section class="fade-in-up rounded-2xl bg-white border border-slate-100 p-5">
+        <div class="flex items-center gap-4">
+          <div class="relative shrink-0">
+            <div id="avatar-skeleton" class="skeleton w-20 h-20 rounded-2xl bg-slate-200"></div>
+            <img id="shop-photo" src="" alt="" width="80" height="80" class="hidden w-20 h-20 rounded-2xl object-cover bg-slate-100">
+            <button type="button" id="change-photo-btn" aria-label="Change shop photo"
+                    class="btn-tap absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-brand text-white flex items-center justify-center shadow">
+              <i class="fa-solid fa-camera text-[10px]" aria-hidden="true"></i>
+            </button>
+            <input type="file" id="photo-input" accept="image/*" class="hidden">
+          </div>
+          <div class="min-w-0 flex-1">
+            <div id="name-skeleton" class="skeleton h-4 w-32 rounded bg-slate-200"></div>
+            <p id="shop-name-display" class="hidden font-bold text-slate-900 truncate"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- Editable fields ---- -->
+      <section class="fade-in-up-d1 rounded-2xl bg-white border border-slate-100 p-5">
+        <h2 class="text-sm font-semibold text-slate-900 mb-3">Shop Details</h2>
+
+        <form id="details-form" class="space-y-4">
+          <div>
+            <label for="shop-name-input" class="block text-sm font-medium text-slate-700 mb-1.5">Shop Name</label>
+            <input type="text" id="shop-name-input" name="shop_name" maxlength="100"
+                   class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand focus:border-brand focus:outline-none">
+          </div>
+
+          <div>
+            <label for="category-select" class="block text-sm font-medium text-slate-700 mb-1.5">Primary Category</label>
+            <div class="relative">
+              <select id="category-select" name="category"
+                      class="w-full appearance-none rounded-xl border border-slate-200 px-4 py-2.5 text-sm bg-white focus:ring-2 focus:ring-brand focus:border-brand focus:outline-none">
+                <option value="washing-machine">Washing Machine Repair</option>
+                <option value="fridge">Fridge Repair</option>
+                <option value="ac">AC Repair</option>
+                <option value="car">Car Mechanic</option>
+                <option value="bike">Bike Mechanic</option>
+                <option value="electrician">Electrician</option>
+                <option value="plumber">Plumber</option>
+                <option value="generator">Generator / UPS Repair</option>
+              </select>
+              <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none" aria-hidden="true"></i>
+            </div>
+          </div>
+
+          <div>
+            <label for="address-input" class="block text-sm font-medium text-slate-700 mb-1.5">Shop Address</label>
+            <input type="text" id="address-input" name="address" maxlength="255"
+                   placeholder="e.g. Shop #12, Block 4, Clifton, Karachi"
+                   class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand focus:border-brand focus:outline-none">
+          </div>
+
+          <div>
+            <label for="bio-input" class="block text-sm font-medium text-slate-700 mb-1.5">Bio / Description</label>
+            <textarea id="bio-input" name="bio" rows="4" maxlength="400"
+                      placeholder="Tell customers about your experience and specialties…"
+                      class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm resize-none focus:ring-2 focus:ring-brand focus:border-brand focus:outline-none"></textarea>
+          </div>
+
+          <button type="submit" id="save-details-btn"
+                  class="btn-tap inline-flex items-center justify-center gap-2 rounded-xl bg-brand hover:bg-brand-dark text-white text-sm font-semibold px-5 py-2.5">
+            <i id="save-spinner" class="fa-solid fa-spinner animate-spin hidden" aria-hidden="true"></i>
+            <span id="save-text">Save Changes</span>
+          </button>
+        </form>
+      </section>
+
+      <!-- ---- Settings ---- -->
+      <section class="fade-in-up-d2 rounded-2xl bg-white border border-slate-100 divide-y divide-slate-100 overflow-hidden">
+
+
+        <div class="flex items-center gap-3 px-4 py-3.5">
+          <span class="w-9 h-9 rounded-xl bg-brand-light flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-bell text-brand text-sm" aria-hidden="true"></i>
+          </span>
+          <span class="flex-1 text-sm font-medium text-slate-800">Notifications</span>
+          <button type="button" id="notif-toggle" role="switch" aria-checked="true" aria-label="Toggle notifications"
+                  class="relative w-11 h-6 rounded-full bg-brand shrink-0">
+            <span class="toggle-thumb absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow translate-x-5"></span>
+          </button>
+        </div>
+
+        <button type="button" id="language-row" class="row-hover w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50">
+          <span class="w-9 h-9 rounded-xl bg-brand-light flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-globe text-brand text-sm" aria-hidden="true"></i>
+          </span>
+          <span class="flex-1 text-sm font-medium text-slate-800 text-left">Language</span>
+          <span id="language-value" class="text-xs text-slate-400 mr-1">English</span>
+          <i class="fa-solid fa-chevron-right chevron-hover text-xs text-slate-300" aria-hidden="true"></i>
+        </button>
+
+        <button type="button" id="change-password-row" class="row-hover w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50">
+          <span class="w-9 h-9 rounded-xl bg-brand-light flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-key text-brand text-sm" aria-hidden="true"></i>
+          </span>
+          <span class="flex-1 text-sm font-medium text-slate-800 text-left">Change Password</span>
+          <i class="fa-solid fa-chevron-right chevron-hover text-xs text-slate-300" aria-hidden="true"></i>
+        </button>
+
+        <a href="help.html" class="row-hover flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50">
+          <span class="w-9 h-9 rounded-xl bg-brand-light flex items-center justify-center shrink-0">
+            <i class="fa-regular fa-circle-question text-brand text-sm" aria-hidden="true"></i>
+          </span>
+          <span class="flex-1 text-sm font-medium text-slate-800">Help &amp; Support</span>
+          <i class="fa-solid fa-chevron-right chevron-hover text-xs text-slate-300" aria-hidden="true"></i>
+        </a>
+
+      </section>
+
+      <!-- ================= DANGER ZONE / ACCOUNT ACTIONS ================= -->
+      <section class="fade-in-up-d2 rounded-2xl bg-white border border-slate-100 p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Account Actions</h3>
+            <p class="text-xs text-slate-500">Manage workshop sessions or permanently delete your account.</p>
+          </div>
+        </div>
+
+        <div class="pt-2 flex flex-col sm:flex-row gap-2.5">
+          <button type="button" id="logout-btn"
+                  class="btn-tap flex-1 flex items-center justify-center gap-2 rounded-xl border border-slate-200 text-slate-700 text-xs sm:text-sm font-semibold px-4 py-3 hover:bg-slate-50 transition-colors">
+            <i class="fa-solid fa-arrow-right-from-bracket text-sm" aria-hidden="true"></i>
+            Logout
+          </button>
+
+          <button type="button" id="delete-account-btn"
+                  class="btn-tap flex-1 flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50/60 text-red-600 text-xs sm:text-sm font-semibold px-4 py-3 hover:bg-red-100/80 transition-colors">
+            <i class="fa-regular fa-trash-can text-sm" aria-hidden="true"></i>
+            Delete Account
+          </button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ================= CHANGE PASSWORD MODAL ================= -->
+<div id="password-modal" class="hidden fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4">
+  <div class="fade-in-up bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-base font-bold text-slate-900">Change Password</h2>
+      <button type="button" id="password-modal-close" class="text-slate-400 hover:text-slate-600 p-1">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <div id="password-error" class="hidden rounded-xl bg-red-50 border border-red-100 px-3.5 py-2.5 mb-3.5 text-xs text-red-600 flex items-start gap-2">
+      <i class="fa-solid fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>
+      <span id="password-error-text"></span>
+    </div>
+
+    <div id="password-success" class="hidden rounded-xl bg-green-50 border border-green-100 px-3.5 py-2.5 mb-3.5 text-xs text-green-700 flex items-start gap-2">
+      <i class="fa-solid fa-circle-check mt-0.5 shrink-0" aria-hidden="true"></i>
+      <span>Password updated successfully!</span>
+    </div>
+
+    <form id="password-form" class="space-y-3">
+      <div>
+        <label for="current-password-input" class="block text-xs font-semibold text-slate-600 mb-1">Current Password</label>
+        <input type="password" id="current-password-input" required autocomplete="current-password"
+               class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm text-slate-800 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+      </div>
+
+      <div>
+        <label for="new-password-input" class="block text-xs font-semibold text-slate-600 mb-1">New Password (min. 6 chars)</label>
+        <input type="password" id="new-password-input" required minlength="6" autocomplete="new-password"
+               class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm text-slate-800 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+      </div>
+
+      <div>
+        <label for="confirm-password-input" class="block text-xs font-semibold text-slate-600 mb-1">Confirm New Password</label>
+        <input type="password" id="confirm-password-input" required minlength="6" autocomplete="new-password"
+               class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm text-slate-800 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+      </div>
+
+      <div class="flex gap-2.5 pt-2">
+        <button type="button" id="password-cancel-btn" class="btn-tap flex-1 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold py-2.5">
+          Cancel
+        </button>
+        <button type="submit" id="password-submit-btn" class="btn-tap flex-1 rounded-xl bg-brand hover:bg-brand-dark text-white text-xs font-semibold py-2.5 shadow-sm">
+          Update Password
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= DELETE ACCOUNT MODAL ================= -->
+<div id="delete-modal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4">
+  <div class="fade-in-up bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl">
+    <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center mx-auto mb-3">
+      <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+    </div>
+
+    <h2 class="text-base font-extrabold text-slate-900 text-center">Delete Mechanic Account?</h2>
+    <p class="text-xs text-slate-500 text-center mt-1 leading-relaxed">
+      This action is <strong class="text-red-600">permanent</strong>. All your gigs, active bookings, chats, and workshop profile will be erased forever.
+    </p>
+
+    <div id="delete-error" class="hidden rounded-xl bg-red-50 border border-red-100 px-3.5 py-2.5 my-3 text-xs text-red-600 flex items-start gap-2">
+      <i class="fa-solid fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>
+      <span id="delete-error-text"></span>
+    </div>
+
+    <div class="mt-4 mb-4">
+      <label for="delete-password-input" class="block text-xs font-semibold text-slate-700 mb-1">Enter your password to confirm:</label>
+      <input type="password" id="delete-password-input" placeholder="Password"
+             class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm text-slate-800 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100">
+    </div>
+
+    <div class="flex gap-2.5">
+      <button type="button" id="delete-modal-cancel" class="btn-tap flex-1 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold py-2.5">
+        Keep Account
+      </button>
+      <button type="button" id="delete-modal-confirm" class="btn-tap flex-1 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2.5 shadow-sm">
+        <span id="delete-confirm-text">Yes, Delete</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= LANGUAGE MODAL ================= -->
+<div id="language-modal" class="hidden fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4">
+  <div class="fade-in-up bg-white rounded-2xl w-full max-w-xs p-5">
+    <h2 class="text-base font-bold text-slate-900 mb-3">Choose Language</h2>
+    <div class="space-y-1">
+      <button type="button" data-lang="English" class="lang-option w-full flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium hover:bg-slate-50">
+        English <i class="fa-solid fa-check text-brand text-xs lang-check"></i>
+      </button>
+      <button type="button" data-lang="اردو" class="lang-option w-full flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium hover:bg-slate-50">
+        اردو (Urdu) <i class="fa-solid fa-check text-brand text-xs lang-check hidden"></i>
+      </button>
+    </div>
+    <button type="button" id="language-modal-close" class="btn-tap w-full mt-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium px-4 py-2.5">
+      Cancel
+    </button>
+  </div>
+</div>
+
+<!-- ================= LOGOUT CONFIRM MODAL ================= -->
+<div id="logout-modal" class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+  <div class="fade-in-up w-full max-w-lg rounded-[28px] bg-white p-6 md:p-8 shadow-2xl border border-slate-200">
+    <h2 class="text-[clamp(1.8rem,2vw,2.5rem)] font-extrabold tracking-[-0.03em] text-slate-900 leading-tight">Log out of RepairKar?</h2>
+    <p class="mt-4 text-[1.05rem] leading-relaxed text-slate-500">You'll stop receiving job requests until you log back in.</p>
+    <div class="mt-7 flex gap-3">
+      <button type="button" id="logout-modal-cancel" class="btn-tap flex-1 rounded-full border border-slate-300 text-slate-700 text-base font-semibold px-4 py-3.5 transition-colors hover:bg-slate-50">
+        Cancel
+      </button>
+      <button type="button" id="logout-modal-confirm" class="btn-tap flex-1 rounded-full bg-red-500 hover:bg-red-600 text-white text-base font-bold px-4 py-3.5 transition-colors">
+        <span id="logout-confirm-text">Yes, Logout</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SAVE TOAST ================= -->
+<div id="save-toast" class="hidden toast-in fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-sm font-medium rounded-xl px-4 py-2.5 flex items-center gap-2">
+  <i class="fa-solid fa-circle-check text-green-400" aria-hidden="true"></i>
+  <span>Profile updated</span>
+</div>
+
+<script>
+(function () {
+
+  const openDrawerBtn  = document.getElementById('open-drawer-btn');
+  const closeDrawerBtn = document.getElementById('close-drawer-btn');
+  const mobileDrawer    = document.getElementById('mobile-drawer');
+  const drawerBackdrop  = document.getElementById('mobile-drawer-backdrop');
+
+  const avatarSkeleton = document.getElementById('avatar-skeleton');
+  const shopPhoto        = document.getElementById('shop-photo');
+  const shopPhotoSidebar = document.getElementById('shop-photo-sidebar');
+  const changePhotoBtn = document.getElementById('change-photo-btn');
+  const photoInput     = document.getElementById('photo-input');
+  const nameSkeleton   = document.getElementById('name-skeleton');
+  const shopNameDisplay = document.getElementById('shop-name-display');
+  const shopNameSidebar = document.getElementById('shop-name-sidebar');
+
+  const shopNameInput  = document.getElementById('shop-name-input');
+  const categorySelect = document.getElementById('category-select');
+  const addressInput   = document.getElementById('address-input');
+  const bioInput       = document.getElementById('bio-input');
+  const detailsForm    = document.getElementById('details-form');
+  const saveBtn        = document.getElementById('save-details-btn');
+  const saveSpinner    = document.getElementById('save-spinner');
+  const saveText       = document.getElementById('save-text');
+  const saveToast      = document.getElementById('save-toast');
+
+  const notifToggle   = document.getElementById('notif-toggle');
+  const languageRow    = document.getElementById('language-row');
+  const languageModal  = document.getElementById('language-modal');
+  const languageClose  = document.getElementById('language-modal-close');
+  const languageValue  = document.getElementById('language-value');
+  const langOptions    = document.querySelectorAll('.lang-option');
+
+  const logoutBtn         = document.getElementById('logout-btn');
+  const logoutModal       = document.getElementById('logout-modal');
+  const logoutCancel      = document.getElementById('logout-modal-cancel');
+  const logoutConfirm     = document.getElementById('logout-modal-confirm');
+  const logoutConfirmText = document.getElementById('logout-confirm-text');
+
+  logoutModal.addEventListener('click', function (event) {
+    if (event.target === logoutModal) {
+      logoutModal.classList.add('hidden');
+    }
+  });
+
+  // ---- Mobile drawer ----
+  function openDrawer() { mobileDrawer.classList.remove('hidden'); drawerBackdrop.classList.remove('hidden'); }
+  function closeDrawer() { mobileDrawer.classList.add('hidden'); drawerBackdrop.classList.add('hidden'); }
+  openDrawerBtn.addEventListener('click', openDrawer);
+  closeDrawerBtn.addEventListener('click', closeDrawer);
+  drawerBackdrop.addEventListener('click', closeDrawer);
+
+  // ---- Role check & Load profile ----
+  fetch('../api/current-user.php', { credentials: 'same-origin' })
+    .then(function (res) {
+      if (!res.ok) throw new Error('guest');
+      return res.json();
+    })
+    .then(function (user) {
+      if (user.role === 'user') {
+        window.location.replace('../user/profile.html');
+        return;
+      }
+      if (user.role === 'admin') {
+        window.location.replace('../admin/index.php');
+        return;
+      }
+      if (user.role !== 'mechanic') {
+        window.location.replace('../login.html');
+        return;
+      }
+
+      return fetch('../api/get-mechanic-profile-self.php', { credentials: 'same-origin' })
+        .then(function (res) { if (!res.ok) throw new Error('request_failed'); return res.json(); })
+        .then(function (data) { renderProfile(data); });
+    })
+    .catch(function () {
+      window.location.replace('../login.html');
+    });
+
+  function renderProfile(data) {
+    shopNameDisplay.textContent = data.shopName || 'Your Shop';   // untrusted (mechanic's own input) — textContent only
+    shopNameSidebar.textContent = data.shopName || 'Your Shop';
+    shopNameInput.value = data.shopName || '';
+    if (addressInput) addressInput.value = data.address || '';
+    bioInput.value = data.bio || '';
+    if (data.category) categorySelect.value = data.category;
+
+    // Always set photo — use server photo if available, otherwise default mechanic placeholder.
+    var photoSrc = data.photo || '../assets/images/placeholders/default-mechnaic-profile.png';
+    shopPhoto.src = photoSrc;
+    shopPhotoSidebar.src = photoSrc;
+
+    avatarSkeleton.classList.add('hidden');
+    shopPhoto.classList.remove('hidden');
+    nameSkeleton.classList.add('hidden');
+    shopNameDisplay.classList.remove('hidden');
+  }
+
+  // ---- Change photo ----
+  changePhotoBtn.addEventListener('click', function () { photoInput.click(); });
+  photoInput.addEventListener('change', function () {
+    const file = photoInput.files && photoInput.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { photoInput.value = ''; return; }
+
+    // Show a local preview immediately while uploading.
+    const previewUrl = URL.createObjectURL(file);
+    shopPhoto.src = previewUrl;
+    shopPhotoSidebar.src = previewUrl;
+
+    const formData = new FormData();
+    formData.append('photo', file);
+    fetch('../api/update-mechanic-profile.php', { method: 'POST', credentials: 'same-origin', body: formData })
+      .then(function (res) { if (!res.ok) throw new Error('failed'); return res.json(); })
+      .then(function (data) {
+        // Replace the temporary blob URL with the permanent server URL so the
+        // photo remains visible after the blob is revoked and on page reload.
+        if (data.photo) {
+          shopPhoto.src = data.photo;
+          shopPhotoSidebar.src = data.photo;
+        }
+        URL.revokeObjectURL(previewUrl);
+        showToast('Photo updated');
+      })
+      .catch(function () {
+        // Keep the local preview even if the upload failed.
+        URL.revokeObjectURL(previewUrl);
+      });
+  });
+
+  // ---- Save shop details ----
+  detailsForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    saveBtn.disabled = true;
+    saveSpinner.classList.remove('hidden');
+    saveText.textContent = 'Saving...';
+
+    fetch('../api/update-mechanic-profile.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({
+        shop_name: shopNameInput.value.trim(),
+        category: categorySelect.value,
+        address: addressInput ? addressInput.value.trim() : '',
+        bio: bioInput.value.trim()
+      })
+    })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          if (!res.ok) throw new Error(data.message || 'Save failed.');
+          return data;
+        });
+      })
+      .then(function () {
+        // Update the displayed name immediately without reloading the page.
+        var newName = shopNameInput.value.trim();
+        shopNameDisplay.textContent = newName;
+        shopNameSidebar.textContent = newName;
+        showToast('Profile updated');
+      })
+      .catch(function (err) {
+        showToast(err.message || 'Save failed. Please try again.');
+      })
+      .finally(function () {
+        saveBtn.disabled = false;
+        saveSpinner.classList.add('hidden');
+        saveText.textContent = 'Save Changes';
+      });
+  });
+
+  function showToast(message) {
+    saveToast.innerHTML = '<i class="fa-solid fa-circle-check text-green-400" aria-hidden="true"></i><span>' + message + '</span>';
+    saveToast.classList.remove('hidden');
+    saveToast.classList.add('toast-in');
+    setTimeout(function () { saveToast.classList.add('hidden'); }, 2500);
+  }
+
+  // ---- Notification toggle ----
+  notifToggle.addEventListener('click', function () {
+    const isOn = notifToggle.getAttribute('aria-checked') === 'true';
+    const next = !isOn;
+    notifToggle.setAttribute('aria-checked', String(next));
+    notifToggle.classList.toggle('bg-brand', next);
+    notifToggle.classList.toggle('bg-slate-300', !next);
+    notifToggle.querySelector('.toggle-thumb').classList.toggle('translate-x-5', next);
+    notifToggle.querySelector('.toggle-thumb').classList.toggle('translate-x-0', !next);
+
+    fetch('../api/update-preferences.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin', body: JSON.stringify({ notifications_enabled: next })
+    }).catch(function () {});
+  });
+
+  // ---- Language modal ----
+  languageRow.addEventListener('click', function () { languageModal.classList.remove('hidden'); });
+  languageClose.addEventListener('click', function () { languageModal.classList.add('hidden'); });
+  languageModal.addEventListener('click', function (e) { if (e.target === languageModal) languageModal.classList.add('hidden'); });
+  langOptions.forEach(function (opt) {
+    opt.addEventListener('click', function () {
+      langOptions.forEach(function (o) { o.querySelector('.lang-check').classList.add('hidden'); });
+      opt.querySelector('.lang-check').classList.remove('hidden');
+      languageValue.textContent = opt.dataset.lang;
+      languageModal.classList.add('hidden');
+      fetch('../api/update-preferences.php', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin', body: JSON.stringify({ language: opt.dataset.lang })
+      }).catch(function () {});
+    });
+  });
+
+  // ---- Change Password Modal & Flow ----
+  const changePasswordRow = document.getElementById('change-password-row');
+  const passwordModal = document.getElementById('password-modal');
+  const passwordModalClose = document.getElementById('password-modal-close');
+  const passwordCancelBtn = document.getElementById('password-cancel-btn');
+  const passwordForm = document.getElementById('password-form');
+  const currentPasswordInput = document.getElementById('current-password-input');
+  const newPasswordInput = document.getElementById('new-password-input');
+  const confirmPasswordInput = document.getElementById('confirm-password-input');
+  const passwordError = document.getElementById('password-error');
+  const passwordErrorText = document.getElementById('password-error-text');
+  const passwordSuccess = document.getElementById('password-success');
+  const passwordSubmitBtn = document.getElementById('password-submit-btn');
+
+  function openPasswordModal() {
+    passwordError.classList.add('hidden');
+    passwordSuccess.classList.add('hidden');
+    passwordForm.reset();
+    passwordSubmitBtn.disabled = false;
+    passwordModal.classList.remove('hidden');
+    currentPasswordInput.focus();
+  }
+  function closePasswordModal() {
+    passwordModal.classList.add('hidden');
+  }
+
+  if (changePasswordRow) changePasswordRow.addEventListener('click', openPasswordModal);
+  if (passwordModalClose) passwordModalClose.addEventListener('click', closePasswordModal);
+  if (passwordCancelBtn) passwordCancelBtn.addEventListener('click', closePasswordModal);
+  if (passwordModal) passwordModal.addEventListener('click', function (e) {
+    if (e.target === passwordModal) closePasswordModal();
+  });
+
+  if (passwordForm) {
+    passwordForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      passwordError.classList.add('hidden');
+      passwordSuccess.classList.add('hidden');
+
+      const currentPass = currentPasswordInput.value;
+      const newPass = newPasswordInput.value;
+      const confirmPass = confirmPasswordInput.value;
+
+      if (newPass.length < 6) {
+        passwordErrorText.textContent = 'New password must be at least 6 characters.';
+        passwordError.classList.remove('hidden');
+        newPasswordInput.focus();
+        return;
+      }
+
+      if (newPass !== confirmPass) {
+        passwordErrorText.textContent = 'New passwords do not match.';
+        passwordError.classList.remove('hidden');
+        confirmPasswordInput.focus();
+        return;
+      }
+
+      passwordSubmitBtn.disabled = true;
+      passwordSubmitBtn.textContent = 'Updating...';
+
+      fetch('../api/change-password.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ current_password: currentPass, new_password: newPass })
+      })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            if (!res.ok) throw new Error(data.message || 'Could not update password.');
+            return data;
+          });
+        })
+        .then(function () {
+          passwordSuccess.classList.remove('hidden');
+          passwordForm.reset();
+          setTimeout(function () {
+            closePasswordModal();
+          }, 1500);
+        })
+        .catch(function (err) {
+          passwordErrorText.textContent = err.message || 'Failed to change password. Please check your current password.';
+          passwordError.classList.remove('hidden');
+        })
+        .finally(function () {
+          passwordSubmitBtn.disabled = false;
+          passwordSubmitBtn.textContent = 'Update Password';
+        });
+    });
+  }
+
+  // ---- Delete Account Modal & Flow ----
+  const deleteAccountBtn = document.getElementById('delete-account-btn');
+  const deleteModal = document.getElementById('delete-modal');
+  const deleteModalCancel = document.getElementById('delete-modal-cancel');
+  const deleteModalConfirm = document.getElementById('delete-modal-confirm');
+  const deleteConfirmText = document.getElementById('delete-confirm-text');
+  const deletePasswordInput = document.getElementById('delete-password-input');
+  const deleteError = document.getElementById('delete-error');
+  const deleteErrorText = document.getElementById('delete-error-text');
+
+  function openDeleteModal() {
+    deleteError.classList.add('hidden');
+    deletePasswordInput.value = '';
+    deleteModalConfirm.disabled = false;
+    deleteConfirmText.textContent = 'Yes, Delete';
+    deleteModal.classList.remove('hidden');
+    deletePasswordInput.focus();
+  }
+  function closeDeleteModal() {
+    deleteModal.classList.add('hidden');
+  }
+
+  if (deleteAccountBtn) deleteAccountBtn.addEventListener('click', openDeleteModal);
+  if (deleteModalCancel) deleteModalCancel.addEventListener('click', closeDeleteModal);
+  if (deleteModal) deleteModal.addEventListener('click', function (e) {
+    if (e.target === deleteModal) closeDeleteModal();
+  });
+
+  if (deleteModalConfirm) {
+    deleteModalConfirm.addEventListener('click', function () {
+      const password = deletePasswordInput.value;
+      if (!password) {
+        deleteErrorText.textContent = 'Please enter your password to confirm deletion.';
+        deleteError.classList.remove('hidden');
+        deletePasswordInput.focus();
+        return;
+      }
+
+      deleteError.classList.add('hidden');
+      deleteModalConfirm.disabled = true;
+      deleteConfirmText.textContent = 'Deleting...';
+
+      fetch('../api/delete-account.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ password: password })
+      })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            if (!res.ok) throw new Error(data.message || 'Could not delete account.');
+            return data;
+          });
+        })
+        .then(function () {
+          window.location.href = '../index.html';
+        })
+        .catch(function (err) {
+          deleteErrorText.textContent = err.message || 'Failed to delete account. Please verify your password.';
+          deleteError.classList.remove('hidden');
+          deleteModalConfirm.disabled = false;
+          deleteConfirmText.textContent = 'Yes, Delete';
+        });
+    });
+  }
+
+  // ---- Logout ----
+  function openLogoutModal() { logoutModal.classList.remove('hidden'); }
+  if (logoutBtn) logoutBtn.addEventListener('click', openLogoutModal);
+  const logoutBtnMobile = document.getElementById('logout-btn-mobile');
+  if (logoutBtnMobile) logoutBtnMobile.addEventListener('click', openLogoutModal);
+  logoutCancel.addEventListener('click', function () { logoutModal.classList.add('hidden'); });
+  logoutConfirm.addEventListener('click', function () {
+    logoutConfirm.disabled = true;
+    logoutConfirmText.textContent = 'Logging out...';
+    fetch('../api/logout.php', { method: 'POST', credentials: 'same-origin' })
+      .then(function () { window.location.href = '../index.html'; })
+      .catch(function () { window.location.href = '../login.html'; });
+  });
+
+})();
+</script>
+
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>

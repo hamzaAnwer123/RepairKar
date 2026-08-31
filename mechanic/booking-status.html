@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Details - RepairKar</title>
+  <meta name="description" content="View booking details and status on RepairKar.">
+  <link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .badge-pending   { background:#fef9c3; color:#854d0e; }
+    .badge-accepted  { background:#dcfce7; color:#166534; }
+    .badge-en_route  { background:#e0e7ff; color:#3730a3; }
+    .badge-completed { background:#dcfce7; color:#15803d; }
+    .badge-cancelled { background:#fee2e2; color:#991b1b; }
+    @keyframes sk-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .skeleton { animation: sk-pulse 1.4s ease-in-out infinite; }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    .fade-in-up { animation: fadeInUp .35s ease both; }
+    .info-row { display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid #f1f5f9; }
+    .info-row:last-child { border-bottom:none; }
+    .info-icon { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 antialiased">
+
+<header class="sticky top-0 z-40 border-b border-slate-100 bg-white">
+  <div class="mx-auto flex max-w-2xl items-center gap-3 px-4 py-4">
+    <a href="dashboard.html" aria-label="Back to dashboard" class="flex h-9 w-9 items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+      <i class="fa-solid fa-arrow-left text-slate-600" aria-hidden="true"></i>
+    </a>
+    <h1 class="text-lg font-bold text-slate-900">Booking Details</h1>
+  </div>
+</header>
+
+<main id="skeleton-view" class="mx-auto max-w-2xl space-y-4 px-4 py-6">
+  <div class="skeleton h-32 rounded-2xl bg-slate-200"></div>
+  <div class="skeleton h-48 rounded-2xl bg-slate-200"></div>
+  <div class="skeleton h-28 rounded-2xl bg-slate-200"></div>
+</main>
+
+<div id="error-view" class="hidden mx-auto max-w-2xl px-4 py-16 text-center">
+  <div class="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-400 mb-4">
+    <i class="fa-solid fa-triangle-exclamation text-2xl" aria-hidden="true"></i>
+  </div>
+  <p class="text-base font-semibold text-slate-800">Booking Not Found</p>
+  <p id="error-msg" class="mt-1 text-sm text-slate-500">We could not load this booking.</p>
+  <a href="dashboard.html" class="mt-5 inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark transition-colors">
+    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to Dashboard
+  </a>
+</div>
+
+<div id="content-view" class="hidden mx-auto max-w-2xl px-4 py-6 space-y-4 fade-in-up">
+
+  <!-- Status Hero & Tracker -->
+  <section class="rounded-2xl bg-white border border-slate-100 p-5">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p id="service-title" class="text-base font-bold text-slate-900 truncate">-</p>
+        <p id="booking-id-label" class="text-xs text-slate-400 mt-0.5">Booking #-</p>
+      </div>
+      <span id="status-badge" class="shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold badge-pending">
+        <span id="status-text">-</span>
+      </span>
+    </div>
+
+    <!-- 4-Step Progress Tracker matching User View -->
+    <div class="mt-6 flex items-center" id="progress-bar">
+      <!-- Step 1: Requested -->
+      <div class="flex-1 text-center">
+        <div id="step-pending" class="mx-auto w-8 h-8 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center text-xs font-bold text-slate-400 transition-colors">
+          <i class="fa-solid fa-check text-xs hidden"></i>
+          <span class="step-num">1</span>
+        </div>
+        <p class="text-[10px] text-slate-500 font-medium mt-1.5">Requested</p>
+      </div>
+      <div class="flex-1 h-0.5 bg-slate-200" id="line-1"></div>
+
+      <!-- Step 2: Accepted -->
+      <div class="flex-1 text-center">
+        <div id="step-accepted" class="mx-auto w-8 h-8 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center text-xs font-bold text-slate-400 transition-colors">
+          <i class="fa-solid fa-check text-xs hidden"></i>
+          <span class="step-num">2</span>
+        </div>
+        <p class="text-[10px] text-slate-500 font-medium mt-1.5">Accepted</p>
+      </div>
+      <div class="flex-1 h-0.5 bg-slate-200" id="line-2"></div>
+
+      <!-- Step 3: En Route -->
+      <div class="flex-1 text-center">
+        <div id="step-en_route" class="mx-auto w-8 h-8 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center text-xs font-bold text-slate-400 transition-colors">
+          <i class="fa-solid fa-check text-xs hidden"></i>
+          <span class="step-num">3</span>
+        </div>
+        <p class="text-[10px] text-slate-500 font-medium mt-1.5">En Route</p>
+      </div>
+      <div class="flex-1 h-0.5 bg-slate-200" id="line-3"></div>
+
+      <!-- Step 4: Completed -->
+      <div class="flex-1 text-center">
+        <div id="step-completed" class="mx-auto w-8 h-8 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center text-xs font-bold text-slate-400 transition-colors">
+          <i class="fa-solid fa-check text-xs hidden"></i>
+          <span class="step-num">4</span>
+        </div>
+        <p class="text-[10px] text-slate-500 font-medium mt-1.5">Completed</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Job Info -->
+  <section class="rounded-2xl bg-white border border-slate-100 p-5">
+    <h2 class="text-sm font-semibold text-slate-900 mb-1">Customer & Job Details</h2>
+
+    <div class="info-row">
+      <div class="info-icon bg-blue-50"><i class="fa-solid fa-user text-blue-500 text-sm" aria-hidden="true"></i></div>
+      <div class="min-w-0">
+        <p class="text-xs text-slate-400">Customer</p>
+        <p id="user-name" class="text-sm font-semibold text-slate-800">-</p>
+        <p id="user-phone" class="text-xs text-slate-500 mt-0.5">-</p>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-icon bg-green-50"><i class="fa-solid fa-location-dot text-green-500 text-sm" aria-hidden="true"></i></div>
+      <div class="min-w-0">
+        <p class="text-xs text-slate-400">Service Location</p>
+        <p id="address" class="text-sm font-medium text-slate-800">-</p>
+      </div>
+    </div>
+
+    <div class="info-row" id="scheduled-row">
+      <div class="info-icon bg-amber-50"><i class="fa-solid fa-calendar-days text-amber-500 text-sm" aria-hidden="true"></i></div>
+      <div class="min-w-0">
+        <p class="text-xs text-slate-400">Scheduled Time</p>
+        <p id="scheduled-time" class="text-sm font-medium text-slate-800">-</p>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-icon bg-slate-50"><i class="fa-solid fa-clock text-slate-400 text-sm" aria-hidden="true"></i></div>
+      <div class="min-w-0">
+        <p class="text-xs text-slate-400">Booked On</p>
+        <p id="created-at" class="text-sm font-medium text-slate-800">-</p>
+      </div>
+    </div>
+
+    <div class="info-row" id="description-row">
+      <div class="info-icon bg-purple-50"><i class="fa-solid fa-file-lines text-purple-500 text-sm" aria-hidden="true"></i></div>
+      <div class="min-w-0">
+        <p class="text-xs text-slate-400">Service Notes</p>
+        <p id="description" class="text-sm font-medium text-slate-800">-</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Actions (Mechanic controls) -->
+  <section id="action-section" class="rounded-2xl bg-white border border-slate-100 p-5 space-y-3">
+    <h2 class="text-sm font-semibold text-slate-900 mb-2">Actions</h2>
+
+    <!-- En Route Button -->
+    <button id="btn-en-route" type="button"
+      class="w-full rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-3 transition-colors flex items-center justify-center gap-2 shadow-sm">
+      <i class="fa-solid fa-car-side" aria-hidden="true"></i> On The Way (En Route)
+    </button>
+
+    <!-- Complete Button -->
+    <button id="btn-complete" type="button"
+      class="w-full rounded-xl bg-brand hover:bg-brand-dark text-white text-sm font-semibold py-3 transition-colors flex items-center justify-center gap-2 shadow-sm">
+      <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Mark as Completed
+    </button>
+
+    <!-- Chat Button -->
+    <a id="btn-chat" href="#"
+      class="w-full rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-semibold py-3 transition-colors flex items-center justify-center gap-2 no-underline">
+      <i class="fa-solid fa-message text-brand" aria-hidden="true"></i> Chat with Customer
+    </a>
+  </section>
+
+  <!-- Completed Banner -->
+  <div id="completed-banner" class="hidden rounded-2xl bg-green-50 border border-green-200 p-4 text-center">
+    <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-500 text-white mb-2">
+      <i class="fa-solid fa-check text-lg" aria-hidden="true"></i>
+    </div>
+    <p class="text-sm font-bold text-green-800">Job Completed Successfully</p>
+    <p class="text-xs text-green-600 mt-0.5">The customer has been notified to leave a review.</p>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  var params    = new URLSearchParams(window.location.search);
+  var bookingId = parseInt(params.get('booking_id'), 10);
+
+  var skeletonView    = document.getElementById('skeleton-view');
+  var errorView       = document.getElementById('error-view');
+  var contentView     = document.getElementById('content-view');
+  var actionSection   = document.getElementById('action-section');
+  var completedBanner = document.getElementById('completed-banner');
+  var btnEnRoute      = document.getElementById('btn-en-route');
+  var btnComplete     = document.getElementById('btn-complete');
+  var btnChat         = document.getElementById('btn-chat');
+
+  // ---- Styled toast (replaces native alert()) ----
+  var toastTimer = null;
+  function showToast(message, type) {
+    var toast = document.getElementById('toast');
+    if (!toast) return;
+    var isError = (type === 'error' || type === true);
+    toast.className = 'hidden fixed bottom-20 md:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto sm:min-w-[260px] max-w-sm z-[60] rounded-2xl px-4 py-3 text-sm font-medium shadow-xl flex items-center gap-2 ' +
+      (isError ? 'bg-red-500 text-white' : 'bg-slate-900 text-white');
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.add('hidden'); }, 3200);
+  }
+
+  function showError(msg) {
+    skeletonView.classList.add('hidden');
+    errorView.classList.remove('hidden');
+    document.getElementById('error-msg').textContent = msg || 'We could not load this booking.';
+  }
+
+  if (!bookingId) { showError('No booking ID provided.'); return; }
+
+  function fmtDate(str) {
+    if (!str) return '-';
+    try { return new Date(str).toLocaleString('en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+    catch(e) { return str; }
+  }
+
+  var STATUS_LABELS = { pending: 'Requested', accepted: 'Accepted', en_route: 'En Route', completed: 'Completed', cancelled: 'Cancelled' };
+  var STEPS = ['pending', 'accepted', 'en_route', 'completed'];
+
+  function applyStatus(status) {
+    var badge = document.getElementById('status-badge');
+    badge.className = 'shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold badge-' + (status || 'pending');
+    document.getElementById('status-text').textContent = STATUS_LABELS[status] || status || 'Unknown';
+
+    var currentIdx = STEPS.indexOf(status);
+
+    STEPS.forEach(function (stepKey, idx) {
+      var node = document.getElementById('step-' + stepKey);
+      if (!node) return;
+      var numSpan = node.querySelector('.step-num');
+      var checkIcon = node.querySelector('.fa-check');
+
+      if (idx < currentIdx) {
+        // Done
+        node.className = 'mx-auto w-8 h-8 rounded-full border-2 border-brand bg-brand text-white flex items-center justify-center text-xs font-bold transition-colors';
+        if (numSpan) numSpan.classList.add('hidden');
+        if (checkIcon) checkIcon.classList.remove('hidden');
+      } else if (idx === currentIdx) {
+        // Active
+        node.className = 'mx-auto w-8 h-8 rounded-full border-2 border-brand bg-brand text-white flex items-center justify-center text-xs font-bold transition-colors';
+        if (numSpan) numSpan.classList.add('hidden');
+        if (checkIcon) checkIcon.classList.remove('hidden');
+      } else {
+        // Inactive
+        node.className = 'mx-auto w-8 h-8 rounded-full border-2 border-slate-300 bg-white text-slate-400 flex items-center justify-center text-xs font-bold transition-colors';
+        if (numSpan) numSpan.classList.remove('hidden');
+        if (checkIcon) checkIcon.classList.add('hidden');
+      }
+    });
+
+    // Connecting lines
+    var line1 = document.getElementById('line-1');
+    var line2 = document.getElementById('line-2');
+    var line3 = document.getElementById('line-3');
+
+    if (line1) line1.className = 'flex-1 h-0.5 ' + (currentIdx >= 1 ? 'bg-brand' : 'bg-slate-200');
+    if (line2) line2.className = 'flex-1 h-0.5 ' + (currentIdx >= 2 ? 'bg-brand' : 'bg-slate-200');
+    if (line3) line3.className = 'flex-1 h-0.5 ' + (currentIdx >= 3 ? 'bg-brand' : 'bg-slate-200');
+
+    // Button states
+    if (status === 'completed') {
+      actionSection.classList.add('hidden');
+      completedBanner.classList.remove('hidden');
+    } else if (status === 'en_route') {
+      actionSection.classList.remove('hidden');
+      completedBanner.classList.add('hidden');
+      btnEnRoute.classList.add('hidden');
+      btnComplete.classList.remove('hidden');
+    } else if (status === 'accepted') {
+      actionSection.classList.remove('hidden');
+      completedBanner.classList.add('hidden');
+      btnEnRoute.classList.remove('hidden');
+      btnComplete.classList.remove('hidden');
+    } else {
+      actionSection.classList.add('hidden');
+      completedBanner.classList.add('hidden');
+    }
+  }
+
+  function updateStatus(newStatus, btn) {
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+    }
+    fetch('../api/update-booking-status.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ booking_id: bookingId, status: newStatus })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.status) {
+          applyStatus(data.status);
+        } else if (data.success) {
+          applyStatus(newStatus);
+        } else {
+          showToast(data.message || 'Could not update status', true);
+        }
+      })
+      .catch(function () { showToast('Network error. Please try again.', true); })
+      .finally(function () {
+        if (btn) {
+          btn.disabled = false;
+          if (newStatus === 'en_route') {
+            btn.innerHTML = '<i class="fa-solid fa-car-side"></i> On The Way (En Route)';
+          } else if (newStatus === 'completed') {
+            btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Mark as Completed';
+          }
+        }
+      });
+  }
+
+  function render(b, currentUserId) {
+    document.getElementById('service-title').textContent     = b.serviceTitle || '-';
+    document.getElementById('booking-id-label').textContent  = 'Booking #' + b.id;
+    document.getElementById('user-name').textContent         = b.userName    || '-';
+    document.getElementById('user-phone').textContent        = b.userPhone   || 'Not provided';
+    document.getElementById('address').textContent           = b.address     || 'Not provided';
+    document.getElementById('created-at').textContent        = fmtDate(b.createdAt);
+
+    if (b.scheduledTime) {
+      document.getElementById('scheduled-time').textContent = fmtDate(b.scheduledTime);
+      document.getElementById('scheduled-row').classList.remove('hidden');
+    } else {
+      document.getElementById('scheduled-row').classList.add('hidden');
+    }
+
+    if (b.description) {
+      document.getElementById('description').textContent = b.description;
+      document.getElementById('description-row').classList.remove('hidden');
+    } else {
+      document.getElementById('description-row').classList.add('hidden');
+    }
+
+    btnChat.href = 'chat.html?booking_id=' + encodeURIComponent(b.id);
+
+    // Event listeners
+    btnEnRoute.onclick = function () { updateStatus('en_route', btnEnRoute); };
+    btnComplete.onclick = function () { updateStatus('completed', btnComplete); };
+
+    applyStatus(b.status);
+
+    skeletonView.classList.add('hidden');
+    contentView.classList.remove('hidden');
+  }
+
+  fetch('../api/current-user.php', { credentials: 'same-origin' })
+    .then(function (r) {
+      if (!r.ok) {
+        window.location.replace('../login.html?redirect=' + encodeURIComponent('mechanic/booking-status.html?booking_id=' + bookingId));
+        throw new Error('guest');
+      }
+      return r.json();
+    })
+    .then(function (user) {
+      var uid = user ? (user.id || user.user_id) : null;
+      if (!uid) {
+        window.location.replace('../login.html?redirect=' + encodeURIComponent('mechanic/booking-status.html?booking_id=' + bookingId));
+        return;
+      }
+      return fetch('../api/get-booking-detail.php?booking_id=' + bookingId, { credentials: 'same-origin' })
+        .then(function (r) {
+          return r.text().then(function (text) {
+            var data;
+            try {
+              data = JSON.parse(text);
+            } catch (e) {
+              throw new Error('Server returned an unexpected response (Status ' + r.status + ').');
+            }
+            if (!r.ok) {
+              throw new Error(data.error || data.message || 'Failed to load booking details (Status ' + r.status + ').');
+            }
+            return data;
+          });
+        })
+        .then(function (data) {
+          if (!data || !data.booking) throw new Error('Booking not found.');
+          render(data.booking, uid);
+        });
+    })
+    .catch(function (err) {
+      if (err.message !== 'guest') {
+        showError(err.message);
+      }
+    });
+})();
+</script>
+
+<!-- Styled toast notification (no native alert boxes) -->
+<div id="toast" class="hidden fixed bottom-20 md:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto sm:min-w-[260px] max-w-sm z-[60] rounded-2xl px-4 py-3 text-sm font-medium shadow-xl flex items-center gap-2" role="status" aria-live="polite"></div>
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>

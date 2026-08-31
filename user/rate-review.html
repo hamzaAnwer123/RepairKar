@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rate & Review — RepairKar</title>
+  <meta name="description" content="Rate your experience and leave feedback for your mechanic on RepairKar.">
+  <link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in-up { animation: fadeInUp 0.35s ease-out both; }
+    .star-btn { transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.15s ease; }
+    .star-btn:hover { transform: scale(1.25); }
+    .star-btn:active { transform: scale(0.95); }
+    .tag-chip { transition: all 0.15s ease; }
+    .tag-chip.selected { background-color: #0f766e; color: #ffffff; border-color: #0f766e; }
+    .btn-tap:active { transform: scale(0.97); }
+    .btn-tap { transition: transform 0.12s ease-out, background-color 0.15s ease; }
+    @keyframes pulseSuccess { 0% { transform: scale(0.8); opacity: 0; } 50% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+    .success-icon { animation: pulseSuccess 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+    .photo-drop {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 12px;
+      background: #f8fafc;
+      padding: 13px 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+    .photo-drop:hover { border-color: #0f766e; background: #f0fdfa; }
+    .photo-drop > i { color: #0f766e; font-size: 18px; }
+    .photo-drop .photo-drop-title { display: block; font-size: 12px; font-weight: 600; color: #334155; }
+    .photo-drop .photo-drop-hint { display: block; font-size: 10px; color: #94a3b8; margin-top: 2px; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 antialiased flex flex-col justify-between">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 border-b border-slate-100 bg-white/95 backdrop-blur">
+    <div class="mx-auto flex max-w-xl items-center justify-between px-4 sm:px-6 py-4">
+      <a href="dashboard.html" aria-label="Back" class="flex h-9 w-9 items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+        <i class="fa-solid fa-arrow-left text-slate-600" aria-hidden="true"></i>
+      </a>
+      <h1 class="text-base font-bold text-slate-900">Rate & Review</h1>
+      <a href="dashboard.html" class="text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors">Skip</a>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="mx-auto w-full max-w-xl px-4 sm:px-6 py-6 flex-1">
+
+    <!-- Loading Skeleton -->
+    <div id="skeleton-view" class="space-y-4">
+      <div class="skeleton h-24 rounded-2xl bg-slate-200 animate-pulse"></div>
+      <div class="skeleton h-64 rounded-2xl bg-slate-200 animate-pulse"></div>
+    </div>
+
+    <!-- Error View -->
+    <div id="error-view" class="hidden text-center py-16">
+      <div class="w-14 h-14 rounded-full bg-red-50 text-red-500 mx-auto flex items-center justify-center text-2xl mb-3">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+      </div>
+      <p class="text-base font-bold text-slate-900">Booking Details Unavailable</p>
+      <p id="error-msg" class="text-xs text-slate-500 mt-1">We could not load this booking for review.</p>
+      <a href="dashboard.html" class="mt-5 inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-xs font-semibold text-white hover:bg-brand-dark transition-colors">
+        <i class="fa-solid fa-arrow-left"></i> Go to Dashboard
+      </a>
+    </div>
+
+    <!-- Form View -->
+    <div id="form-view" class="hidden space-y-5 fade-in-up">
+
+      <!-- Job Summary Card -->
+      <section class="rounded-2xl bg-white border border-slate-100 p-5 shadow-sm flex items-center gap-4">
+        <img id="mechanic-photo" src="" alt="" width="48" height="48"
+             class="hidden w-12 h-12 rounded-xl object-cover bg-slate-100 shrink-0">
+        <div id="service-icon" class="w-12 h-12 rounded-xl bg-brand-light text-brand flex items-center justify-center font-bold text-lg shrink-0">
+          <i class="fa-solid fa-wrench"></i>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p id="service-title" class="text-sm font-bold text-slate-900 truncate">Service Repair</p>
+          <p id="mechanic-name" class="text-xs text-slate-500 mt-0.5">By Workshop</p>
+          <p id="booking-meta" class="text-[11px] text-slate-400 mt-0.5">Booking #—</p>
+        </div>
+        <span class="shrink-0 inline-flex items-center gap-1 rounded-full bg-green-50 text-green-700 px-2.5 py-1 text-xs font-semibold">
+          <i class="fa-solid fa-circle-check text-[10px]"></i> Completed
+        </span>
+      </section>
+
+      <!-- Rating & Feedback Card -->
+      <section class="rounded-2xl bg-white border border-slate-100 p-6 shadow-sm space-y-6">
+        
+        <!-- Stars Picker -->
+        <div class="text-center space-y-2">
+          <p class="text-sm font-semibold text-slate-900">How was your service experience?</p>
+          <div class="flex items-center justify-center gap-2 pt-2" id="star-container">
+            <button type="button" class="star-btn text-3xl text-slate-200 focus:outline-none" data-rating="1" aria-label="1 star"><i class="fa-solid fa-star"></i></button>
+            <button type="button" class="star-btn text-3xl text-slate-200 focus:outline-none" data-rating="2" aria-label="2 stars"><i class="fa-solid fa-star"></i></button>
+            <button type="button" class="star-btn text-3xl text-slate-200 focus:outline-none" data-rating="3" aria-label="3 stars"><i class="fa-solid fa-star"></i></button>
+            <button type="button" class="star-btn text-3xl text-slate-200 focus:outline-none" data-rating="4" aria-label="4 stars"><i class="fa-solid fa-star"></i></button>
+            <button type="button" class="star-btn text-3xl text-slate-200 focus:outline-none" data-rating="5" aria-label="5 stars"><i class="fa-solid fa-star"></i></button>
+          </div>
+          <p id="rating-label" class="text-xs font-semibold text-amber-500 h-4">Tap a star to rate</p>
+        </div>
+
+        <!-- Quick Tags -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-2">What went well? (optional)</label>
+          <div class="flex flex-wrap gap-2" id="tags-container">
+            <button type="button" class="tag-chip rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100">Punctual</button>
+            <button type="button" class="tag-chip rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100">Professional</button>
+            <button type="button" class="tag-chip rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100">Fair Price</button>
+            <button type="button" class="tag-chip rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100">Great Communication</button>
+            <button type="button" class="tag-chip rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100">High Quality Work</button>
+          </div>
+        </div>
+
+        <!-- Feedback Textarea -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label for="review-comment" class="block text-xs font-semibold text-slate-700">Write your feedback (optional)</label>
+            <span id="char-count" class="text-[11px] text-slate-400">0/500</span>
+          </div>
+          <textarea id="review-comment" rows="4" maxlength="500" placeholder="Share details about the repair quality, speed, or technician's behavior..."
+            class="w-full rounded-xl border border-slate-200 p-3 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-all resize-none"></textarea>
+        </div>
+
+        <!-- Photo Upload (optional) -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-2">Add a photo (optional)</label>
+          <button type="button" id="photo-drop" class="photo-drop">
+            <i class="fa-solid fa-camera" aria-hidden="true"></i>
+            <span>
+              <span class="photo-drop-title">Add a photo of the completed work</span>
+              <span class="photo-drop-hint">JPG, PNG, or WebP &middot; max 5MB</span>
+            </span>
+          </button>
+          <div id="photo-preview" class="hidden relative inline-block">
+            <img id="photo-thumb" src="" alt="Review photo preview" width="80" height="80"
+                 class="w-20 h-20 rounded-xl object-cover border border-slate-200">
+            <button type="button" id="photo-remove" aria-label="Remove photo"
+              class="btn-tap absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md hover:bg-red-500">
+              <i class="fa-solid fa-xmark text-[10px]" aria-hidden="true"></i>
+            </button>
+          </div>
+          <input type="file" id="review-photo-input" accept="image/png,image/jpeg,image/webp" class="hidden">
+          <p id="photo-error" class="hidden text-[11px] text-red-500 mt-1.5 font-medium"></p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="space-y-2 pt-2">
+          <button type="button" id="submit-review-btn" disabled
+            class="btn-tap w-full rounded-xl bg-brand hover:bg-brand-dark disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-semibold py-3 flex items-center justify-center gap-2 shadow-sm">
+            <span>Submit Review</span>
+          </button>
+          <a href="dashboard.html" class="block text-center text-xs text-slate-400 hover:text-slate-600 py-1 font-medium">
+            Maybe later
+          </a>
+        </div>
+
+      </section>
+    </div>
+
+    <!-- Success View -->
+    <div id="success-view" class="hidden text-center py-16 space-y-4 fade-in-up">
+      <div class="success-icon w-16 h-16 rounded-full bg-green-500 text-white mx-auto flex items-center justify-center text-3xl shadow-lg">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <div>
+        <h2 class="text-lg font-bold text-slate-900">Thank You For Your Feedback!</h2>
+        <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Your review helps improve our community and helps other users find reliable specialists.</p>
+      </div>
+      <div class="pt-4 flex flex-col sm:flex-row gap-2 justify-center">
+        <a href="home.html" class="btn-tap rounded-xl bg-brand text-white text-xs font-semibold px-5 py-2.5 hover:bg-brand-dark">
+          Explore Mechanics
+        </a>
+        <a href="dashboard.html" class="btn-tap rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold px-5 py-2.5 hover:bg-slate-200">
+          Go to Dashboard
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="py-4 text-center text-[11px] text-slate-400">
+    RepairKar &copy; 2026. All rights reserved.
+  </footer>
+
+<script>
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  var bookingId = parseInt(params.get('booking_id'), 10);
+
+  var skeletonView = document.getElementById('skeleton-view');
+  var errorView    = document.getElementById('error-view');
+  var formView     = document.getElementById('form-view');
+  var successView  = document.getElementById('success-view');
+  var submitBtn    = document.getElementById('submit-review-btn');
+  var commentBox   = document.getElementById('review-comment');
+  var charCount    = document.getElementById('char-count');
+  var ratingLabel  = document.getElementById('rating-label');
+
+  // ---- Styled toast (replaces native alert()) ----
+  var toastTimer = null;
+  function showToast(message, type) {
+    var toast = document.getElementById('toast');
+    if (!toast) return;
+    var isError = (type === 'error' || type === true);
+    toast.className = 'hidden fixed bottom-20 md:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto sm:min-w-[260px] max-w-sm z-[60] rounded-2xl px-4 py-3 text-sm font-medium shadow-xl flex items-center gap-2 ' +
+      (isError ? 'bg-red-500 text-white' : 'bg-slate-900 text-white');
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.add('hidden'); }, 3200);
+  }
+
+  // Photo upload (optional)
+  var photoDrop      = document.getElementById('photo-drop');
+  var photoInput     = document.getElementById('review-photo-input');
+  var photoPreview   = document.getElementById('photo-preview');
+  var photoThumb     = document.getElementById('photo-thumb');
+  var photoRemoveBtn = document.getElementById('photo-remove');
+  var photoError     = document.getElementById('photo-error');
+  var selectedPhoto  = null; // File object, or null when no photo chosen
+
+  var currentRating = 0;
+
+  var RATING_META = {
+    1: { icon: 'fa-face-frown',       cls: 'text-red-500',    text: 'Poor — Not satisfied' },
+    2: { icon: 'fa-face-meh',         cls: 'text-orange-500', text: 'Fair — Could be better' },
+    3: { icon: 'fa-face-smile',       cls: 'text-amber-500',  text: 'Good — Met expectations' },
+    4: { icon: 'fa-face-smile-beam',  cls: 'text-lime-600',   text: 'Very Good — Recommended' },
+    5: { icon: 'fa-face-grin-hearts', cls: 'text-green-600',  text: 'Excellent — Highly recommended!' }
+  };
+  // Every color the label can carry — removed before applying a new one.
+  var RATING_COLOR_CLASSES = ['text-red-500', 'text-orange-500', 'text-amber-500', 'text-lime-600', 'text-green-600'];
+
+  function showError(msg) {
+    skeletonView.classList.add('hidden');
+    formView.classList.add('hidden');
+    successView.classList.add('hidden');
+    errorView.classList.remove('hidden');
+    if (msg) document.getElementById('error-msg').textContent = msg;
+  }
+
+  function showPhotoError(msg) {
+    if (!photoError) return;
+    photoError.textContent = msg;
+    photoError.classList.remove('hidden');
+  }
+
+  function clearSelectedPhoto() {
+    selectedPhoto = null;
+    if (photoThumb) photoThumb.src = '';
+    if (photoPreview) photoPreview.classList.add('hidden');
+    if (photoDrop) photoDrop.style.display = 'flex';
+    if (photoError) photoError.classList.add('hidden');
+  }
+
+  // Photo picker interaction
+  if (photoDrop && photoInput) {
+    photoDrop.addEventListener('click', function () { photoInput.click(); });
+
+    photoInput.addEventListener('change', function () {
+      var file = photoInput.files && photoInput.files[0];
+      photoInput.value = ''; // allow re-picking the same file later
+      if (!file) return;
+
+      // Client-side guard rails (the server re-validates everything).
+      if (!file.type || file.type.indexOf('image/') !== 0) {
+        showPhotoError('Please choose an image file (JPG, PNG, or WebP).');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showPhotoError('Photo must be smaller than 5MB.');
+        return;
+      }
+
+      selectedPhoto = file;
+      if (photoError) photoError.classList.add('hidden');
+
+      // Instant local preview — no upload happens until Submit.
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        if (photoThumb) photoThumb.src = e.target.result;
+        if (photoDrop) photoDrop.style.display = 'none';
+        if (photoPreview) photoPreview.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if (photoRemoveBtn) {
+    photoRemoveBtn.addEventListener('click', clearSelectedPhoto);
+  }
+
+  if (!bookingId) {
+    showError('No booking ID was provided.');
+    return;
+  }
+
+  // Star interaction
+  var starButtons = document.querySelectorAll('.star-btn');
+  function updateStars(val, isHover) {
+    starButtons.forEach(function (btn) {
+      var r = parseInt(btn.dataset.rating, 10);
+      if (r <= val) {
+        btn.className = 'star-btn text-3xl text-amber-400 focus:outline-none';
+      } else {
+        btn.className = 'star-btn text-3xl text-slate-200 focus:outline-none';
+      }
+    });
+    if (val > 0 && RATING_META[val]) {
+      var meta = RATING_META[val];
+      RATING_COLOR_CLASSES.forEach(function (c) { ratingLabel.classList.remove(c); });
+      // Static, hardcoded markup only — no user input reaches innerHTML here.
+      ratingLabel.innerHTML = '<i class="fa-solid ' + meta.icon + ' mr-1" aria-hidden="true"></i>' + meta.text;
+      ratingLabel.classList.add(meta.cls);
+    } else {
+      RATING_COLOR_CLASSES.forEach(function (c) { ratingLabel.classList.remove(c); });
+      ratingLabel.classList.add('text-amber-500');
+      ratingLabel.textContent = 'Tap a star to rate';
+    }
+  }
+
+  starButtons.forEach(function (btn) {
+    btn.addEventListener('mouseenter', function () {
+      updateStars(parseInt(btn.dataset.rating, 10), true);
+    });
+    btn.addEventListener('mouseleave', function () {
+      updateStars(currentRating, false);
+    });
+    btn.addEventListener('click', function () {
+      currentRating = parseInt(btn.dataset.rating, 10);
+      updateStars(currentRating, false);
+      submitBtn.disabled = false;
+    });
+  });
+
+  // Quick tags
+  var selectedTags = [];
+  document.querySelectorAll('.tag-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      var tag = chip.textContent.trim();
+      if (chip.classList.contains('selected')) {
+        chip.classList.remove('selected');
+        selectedTags = selectedTags.filter(function (t) { return t !== tag; });
+      } else {
+        chip.classList.add('selected');
+        selectedTags.push(tag);
+      }
+    });
+  });
+
+  // Char count
+  commentBox.addEventListener('input', function () {
+    charCount.textContent = commentBox.value.length + '/500';
+  });
+
+  // Submit handler
+  submitBtn.addEventListener('click', function () {
+    if (!currentRating) return;
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting…';
+
+    var finalComment = commentBox.value.trim();
+    if (selectedTags.length > 0) {
+      var tagStr = 'Highlights: ' + selectedTags.join(', ');
+      finalComment = finalComment ? finalComment + ' (' + tagStr + ')' : tagStr;
+    }
+
+    var fetchOptions;
+    if (selectedPhoto) {
+      // Photo attached — send multipart/form-data. Do NOT set Content-Type
+      // manually; the browser adds the correct one with the boundary.
+      var formData = new FormData();
+      formData.append('booking_id', bookingId);
+      formData.append('rating', currentRating);
+      formData.append('comment', finalComment);
+      formData.append('photo', selectedPhoto);
+      fetchOptions = { method: 'POST', credentials: 'same-origin', body: formData };
+    } else {
+      fetchOptions = {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          booking_id: bookingId,
+          rating: currentRating,
+          comment: finalComment
+        })
+      };
+    }
+
+    fetch('../api/submit-review.php', fetchOptions)
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.success) {
+          formView.classList.add('hidden');
+          successView.classList.remove('hidden');
+        } else {
+          showToast(data.message || 'Could not submit review. Please try again.', true);
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Submit Review';
+        }
+      })
+      .catch(function () {
+        showToast('Network error. Please try again.', true);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Submit Review';
+      });
+  });
+
+  // Fetch current user and booking details
+  fetch('../api/current-user.php', { credentials: 'same-origin' })
+    .then(function (res) {
+      if (!res.ok) {
+        window.location.replace('../login.html?redirect=' + encodeURIComponent('user/rate-review.html?booking_id=' + bookingId));
+        throw new Error('guest');
+      }
+      return res.json();
+    })
+    .then(function (user) {
+      return fetch('../api/get-booking-status.php?booking_id=' + bookingId, { credentials: 'same-origin' });
+    })
+    .then(function (res) {
+      if (!res.ok) throw new Error('Could not load booking details.');
+      return res.json();
+    })
+    .then(function (b) {
+      // get-booking-status.php returns camelCase keys:
+      // bookingId, gigTitle, mechanicName, mechanicPhoto.
+      document.getElementById('service-title').textContent = b.gigTitle || 'General Repair Service';
+      document.getElementById('mechanic-name').textContent = 'By ' + (b.mechanicName || 'Mechanic');
+      document.getElementById('booking-meta').textContent  = 'Booking #' + (b.bookingId || bookingId);
+
+      // Show the mechanic's shop photo when available; otherwise keep
+      // the generic wrench icon.
+      var photoEl = document.getElementById('mechanic-photo');
+      var iconEl  = document.getElementById('service-icon');
+      if (b.mechanicPhoto && photoEl && iconEl) {
+        photoEl.src = b.mechanicPhoto;
+        photoEl.classList.remove('hidden');
+        iconEl.classList.add('hidden');
+      }
+
+      skeletonView.classList.add('hidden');
+      formView.classList.remove('hidden');
+    })
+    .catch(function (err) {
+      if (err.message !== 'guest') {
+        showError(err.message || 'Booking not found or already completed.');
+      }
+    });
+})();
+</script>
+
+<!-- Styled toast notification (no native alert boxes) -->
+<div id="toast" class="hidden fixed bottom-20 md:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto sm:min-w-[260px] max-w-sm z-[60] rounded-2xl px-4 py-3 text-sm font-medium shadow-xl flex items-center gap-2" role="status" aria-live="polite"></div>
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>

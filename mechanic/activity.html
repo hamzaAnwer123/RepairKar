@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activity - RepairKar</title><meta name="description" content="View your recent RepairKar activity.">
+<link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 antialiased">
+<header class="sticky top-0 z-40 border-b border-slate-100 bg-white"><div class="mx-auto flex max-w-3xl items-center gap-3 px-4 py-4"><a href="dashboard.html" aria-label="Back to dashboard" class="flex h-9 w-9 items-center justify-center rounded-full hover:bg-slate-100"><i class="fa-solid fa-arrow-left text-slate-600" aria-hidden="true"></i></a><h1 class="text-lg font-bold text-slate-900">All Activity</h1></div></header>
+<main class="mx-auto max-w-3xl space-y-5 px-4 py-6"><section class="rounded-2xl border border-slate-100 bg-white p-5"><div class="flex items-center justify-between"><div><p class="text-xs font-semibold uppercase tracking-wide text-brand">Mechanic workspace</p><h2 class="mt-1 text-xl font-extrabold text-slate-900">Recent activity</h2></div><i class="fa-solid fa-clock-rotate-left text-xl text-brand" aria-hidden="true"></i></div></section><section class="rounded-2xl border border-slate-100 bg-white p-5"><div id="activity-list" class="space-y-3"><p class="text-sm text-slate-500">Loading activity...</p></div></section></main>
+<script>
+(async function () {
+  const list = document.getElementById('activity-list');
+  try {
+    const response = await fetch('../api/get-mechanic-activity.php', { credentials: 'include' });
+    const data = await response.json();
+    const items = Array.isArray(data) ? data : (data.activity || data.data || []);
+    if (!items.length) { list.innerHTML = '<p class="text-center text-sm text-slate-500">No activity yet.</p>'; return; }
+    list.innerHTML = items.map(function (item) { return '<div class="flex items-start gap-3 rounded-xl bg-slate-50 p-3"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-light text-brand"><i class="fa-solid fa-circle-check text-sm" aria-hidden="true"></i></span><div><p class="text-sm font-medium text-slate-800">' + (item.description || item.title || item.message || 'Activity update') + '</p><p class="mt-1 text-xs text-slate-400">' + (item.created_at || item.date || '') + '</p></div></div>'; }).join('');
+  } catch (error) { list.innerHTML = '<p class="text-center text-sm text-slate-500">Activity is unavailable right now.</p>'; }
+}());
+</script>
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>

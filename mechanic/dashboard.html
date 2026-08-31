@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dashboard — RepairKar</title>
+<meta name="description" content="Manage your bookings, earnings, and availability on RepairKar.">
+<meta name="robots" content="noindex, follow">
+
+<link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS — compiled via Tailwind CLI. Run `npm run build:css` after adding new classes. -->
+<link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<style>
+  body { font-family: 'Inter', sans-serif; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .fade-in-up    { animation: fadeInUp 0.4s ease-out both; }
+    .fade-in-up-d1 { animation: fadeInUp 0.4s ease-out 0.08s both; }
+    .fade-in-up-d2 { animation: fadeInUp 0.4s ease-out 0.16s both; }
+    .card-enter    { animation: fadeInUp 0.3s ease-out both; }
+    .toggle-thumb  { transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), background-color 0.2s ease-out; }
+    .btn-tap       { transition: transform 0.12s ease-out; }
+    .btn-tap:active { transform: scale(0.96); }
+    .listening-dot { animation: dotPulse 1.6s ease-in-out infinite; }
+    .earnings-pulse { animation: earningsPulse 0.5s ease-out; }
+    .skeleton      { animation: shimmer 1.4s ease-in-out infinite; }
+    .request-clear { transition: opacity 0.3s ease-out, transform 0.3s ease-out, max-height 0.35s ease-out, margin 0.35s ease-out; }
+    .drawer-in     { animation: drawerIn 0.25s ease-out both; }
+    .backdrop-in   { animation: fadeIn 0.2s ease-out both; }
+    .count-badge-pop { animation: countPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+  }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes dotPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  @keyframes earningsPulse { 0% { transform: scale(1); } 40% { transform: scale(1.05); } 100% { transform: scale(1); } }
+  @keyframes shimmer { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+  @keyframes drawerIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+  @keyframes countPop { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+</style>
+
+<!--
+  SECURITY NOTE: shop name, requester names, and activity text below are
+  untrusted database content — every dynamic value is rendered via
+  textContent, never innerHTML. Accept/Decline actions must be
+  re-verified server-side that the logged-in mechanic actually owns
+  this booking request before changing its status.
+-->
+
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+<div class="md:flex md:min-h-screen">
+
+  <!-- ================= SIDEBAR (desktop) ================= -->
+  <aside class="hidden md:flex md:flex-col md:w-64 md:shrink-0 bg-white border-r border-slate-100 md:sticky md:top-0 md:h-screen">
+    <div class="flex items-center gap-3 px-5 py-5 border-b border-slate-100">
+      <div id="sidebar-avatar-skeleton" class="skeleton w-10 h-10 rounded-full bg-slate-200 shrink-0"></div>
+      <img id="shop-photo" src="" alt="" width="40" height="40" class="hidden w-10 h-10 rounded-full object-cover bg-slate-100 shrink-0">
+      <div class="min-w-0">
+        <p id="shop-name" class="text-sm font-bold text-slate-900 truncate">Loading…</p>
+      </div>
+    </div>
+
+    <nav class="flex-1 px-3 py-4 space-y-1" aria-label="Mechanic navigation">
+      <a href="dashboard.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
+        <i class="fa-solid fa-table-cells-large w-4 text-center" aria-hidden="true"></i> Dashboard
+      </a>
+      <a href="jobs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+        <i class="fa-solid fa-clipboard-list w-4 text-center" aria-hidden="true"></i> Jobs & Requests
+      </a>
+      <a href="my-gigs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+        <i class="fa-solid fa-wrench w-4 text-center" aria-hidden="true"></i> My Gigs
+      </a>
+      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+        <i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats
+      </a>
+      <a href="earnings.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+        <i class="fa-regular fa-credit-card w-4 text-center" aria-hidden="true"></i> Earnings
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+        <i class="fa-regular fa-user w-4 text-center" aria-hidden="true"></i> Profile
+      </a>
+    </nav>
+
+    <div class="px-3 pb-4 space-y-1">
+      <a href="create-gig.html" class="btn-tap block text-center rounded-xl bg-brand text-white text-sm font-semibold px-3 py-2.5">
+        New Service Request
+      </a>
+      <a href="help.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+        <i class="fa-regular fa-circle-question w-4 text-center" aria-hidden="true"></i> Help Center
+      </a>
+      <button type="button" id="logout-btn" class="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50">
+        <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center" aria-hidden="true"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= MOBILE DRAWER ================= -->
+  <div id="mobile-drawer-backdrop" class="hidden md:hidden backdrop-in fixed inset-0 z-50 bg-black/40"></div>
+  <aside id="mobile-drawer" class="hidden md:hidden drawer-in fixed inset-y-0 left-0 z-50 w-72 bg-white flex flex-col">
+    <div class="flex items-center justify-between px-4 py-4 border-b border-slate-100">
+      <span class="text-sm font-bold text-slate-900">Menu</span>
+      <button type="button" id="close-drawer-btn" aria-label="Close menu" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center">
+        <i class="fa-solid fa-xmark text-slate-500" aria-hidden="true"></i>
+      </button>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1" aria-label="Mechanic navigation (mobile)">
+      <a href="dashboard.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
+        <i class="fa-solid fa-table-cells-large w-4 text-center" aria-hidden="true"></i> Dashboard
+      </a>
+      <a href="jobs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
+        <i class="fa-solid fa-clipboard-list w-4 text-center" aria-hidden="true"></i> Jobs & Requests
+      </a>
+      <a href="my-gigs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
+        <i class="fa-solid fa-wrench w-4 text-center" aria-hidden="true"></i> My Gigs
+      </a>
+      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
+        <i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats
+      </a>
+      <a href="earnings.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
+        <i class="fa-regular fa-credit-card w-4 text-center" aria-hidden="true"></i> Earnings
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
+        <i class="fa-regular fa-user w-4 text-center" aria-hidden="true"></i> Profile
+      </a>
+    </nav>
+    <div class="px-3 pb-4">
+      <button type="button" id="logout-btn-mobile" class="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-500">
+        <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center" aria-hidden="true"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <div class="flex-1 min-w-0">
+
+    <!-- ---- Top bar ---- -->
+    <header class="sticky top-0 z-30 bg-white border-b border-slate-100">
+      <div class="flex items-center gap-3 px-4 md:px-8 py-4">
+        <button type="button" id="open-drawer-btn" aria-label="Open menu" class="md:hidden w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-bars text-slate-600" aria-hidden="true"></i>
+        </button>
+        <h1 class="flex-1 text-lg md:text-2xl font-extrabold text-slate-900">Dashboard</h1>
+        <a href="../index.html" aria-label="Home" title="Home" class="w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-house text-slate-600" aria-hidden="true"></i>
+        </a>
+        <a href="notifications.html" aria-label="Notifications" class="w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-bell text-slate-600" aria-hidden="true"></i>
+        </a>
+      </div>
+    </header>
+
+    <main class="px-4 md:px-8 py-5 md:py-6 space-y-5 pb-10">
+
+      <!-- ---- Status + Earnings ---- -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        <section class="fade-in-up lg:col-span-2 rounded-2xl bg-white border border-slate-100 p-5">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-slate-900">Current Status</h2>
+            <button type="button" id="online-toggle" role="switch" aria-checked="false" aria-label="Toggle online status"
+                    class="relative w-14 h-7 rounded-full bg-slate-300 shrink-0">
+              <span class="toggle-thumb absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow"></span>
+            </button>
+          </div>
+          <p id="status-description" class="text-sm text-slate-500 mt-1">You are currently offline.</p>
+          <div id="listening-indicator" class="hidden items-center gap-2 mt-3 text-xs font-medium text-brand">
+            <span class="listening-dot w-2 h-2 rounded-full bg-brand"></span>
+            Listening for requests in your area…
+          </div>
+        </section>
+
+        <section class="fade-in-up-d1 rounded-2xl bg-gradient-to-br from-brand to-brand-dark text-white p-5 relative overflow-hidden">
+          <i class="fa-solid fa-wallet absolute -right-3 -bottom-3 text-6xl text-white/10" aria-hidden="true"></i>
+          <p class="text-xs text-white/80">Today's Earnings</p>
+          <p id="today-earnings" class="earnings-pulse text-2xl font-extrabold mt-1">Rs. —</p>
+          <p id="earnings-trend" class="text-xs text-white/80 mt-1"></p>
+        </section>
+      </div>
+
+      <!-- ---- Stats row ---- -->
+      <div class="grid grid-cols-3 gap-3 md:gap-4">
+        <div class="fade-in-up rounded-2xl bg-white border border-slate-100 p-4 text-center md:text-left">
+          <p class="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Jobs Done</p>
+          <p id="jobs-done" class="text-xl md:text-2xl font-extrabold text-slate-900 mt-1">—</p>
+        </div>
+        <div class="fade-in-up-d1 rounded-2xl bg-white border border-slate-100 p-4 text-center md:text-left">
+          <p class="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Avg Rating</p>
+          <p id="avg-rating" class="text-xl md:text-2xl font-extrabold text-slate-900 mt-1">—</p>
+        </div>
+        <div class="fade-in-up-d2 rounded-2xl bg-white border border-slate-100 p-4 text-center md:text-left">
+          <p class="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Response Rate</p>
+          <p id="response-rate" class="text-xl md:text-2xl font-extrabold text-slate-900 mt-1">—</p>
+        </div>
+      </div>
+
+      <!-- ---- Incoming Requests + Recent Activity ---- -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        <section class="lg:col-span-2">
+          <div class="flex items-center justify-between mb-3 px-1">
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-semibold text-slate-900">Incoming Requests</h2>
+              <span id="new-count-badge" class="hidden count-badge-pop text-[11px] font-bold bg-accent text-white rounded-full px-2 py-0.5"></span>
+            </div>
+            <a href="jobs.html?status=pending" class="text-xs text-brand font-semibold hover:underline">View All Requests</a>
+          </div>
+
+          <div id="requests-skeleton" class="space-y-3">
+            <div class="skeleton h-28 rounded-2xl bg-slate-200"></div>
+            <div class="skeleton h-28 rounded-2xl bg-slate-200"></div>
+          </div>
+
+          <div id="requests-list" class="hidden space-y-3"></div>
+
+          <div id="requests-empty" class="hidden rounded-2xl bg-white border border-slate-100 p-8 text-center">
+            <i class="fa-regular fa-clock text-2xl text-slate-300" aria-hidden="true"></i>
+            <p class="mt-2 text-sm text-slate-500">No incoming requests right now.</p>
+          </div>
+        </section>
+
+<!-- ==== Accepted Jobs Section ==== -->
+<section class="fade-in-up-d2">
+  <div class="flex items-center justify-between mb-2 px-1">
+    <h2 class="text-sm font-semibold text-slate-900">Accepted Jobs</h2>
+    <a href="jobs.html?status=active" class="text-xs text-brand font-semibold hover:underline">View All Active Jobs</a>
+  </div>
+  <div id="accepted-skeleton" class="space-y-3">
+    <div class="skeleton h-28 rounded-2xl bg-slate-200"></div>
+    <div class="skeleton h-28 rounded-2xl bg-slate-200"></div>
+  </div>
+  <div id="accepted-list" class="hidden space-y-3"></div>
+  <div id="accepted-empty" class="hidden rounded-2xl bg-white border border-slate-100 p-8 text-center">
+    <i class="fa-regular fa-calendar text-2xl text-slate-300" aria-hidden="true"></i>
+    <p class="mt-2 text-sm text-slate-500">No accepted jobs.</p>
+  </div>
+</section>
+
+        <section>
+          <h2 class="text-sm font-semibold text-slate-900 mb-3 px-1">Recent Activity</h2>
+          <div id="activity-skeleton" class="space-y-2.5">
+            <div class="skeleton h-16 rounded-2xl bg-slate-200"></div>
+            <div class="skeleton h-16 rounded-2xl bg-slate-200"></div>
+          </div>
+          <div id="activity-list" class="hidden space-y-2.5"></div>
+          <a href="activity.html" class="block text-center text-xs text-brand font-medium hover:underline mt-3">View All Activity</a>
+        </section>
+
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ================= DECLINE CONFIRM MODAL ================= -->
+<div id="decline-modal" class="hidden fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4">
+  <div class="fade-in-up bg-white rounded-2xl w-full max-w-sm p-5">
+    <h2 class="text-base font-bold text-slate-900">Decline this request?</h2>
+    <p class="text-sm text-slate-500 mt-1.5">The user will be notified and shown other nearby mechanics.</p>
+    <div class="flex gap-3 mt-5">
+      <button type="button" id="decline-modal-back" class="btn-tap flex-1 rounded-xl border border-slate-200 text-slate-700 text-sm font-medium px-4 py-2.5">
+        Go Back
+      </button>
+      <button type="button" id="decline-modal-confirm" class="btn-tap flex-1 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2.5">
+        Yes, Decline
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+
+  const PRESENCE_PING_MS = 30000; // halved from 60s — the ping doubles as the live-location beacon
+  const REQUESTS_POLL_MS = 8000;
+
+  const sidebarAvatarSkeleton = document.getElementById('sidebar-avatar-skeleton');
+  const shopPhoto     = document.getElementById('shop-photo');
+  const shopName      = document.getElementById('shop-name');
+
+  const openDrawerBtn  = document.getElementById('open-drawer-btn');
+  const closeDrawerBtn = document.getElementById('close-drawer-btn');
+  const mobileDrawer    = document.getElementById('mobile-drawer');
+  const drawerBackdrop  = document.getElementById('mobile-drawer-backdrop');
+
+  const onlineToggle      = document.getElementById('online-toggle');
+  const statusDescription = document.getElementById('status-description');
+  const listeningIndicator = document.getElementById('listening-indicator');
+
+  const todayEarnings = document.getElementById('today-earnings');
+  const earningsTrend  = document.getElementById('earnings-trend');
+  const jobsDone       = document.getElementById('jobs-done');
+  const avgRating      = document.getElementById('avg-rating');
+  const responseRate   = document.getElementById('response-rate');
+
+  const requestsSkeleton = document.getElementById('requests-skeleton');
+  const requestsList      = document.getElementById('requests-list');
+  const requestsEmpty     = document.getElementById('requests-empty');
+  const newCountBadge     = document.getElementById('new-count-badge');
+
+  const acceptedSkeleton = document.getElementById('accepted-skeleton');
+  const acceptedList      = document.getElementById('accepted-list');
+  const acceptedEmpty     = document.getElementById('accepted-empty');
+
+  const activitySkeleton = document.getElementById('activity-skeleton');
+  const activityList      = document.getElementById('activity-list');
+
+  const declineModal        = document.getElementById('decline-modal');
+  const declineModalBack    = document.getElementById('decline-modal-back');
+  const declineModalConfirm = document.getElementById('decline-modal-confirm');
+
+  let isOnline = false;
+  let presenceTimer = null;
+  let requestsTimer = null;
+  let pendingDeclineId = null;
+
+  // ---- Mobile drawer ----
+  function openDrawer() {
+    mobileDrawer.classList.remove('hidden');
+    drawerBackdrop.classList.remove('hidden');
+  }
+  function closeDrawer() {
+    mobileDrawer.classList.add('hidden');
+    drawerBackdrop.classList.add('hidden');
+  }
+  openDrawerBtn.addEventListener('click', openDrawer);
+  closeDrawerBtn.addEventListener('click', closeDrawer);
+  drawerBackdrop.addEventListener('click', closeDrawer);
+
+  // ---- Role check & Load dashboard summary ----
+  fetch('../api/current-user.php', { credentials: 'same-origin' })
+    .then(function (res) {
+      if (!res.ok) throw new Error('guest');
+      return res.json();
+    })
+    .then(function (user) {
+      if (user.role === 'user') {
+        window.location.replace('../user/dashboard.html');
+        return;
+      }
+      if (user.role === 'admin') {
+        window.location.replace('../admin/index.php');
+        return;
+      }
+      if (user.role !== 'mechanic') {
+        window.location.replace('../login.html');
+        return;
+      }
+
+      // Load dashboard summary
+      return fetch('../api/get-mechanic-dashboard.php', { credentials: 'same-origin' })
+        .then(function (res) { if (!res.ok) throw new Error('request_failed'); return res.json(); })
+        .then(function (data) { renderDashboard(data); })
+        .catch(function () {
+          renderDashboard({
+            shopName: user.name || 'Mechanic account', photo: user.photo || null, isOnline: false,
+            todayEarnings: null, earningsTrendPercent: null,
+            jobsDone: null, avgRating: null, responseRate: null
+          });
+        });
+    })
+    .catch(function () {
+      window.location.replace('../login.html');
+    });
+
+  // Pending requests must remain visible after login, even while offline.
+  fetchRequests();
+  fetchAcceptedJobs();
+
+  function renderDashboard(data) {
+    shopName.textContent = data.shopName || 'Mechanic account';   // untrusted — textContent only
+    shopPhoto.src = data.photo || '../assets/images/placeholders/default-mechnaic-profile.png';
+    sidebarAvatarSkeleton.classList.add('hidden');
+    shopPhoto.classList.remove('hidden');
+
+    todayEarnings.textContent = data.todayEarnings != null ? 'Rs. ' + data.todayEarnings.toLocaleString() : 'Rs. —';
+    if (data.earningsTrendPercent != null) {
+      const up = data.earningsTrendPercent >= 0;
+      earningsTrend.innerHTML = '';
+      const icon = document.createElement('i');
+      icon.className = 'fa-solid ' + (up ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down');
+      icon.setAttribute('aria-hidden', 'true');
+      earningsTrend.appendChild(icon);
+      earningsTrend.appendChild(document.createTextNode(' ' + Math.abs(data.earningsTrendPercent) + '% vs yesterday'));
+    }
+
+    jobsDone.textContent = data.jobsDone != null ? data.jobsDone : '—';
+    avgRating.textContent = data.avgRating != null ? data.avgRating + ' / 5' : '—';
+    responseRate.textContent = data.responseRate != null ? data.responseRate + '%' : '—';
+
+    setOnlineState(!!data.isOnline, false);
+  }
+
+  // ---- Online/offline toggle ----
+  function setOnlineState(online, sync) {
+    isOnline = online;
+    onlineToggle.setAttribute('aria-checked', String(online));
+    onlineToggle.classList.toggle('bg-brand', online);
+    onlineToggle.classList.toggle('bg-slate-300', !online);
+    onlineToggle.querySelector('.toggle-thumb').classList.toggle('translate-x-7', online);
+    statusDescription.textContent = online
+      ? 'You are currently receiving job requests.'
+      : 'You are currently offline.';
+    listeningIndicator.classList.toggle('hidden', !online);
+    listeningIndicator.classList.toggle('flex', online);
+
+    if (online) {
+      startPresencePing();
+      startRequestsPolling();
+      startLocationTracking();
+    } else {
+      stopPresencePing();
+      stopRequestsPolling();
+      stopLocationTracking();
+    }
+
+    if (sync) {
+      sendPing(online);
+    }
+  }
+  onlineToggle.addEventListener('click', function () { setOnlineState(!isOnline, true); });
+
+  // ---- Live location tracking (runs only while online) ----
+  // The presence ping doubles as the mechanic's live-location beacon:
+  // api/ping-online.php stores lat/lng together with last_active, which
+  // is exactly what the user's roadside map (user/live-map.html) and SOS
+  // matching rely on. Without coordinates a mechanic stays "online" but
+  // can never appear on the map — so coordinates ride along on every ping.
+  let geoWatchId = null;
+  let lastCoords = null;
+
+  function sendPing(online) {
+    const body = { is_online: online };
+    if (online && lastCoords) {
+      body.lat = lastCoords.lat;
+      body.lng = lastCoords.lng;
+      // The server discards fixes this coarse (IP-level fixes can land in
+      // the wrong city) — sending it lets the server decide.
+      if (lastCoords.accuracy) body.accuracy = lastCoords.accuracy;
+    }
+    return fetch('../api/ping-online.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(body)
+    }).catch(function () { /* best-effort — UI already reflects the toggle */ });
+  }
+
+  function haversineMeters(aLat, aLng, bLat, bLng) {
+    const R = 6371000, rad = Math.PI / 180;
+    const dLat = (bLat - aLat) * rad, dLng = (bLng - aLng) * rad;
+    const s = Math.sin(dLat / 2) ** 2 + Math.cos(aLat * rad) * Math.cos(bLat * rad) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(s));
+  }
+
+  function onPositionFix(pos) {
+    const prev = lastCoords;
+    lastCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
+    // First fix (or a jump of more than ~25m) — push to the server right
+    // away instead of waiting for the next ping interval, so the mechanic
+    // shows up on the live map within seconds of going online.
+    if (isOnline && (!prev || haversineMeters(prev.lat, prev.lng, lastCoords.lat, lastCoords.lng) > 25)) {
+      sendPing(true);
+    }
+  }
+
+  function startLocationTracking() {
+    if (geoWatchId != null || !('geolocation' in navigator) || !window.isSecureContext) return;
+    navigator.geolocation.getCurrentPosition(onPositionFix, function () {}, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+    geoWatchId = navigator.geolocation.watchPosition(onPositionFix, function () {}, { enableHighAccuracy: true, timeout: 15000, maximumAge: 15000 });
+  }
+  function stopLocationTracking() {
+    if (geoWatchId != null) { navigator.geolocation.clearWatch(geoWatchId); geoWatchId = null; }
+    lastCoords = null; // never send a stale position from a previous session
+  }
+
+  function startPresencePing() {
+    if (presenceTimer) return;
+    sendPing(true); // refresh presence immediately instead of waiting a full interval
+    presenceTimer = setInterval(function () {
+      sendPing(true);
+    }, PRESENCE_PING_MS);
+  }
+  function stopPresencePing() {
+    if (presenceTimer) { clearInterval(presenceTimer); presenceTimer = null; }
+  }
+
+  // ---- Incoming requests ----
+  function renderRequestCard(req, index) {
+    const card = document.createElement('div');
+    card.className = 'card-enter request-clear rounded-2xl bg-white border border-slate-100 p-4';
+    card.dataset.requestId = req.id;
+    card.style.animationDelay = (index * 60) + 'ms';
+
+    const topRow = document.createElement('div');
+    topRow.className = 'flex items-start justify-between gap-2';
+
+    const nameWrap = document.createElement('div');
+    nameWrap.className = 'flex items-center gap-2.5 min-w-0';
+    const avatar = document.createElement('img');
+    avatar.src = req.userPhoto || '../assets/images/placeholders/default-user-profile.png';
+    avatar.alt = '';
+    avatar.width = 36; avatar.height = 36;
+    avatar.className = 'w-9 h-9 rounded-full object-cover bg-slate-100 shrink-0';
+    nameWrap.appendChild(avatar);
+    const name = document.createElement('p');
+    name.className = 'text-sm font-semibold text-slate-900 truncate';
+    name.textContent = req.userName;
+    nameWrap.appendChild(name);
+    topRow.appendChild(nameWrap);
+
+    if (req.isUrgent) {
+      const urgentBadge = document.createElement('span');
+      urgentBadge.className = 'shrink-0 text-[10px] font-bold bg-red-50 text-red-500 rounded-full px-2.5 py-1 inline-flex items-center gap-1';
+      urgentBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>';
+      urgentBadge.appendChild(document.createTextNode(' Urgent'));
+      topRow.appendChild(urgentBadge);
+    }
+    card.appendChild(topRow);
+
+    const desc = document.createElement('p');
+    desc.className = 'text-sm text-slate-700 mt-2';
+    desc.textContent = req.description;
+    card.appendChild(desc);
+
+    const meta = document.createElement('p');
+    meta.className = 'text-xs text-slate-400 mt-1.5 flex items-center gap-3';
+    const distSpan = document.createElement('span');
+    distSpan.innerHTML = '<i class="fa-solid fa-location-dot" aria-hidden="true"></i>';
+    if (req.distanceKm !== null && req.distanceKm !== undefined) {
+      distSpan.appendChild(document.createTextNode(' ' + req.distanceKm + ' km away (' + req.area + ')'));
+    } else {
+      distSpan.appendChild(document.createTextNode(' ' + req.area));
+    }
+    meta.appendChild(distSpan);
+    if (req.vehicleOrDevice) {
+      const vSpan = document.createElement('span');
+      vSpan.innerHTML = '<i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i>';
+      vSpan.appendChild(document.createTextNode(' ' + req.vehicleOrDevice));
+      meta.appendChild(vSpan);
+    }
+    card.appendChild(meta);
+
+    const actions = document.createElement('div');
+    actions.className = 'flex gap-2.5 mt-3';
+    const acceptBtn = document.createElement('button');
+    acceptBtn.type = 'button';
+    acceptBtn.className = 'btn-tap flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand hover:bg-brand-dark text-white text-xs font-semibold px-3 py-2.5';
+    acceptBtn.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i>';
+    acceptBtn.appendChild(document.createTextNode(' Accept Job'));
+    acceptBtn.addEventListener('click', function () { respondToRequest(req.id, 'accepted', card); });
+    actions.appendChild(acceptBtn);
+
+    const declineBtn = document.createElement('button');
+    declineBtn.type = 'button';
+    declineBtn.className = 'btn-tap flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 text-slate-600 text-xs font-semibold px-3 py-2.5';
+    declineBtn.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+    declineBtn.appendChild(document.createTextNode(' Decline'));
+    declineBtn.addEventListener('click', function () {
+      pendingDeclineId = req.id;
+      declineModal.dataset.cardTarget = req.id;
+      declineModal.classList.remove('hidden');
+    });
+    actions.appendChild(declineBtn);
+
+    card.appendChild(actions);
+    return card;
+  }
+
+  function removeRequestCard(id) {
+    const card = requestsList.querySelector('[data-request-id="' + id + '"]');
+    if (!card) return;
+    card.style.opacity = '0';
+    card.style.transform = 'translateX(20px)';
+    card.style.maxHeight = card.offsetHeight + 'px';
+    requestAnimFrame(function () {
+      card.style.maxHeight = '0px';
+      card.style.marginBottom = '0px';
+      card.style.paddingTop = '0px';
+      card.style.paddingBottom = '0px';
+      card.style.overflow = 'hidden';
+    });
+    setTimeout(function () {
+      card.remove();
+      updateRequestCount();
+    }, 350);
+  }
+  function requestAnimFrame(fn) {
+    if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(fn);
+    else setTimeout(fn, 16);
+  }
+
+  function respondToRequest(id, status, cardEl) {
+    fetch('../api/update-booking-status.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ booking_id: id, status: status })
+    })
+      .then(function (res) { if (!res.ok) throw new Error('request_failed'); return res.json(); })
+      .then(function () { 
+        removeRequestCard(id);
+        if(status === 'accepted') fetchAcceptedJobs();
+      })
+      .catch(function () { /* leave the card in place so the mechanic can retry */ });
+  }
+
+  declineModalBack.addEventListener('click', function () {
+    declineModal.classList.add('hidden');
+    pendingDeclineId = null;
+  });
+  declineModalConfirm.addEventListener('click', function () {
+    if (pendingDeclineId == null) return;
+    respondToRequest(pendingDeclineId, 'cancelled', null);
+    declineModal.classList.add('hidden');
+    pendingDeclineId = null;
+  });
+
+  function updateRequestCount() {
+    const count = requestsList.querySelectorAll('[data-request-id]').length;
+    if (count === 0) {
+      requestsList.classList.add('hidden');
+      requestsEmpty.classList.remove('hidden');
+      newCountBadge.classList.add('hidden');
+    } else {
+      newCountBadge.textContent = count + ' New';
+      newCountBadge.classList.remove('hidden');
+    }
+  }
+
+  function fetchRequests() {
+    fetch('../api/get-booking-requests.php', { credentials: 'same-origin' })
+      .then(function (res) { if (!res.ok) throw new Error('request_failed'); return res.json(); })
+      .then(function (data) { renderRequests(Array.isArray(data.requests) ? data.requests : []); })
+      .catch(function () { renderRequests([]); });
+  }
+
+  function renderRequests(requests) {
+    requestsSkeleton.classList.add('hidden');
+    requestsList.innerHTML = '';
+
+    if (!requests.length) {
+      requestsList.classList.add('hidden');
+      requestsEmpty.classList.remove('hidden');
+      newCountBadge.classList.add('hidden');
+      return;
+    }
+    requestsEmpty.classList.add('hidden');
+    requests.forEach(function (req, i) { requestsList.appendChild(renderRequestCard(req, i)); });
+    requestsList.classList.remove('hidden');
+    newCountBadge.textContent = requests.length + ' New';
+    newCountBadge.classList.remove('hidden');
+  }
+
+  // ---- Fetch Accepted Jobs ----
+  function fetchAcceptedJobs() {
+    fetch('../api/get-mechanic-accepted.php', { credentials: 'same-origin' })
+      .then(function (res) { if (!res.ok) throw new Error('request_failed'); return res.json(); })
+      .then(function (data) { renderAccepted(Array.isArray(data.bookings) ? data.bookings : []); })
+      .catch(function () { renderAccepted([]); });
+  }
+
+  function renderAccepted(bookings) {
+    acceptedSkeleton.classList.add('hidden');
+    acceptedList.innerHTML = '';
+
+    if (!bookings.length) {
+      acceptedList.classList.add('hidden');
+      acceptedEmpty.classList.remove('hidden');
+      return;
+    }
+    acceptedEmpty.classList.add('hidden');
+    bookings.forEach(function (b, i) { acceptedList.appendChild(renderAcceptedCard(b, i)); });
+    acceptedList.classList.remove('hidden');
+  }
+
+  function renderAcceptedCard(b, index) {
+    const card = document.createElement('div');
+    card.className = 'card-enter request-clear rounded-2xl bg-white border border-slate-100 p-4';
+    card.dataset.bookingId = b.id;
+    card.style.animationDelay = (index * 60) + 'ms';
+
+    const topRow = document.createElement('div');
+    topRow.className = 'flex items-start justify-between gap-2';
+
+    const nameWrap = document.createElement('div');
+    nameWrap.className = 'flex items-center gap-2.5 min-w-0';
+    const avatar = document.createElement('img');
+    avatar.src = b.userPhoto || '../assets/images/placeholders/default-user-profile.png';
+    avatar.alt = '';
+    avatar.width = 36; avatar.height = 36;
+    avatar.className = 'w-9 h-9 rounded-full object-cover bg-slate-100 shrink-0';
+    nameWrap.appendChild(avatar);
+    const name = document.createElement('p');
+    name.className = 'text-sm font-semibold text-slate-900 truncate';
+    name.textContent = b.userName;
+    nameWrap.appendChild(name);
+    topRow.appendChild(nameWrap);
+
+    card.appendChild(topRow);
+
+    const desc = document.createElement('p');
+    desc.className = 'text-sm text-slate-700 mt-2';
+    desc.textContent = b.description;
+    card.appendChild(desc);
+
+    const actions = document.createElement('div');
+    actions.className = 'flex gap-2.5 mt-3';
+    const viewBtn = document.createElement('a');
+    viewBtn.href = 'booking-status.html?booking_id=' + encodeURIComponent(b.id);
+    viewBtn.className = 'btn-tap flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand hover:bg-brand-dark text-white text-xs font-semibold px-3 py-2.5';
+    viewBtn.innerHTML = '<i class="fa-solid fa-eye" aria-hidden="true"></i> View Details';
+    actions.appendChild(viewBtn);
+    card.appendChild(actions);
+
+    return card;
+  }
+
+  function startRequestsPolling() {
+    fetchRequests();
+    fetchAcceptedJobs();
+    if (requestsTimer) return;
+    requestsTimer = setInterval(function () { fetchRequests(); fetchAcceptedJobs(); }, REQUESTS_POLL_MS);
+  }
+  function stopRequestsPolling() {
+    if (requestsTimer) { clearInterval(requestsTimer); requestsTimer = null; }
+  }
+
+  // ---- Recent activity ----
+  const ACTIVITY_ICON = {
+    completed: { icon: 'fa-circle-check', bg: 'bg-green-50', color: 'text-green-500' },
+    review:    { icon: 'fa-star', bg: 'bg-amber-50', color: 'text-amber-500' },
+    payout:    { icon: 'fa-money-bill-wave', bg: 'bg-brand-light', color: 'text-brand' }
+  };
+
+  function renderActivityRow(item, index) {
+    const style = ACTIVITY_ICON[item.type] || ACTIVITY_ICON.completed;
+    const row = document.createElement('div');
+    row.className = 'card-enter flex items-start gap-3 rounded-2xl bg-white border border-slate-100 p-3.5';
+    row.style.animationDelay = (index * 60) + 'ms';
+
+    const iconWrap = document.createElement('span');
+    iconWrap.className = 'w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ' + style.bg;
+    const icon = document.createElement('i');
+    icon.className = 'fa-solid ' + style.icon + ' text-sm ' + style.color;
+    icon.setAttribute('aria-hidden', 'true');
+    iconWrap.appendChild(icon);
+    row.appendChild(iconWrap);
+
+    const info = document.createElement('div');
+    info.className = 'min-w-0 flex-1';
+    const title = document.createElement('p');
+    title.className = 'text-xs font-semibold text-slate-900';
+    title.textContent = item.title;   // untrusted — textContent only
+    info.appendChild(title);
+    const desc = document.createElement('p');
+    desc.className = 'text-xs text-slate-500 truncate';
+    desc.textContent = item.description;   // untrusted — textContent only
+    info.appendChild(desc);
+    if (item.amount != null) {
+      const amount = document.createElement('p');
+      amount.className = 'text-xs font-semibold text-green-600 mt-0.5';
+      amount.textContent = '+Rs. ' + item.amount.toLocaleString();
+      info.appendChild(amount);
+    }
+    const time = document.createElement('p');
+    time.className = 'text-[11px] text-slate-400 mt-0.5';
+    time.textContent = item.timeAgo || '';
+    info.appendChild(time);
+    row.appendChild(info);
+
+    return row;
+  }
+
+  fetch('../api/get-mechanic-activity.php', { credentials: 'same-origin' })
+    .then(function (res) { if (!res.ok) throw new Error('request_failed'); return res.json(); })
+    .then(function (data) {
+      const items = Array.isArray(data.activity) ? data.activity : [];
+      activitySkeleton.classList.add('hidden');
+      activityList.innerHTML = '';
+      if (!items.length) {
+        const empty = document.createElement('p');
+        empty.className = 'rounded-2xl bg-white border border-slate-100 p-6 text-center text-sm text-slate-500';
+        empty.textContent = 'No activity yet.';
+        activityList.appendChild(empty);
+      } else {
+        items.forEach(function (item, i) { activityList.appendChild(renderActivityRow(item, i)); });
+      }
+      activityList.classList.remove('hidden');
+    })
+    .catch(function () {
+      activitySkeleton.classList.add('hidden');
+      activityList.classList.remove('hidden');
+    });
+
+  // ---- Logout ----
+  function doLogout() {
+    fetch('../api/logout.php', { method: 'POST', credentials: 'same-origin' })
+      .then(function () { window.location.href = '../index.html'; })
+      .catch(function () { window.location.href = '../login.html'; });
+  }
+  document.getElementById('logout-btn').addEventListener('click', doLogout);
+  document.getElementById('logout-btn-mobile').addEventListener('click', doLogout);
+
+})();
+</script>
+
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>

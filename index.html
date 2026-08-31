@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- ===== SEO: Title & Meta ===== -->
+<title>RepairKar — Find Verified Mechanics Near You in Pakistan</title>
+<meta name="description" content="RepairKar connects you with trusted, verified mechanics for appliance repair, car and bike service, electrical, and plumbing — chat, book, and get help fast.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://repairkar.site.je/">
+
+<!-- ===== SEO: Open Graph / Social sharing ===== -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="RepairKar — Find Verified Mechanics Near You">
+<meta property="og:description" content="Connect with trusted, verified mechanics for appliance repair, vehicle service, and more — chat, book, and get help fast.">
+<meta property="og:url" content="https://repairkar.site.je/">
+<meta property="og:image" content="/assets/images/logo/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="RepairKar — Find Verified Mechanics Near You">
+<meta name="twitter:description" content="Connect with trusted, verified mechanics for appliance repair, vehicle service, and more.">
+<meta name="twitter:image" content="/assets/images/logo/logo.png">
+
+<!-- ===== Favicon ===== -->
+<link rel="icon" type="image/x-icon" href="assets/images/logo/favicon.ico">
+
+<!-- ===== SEO: Structured Data (JSON-LD) ===== -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "RepairKar",
+  "url": "https://repairkar.site.je/",
+  "logo": "https://repairkar.site.je/assets/images/logo/logo.png",
+  "description": "RepairKar is a local services marketplace connecting users with verified mechanics for appliance repair and vehicle roadside assistance in Pakistan.",
+  "areaServed": {
+    "@type": "Country",
+    "name": "Pakistan"
+  }
+}
+</script>
+
+<!-- ===== Fonts & Tailwind ===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/tailwind.min.css">
+<link rel="stylesheet" href="assets/css/loader.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<!--
+  SECURITY NOTE (for future backend integration):
+  When this page is served through PHP/includes/header.php, any dynamic
+  value inserted here (user name, city, etc.) MUST be escaped with
+  htmlspecialchars() before being echoed into the HTML to prevent XSS.
+  A Content-Security-Policy header should also be added at the server
+  level once inline <script> blocks above are moved into external files,
+  e.g.: Content-Security-Policy: default-src 'self'; img-src 'self' data: https:;
+-->
+
+<!-- ===== Animation styles ===== -->
+<style>
+  /* ---- Page-load hero sequence ---- */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .hero-anim { opacity: 0; animation: fadeUp .7s cubic-bezier(.16,.8,.32,1) forwards; }
+  .hero-anim:nth-child(1) { animation-delay: .05s; }
+  .hero-anim:nth-child(2) { animation-delay: .18s; }
+  .hero-anim:nth-child(3) { animation-delay: .32s; }
+
+  /* ---- Scroll reveal (JS toggles .is-visible via IntersectionObserver) ---- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity .6s cubic-bezier(.16,.8,.32,1), transform .6s cubic-bezier(.16,.8,.32,1);
+  }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+  /* Stagger children inside a revealed group */
+  .reveal-group.is-visible > * { opacity: 1; transform: translateY(0); }
+  .reveal-group > * {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity .55s cubic-bezier(.16,.8,.32,1), transform .55s cubic-bezier(.16,.8,.32,1);
+  }
+  .reveal-group > *:nth-child(1) { transition-delay: .02s; }
+  .reveal-group > *:nth-child(2) { transition-delay: .10s; }
+  .reveal-group > *:nth-child(3) { transition-delay: .18s; }
+  .reveal-group > *:nth-child(4) { transition-delay: .26s; }
+  .reveal-group > *:nth-child(5) { transition-delay: .34s; }
+  .reveal-group > *:nth-child(6) { transition-delay: .42s; }
+  .reveal-group > *:nth-child(7) { transition-delay: .50s; }
+  .reveal-group > *:nth-child(8) { transition-delay: .58s; }
+
+  /* ---- Header shrink/shadow on scroll ---- */
+  header#site-header { transition: box-shadow .3s ease, background-color .3s ease; }
+  header#site-header.is-scrolled { box-shadow: 0 4px 16px -8px rgba(15,23,42,.15); }
+
+  /* ---- Category cards ---- */
+  .cat-card {
+    transition: transform .25s cubic-bezier(.16,.8,.32,1), box-shadow .25s ease, border-color .25s ease;
+  }
+  .cat-card:hover, .cat-card:focus-visible {
+    transform: translateY(-4px);
+    border-color: #0F766E;
+  }
+  .cat-card i { transition: transform .3s cubic-bezier(.34,1.56,.64,1); }
+  .cat-card:hover i { transform: scale(1.15) rotate(-4deg); }
+
+  /* ---- Step icons (How it works) ---- */
+  .step-icon { transition: transform .3s cubic-bezier(.34,1.56,.64,1), background-color .3s ease; }
+  .step-icon:hover { transform: scale(1.08); }
+
+  /* ---- Why-RepairKar trust cards ---- */
+  .trust-card { transition: transform .25s ease, box-shadow .25s ease; }
+  .trust-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px -12px rgba(15,23,42,.18); }
+
+  /* ---- Buttons ---- */
+  .btn-animated { transition: transform .15s ease, box-shadow .2s ease, background-color .2s ease; }
+  .btn-animated:hover { transform: translateY(-1px); }
+  .btn-animated:active { transform: translateY(0) scale(.97); }
+
+  /* ---- Gentle ambient pulse ring behind the search card ---- */
+  @keyframes ringPulse {
+    0%   { transform: scale(.9); opacity: .35; }
+    70%  { transform: scale(1.4); opacity: 0; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+  .pulse-ring {
+    position: absolute;
+    inset: -14px;
+    border-radius: 1.5rem;
+    background: radial-gradient(closest-side, rgba(255,255,255,.35), transparent);
+    animation: ringPulse 3.2s ease-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ---- Mobile menu open/close animation ---- */
+  #mobile-menu {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height .35s cubic-bezier(.16,.8,.32,1), opacity .3s ease;
+  }
+  #mobile-menu.open { max-height: 400px; opacity: 1; }
+
+  /* ---- Profile dropdown ---- */
+  .profile-dropdown {
+    position: relative;
+  }
+  .profile-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 200px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px -12px rgba(15,23,42,.18);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(.97);
+    transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
+    z-index: 100;
+    overflow: hidden;
+  }
+  .profile-dropdown-menu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+  .profile-dropdown-menu a,
+  .profile-dropdown-menu button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #334155;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color .15s ease, color .15s ease;
+  }
+  .profile-dropdown-menu a:hover,
+  .profile-dropdown-menu button:hover {
+    background-color: #f1f5f9;
+    color: #0F766E;
+  }
+  .profile-dropdown-menu .dropdown-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 0;
+  }
+  .profile-dropdown-menu button.logout-btn:hover {
+    background-color: #fef2f2;
+    color: #dc2626;
+  }
+
+  /* Respect reduced-motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-anim, .reveal, .reveal-group > *, .pulse-ring, .cat-card, .cat-card i,
+    .step-icon, .trust-card, .btn-animated, #mobile-menu, .profile-dropdown-menu {
+      animation: none !important;
+      transition: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+</style>
+
+</head>
+<body class="bg-white text-slate-800 antialiased">
+
+<!-- ================= HEADER ================= -->
+<header id="site-header" class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- Logo -->
+      <a href="index.html" class="flex items-center gap-2 shrink-0" aria-label="RepairKar home">
+        <img class="text-2xl w-32 font-extrabold text-brand" src="assets/images/logo/logo.png" alt="RepairKar">
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-8" aria-label="Main navigation">
+        <a href="user/home.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-brand after:transition-all after:duration-300 hover:after:w-full">Find Mechanics</a>
+        <a href="#how-it-works" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-brand after:transition-all after:duration-300 hover:after:w-full">How it Works</a>
+        <a href="signup.html?role=mechanic" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-brand after:transition-all after:duration-300 hover:after:w-full">For Mechanics</a>
+        <a id="desktop-login" href="login.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-brand after:transition-all after:duration-300 hover:after:w-full">Login</a>
+      </nav>
+
+      <div id="guest-actions" class="hidden md:flex items-center gap-3">
+        <a id="guest-signup" href="signup.html"
+           class="btn-animated inline-flex items-center justify-center rounded-xl bg-accent hover:bg-accent-dark hover:shadow-lg hover:shadow-accent/30 text-white text-sm font-semibold px-5 py-2.5">
+          Sign Up
+        </a>
+      </div>
+      <div id="account-actions" class="hidden items-center gap-3">
+        <div class="profile-dropdown">
+          <button id="profile-toggle" type="button" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-brand transition-colors" aria-haspopup="true" aria-expanded="false">
+            <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
+              <i id="account-icon" class="fa-regular fa-user text-xs" aria-hidden="true"></i>
+            </span>
+            <span id="account-name"></span>
+            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="dropdown-arrow"></i>
+          </button>
+          <div id="profile-dropdown-menu" class="profile-dropdown-menu">
+            <a id="dashboard-link" href="#">
+              <i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>
+              Dashboard
+            </a>
+            <a id="view-profile-link" href="#">
+              <i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>
+              My Profile
+            </a>
+            <div class="dropdown-divider"></div>
+            <button id="logout-btn" type="button" class="logout-btn">
+              <i class="fa-solid fa-right-from-bracket text-slate-400" aria-hidden="true"></i>
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile menu button -->
+      <button id="mobile-menu-btn" type="button"
+              class="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+              aria-label="Open main menu" aria-expanded="false" aria-controls="mobile-menu">
+        <svg id="icon-open" class="w-6 h-6 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <svg id="icon-close" class="w-6 h-6 hidden transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="md:hidden pb-4">
+      <nav class="flex flex-col gap-1" aria-label="Mobile navigation">
+        <a href="user/home.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Find Mechanics</a>
+        <a href="#how-it-works" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">How it Works</a>
+        <a href="signup.html?role=mechanic" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">For Mechanics</a>
+        <a id="mobile-login" href="login.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Login</a>
+        <a id="mobile-signup" href="signup.html" class="btn-animated mt-2 inline-flex items-center justify-center rounded-xl bg-accent text-white text-sm font-semibold px-5 py-2.5">Sign Up</a>
+        <div id="mobile-account-section" class="hidden">
+          <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-brand">
+            <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
+              <i id="mobile-account-icon" class="fa-regular fa-user" aria-hidden="true"></i>
+            </span>
+            <span id="mobile-account-name"></span>
+          </div>
+          <a id="mobile-dashboard-link" href="#" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+            <i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>
+            Dashboard
+          </a>
+          <a id="mobile-view-profile-link" href="#" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+            <i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>
+            My Profile
+          </a>
+          <button id="mobile-logout-btn" type="button" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 w-full text-left">
+            <i class="fa-solid fa-right-from-bracket text-red-400" aria-hidden="true"></i>
+            Logout
+          </button>
+        </div>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= HERO ================= -->
+  <section class="bg-brand">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 text-center">
+      <h1 class="hero-anim text-3xl sm:text-5xl font-extrabold text-white leading-tight">
+        Find Trusted Mechanics<br class="hidden sm:block"> Near You in Minutes
+      </h1>
+      <p class="hero-anim mt-4 text-brand-light/90 text-base sm:text-lg max-w-2xl mx-auto">
+        From appliance repair to roadside help — connect with verified, nearby professionals you can chat with before you book.
+      </p>
+
+      <!-- Search form -->
+      <div class="hero-anim relative mt-8 max-w-2xl mx-auto">
+        <div class="pulse-ring"></div>
+        <form action="user/home.html" method="GET"
+              class="relative z-10 bg-white rounded-2xl shadow-lg p-2 flex flex-col sm:flex-row gap-2">
+          <label for="hero-category" class="sr-only">What service do you need?</label>
+          <select id="hero-category" name="category"
+                  class="flex-1 rounded-xl border-0 text-slate-700 text-sm px-4 py-3 focus:ring-2 focus:ring-brand focus:outline-none transition-shadow">
+            <option value="">What service do you need?</option>
+            <option value="washing-machine">Washing Machine</option>
+            <option value="fridge">Fridge Repair</option>
+            <option value="ac">AC Service</option>
+            <option value="car">Car Mechanic</option>
+            <option value="bike">Bike Repair</option>
+            <option value="electrician">Electrician</option>
+            <option value="plumber">Plumber</option>
+          </select>
+          <label for="hero-location" class="sr-only">Your location</label>
+          <input id="hero-location" name="location" type="text" placeholder="Your city / area"
+                 class="flex-1 rounded-xl border border-slate-200 text-slate-700 text-sm px-4 py-3 focus:ring-2 focus:ring-brand focus:outline-none transition-shadow">
+          <button type="submit"
+                  class="btn-animated inline-flex items-center justify-center rounded-xl bg-accent hover:bg-accent-dark hover:shadow-lg hover:shadow-accent/40 text-white text-sm font-semibold px-6 py-3">
+            Search
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section id="how-it-works" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+    <h2 class="reveal text-2xl sm:text-3xl font-bold text-center text-slate-900">How RepairKar Works</h2>
+    <div class="reveal-group mt-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
+
+      <div class="text-center">
+        <div class="step-icon mx-auto w-14 h-14 rounded-2xl bg-brand-light flex items-center justify-center">
+          <svg class="w-7 h-7 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+          </svg>
+        </div>
+        <h3 class="mt-4 font-semibold text-slate-900">Search</h3>
+        <p class="mt-2 text-sm text-slate-600">Find verified mechanics near you by category, rating, and distance.</p>
+      </div>
+
+      <div class="text-center">
+        <div class="step-icon mx-auto w-14 h-14 rounded-2xl bg-brand-light flex items-center justify-center">
+          <svg class="w-7 h-7 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4-.8L3 20l1.3-3.9A7.96 7.96 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+        </div>
+        <h3 class="mt-4 font-semibold text-slate-900">Chat & Book</h3>
+        <p class="mt-2 text-sm text-slate-600">Message the mechanic, share photos and your location, then confirm a booking.</p>
+      </div>
+
+      <div class="text-center">
+        <div class="step-icon mx-auto w-14 h-14 rounded-2xl bg-brand-light flex items-center justify-center">
+          <svg class="w-7 h-7 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3 class="mt-4 font-semibold text-slate-900">Get Fixed</h3>
+        <p class="mt-2 text-sm text-slate-600">Your mechanic arrives, does the job, and you rate the service.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= CATEGORY GRID ================= -->
+  <section class="bg-slate-50 py-16 sm:py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="reveal text-2xl sm:text-3xl font-bold text-slate-900">Browse Categories</h2>
+      <div class="reveal-group mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
+
+        <a href="user/home.html?category=washing-machine" class="cat-card group rounded-2xl bg-white border border-slate-100 p-6 text-center">
+          <span class="block"><i class="fa-solid fa-soap text-2xl text-brand" aria-hidden="true"></i></span>
+          <span class="mt-3 block text-sm font-medium text-slate-800">Washing Machine</span>
+        </a>
+        <a href="user/home.html?category=fridge" class="cat-card group rounded-2xl bg-white border border-slate-100 p-6 text-center">
+          <span class="block"><i class="fa-solid fa-temperature-low text-2xl text-brand" aria-hidden="true"></i></span>
+          <span class="mt-3 block text-sm font-medium text-slate-800">Fridge Repair</span>
+        </a>
+        <a href="user/home.html?category=ac" class="cat-card group rounded-2xl bg-white border border-slate-100 p-6 text-center">
+          <span class="block"><i class="fa-solid fa-snowflake text-2xl text-brand" aria-hidden="true"></i></span>
+          <span class="mt-3 block text-sm font-medium text-slate-800">AC Repair</span>
+        </a>
+        <a href="user/home.html?category=car" class="cat-card group rounded-2xl bg-white border border-slate-100 p-6 text-center">
+          <span class="block"><i class="fa-solid fa-car text-2xl text-brand" aria-hidden="true"></i></span>
+          <span class="mt-3 block text-sm font-medium text-slate-800">Car Mechanic</span>
+        </a>
+        <a href="user/home.html?category=bike" class="cat-card group rounded-2xl bg-white border border-slate-100 p-6 text-center">
+          <span class="block"><i class="fa-solid fa-motorcycle text-2xl text-brand" aria-hidden="true"></i></span>
+          <span class="mt-3 block text-sm font-medium text-slate-800">Bike Repair</span>
+        </a>
+        <a href="user/home.html?category=electrician" class="cat-card group rounded-2xl bg-white border border-slate-100 p-6 text-center">
+          <span class="block"><i class="fa-solid fa-bolt text-2xl text-brand" aria-hidden="true"></i></span>
+          <span class="mt-3 block text-sm font-medium text-slate-800">Electrician</span>
+        </a>
+        <a href="user/home.html?category=plumber" class="cat-card group rounded-2xl bg-white border border-slate-100 p-6 text-center">
+          <span class="block"><i class="fa-solid fa-wrench text-2xl text-brand" aria-hidden="true"></i></span>
+          <span class="mt-3 block text-sm font-medium text-slate-800">Plumber</span>
+        </a>
+        <a href="user/home.html?category=generator" class="cat-card group rounded-2xl bg-white border border-slate-100 p-6 text-center">
+          <span class="block"><i class="fa-solid fa-plug text-2xl text-brand" aria-hidden="true"></i></span>
+          <span class="mt-3 block text-sm font-medium text-slate-800">Generator / UPS</span>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= WHY KARIGAR (trust section) ================= -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+    <h2 class="reveal text-2xl sm:text-3xl font-bold text-center text-slate-900">Why RepairKar</h2>
+    <div class="reveal-group mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="trust-card rounded-2xl border border-slate-100 p-6">
+        <h3 class="font-semibold text-slate-900">Verified Mechanics</h3>
+        <p class="mt-2 text-sm text-slate-600">Every mechanic is reviewed before they can list a service.</p>
+      </div>
+      <div class="trust-card rounded-2xl border border-slate-100 p-6">
+        <h3 class="font-semibold text-slate-900">Fair Pricing</h3>
+        <p class="mt-2 text-sm text-slate-600">See prices upfront and agree on the job before it starts.</p>
+      </div>
+      <div class="trust-card rounded-2xl border border-slate-100 p-6">
+        <h3 class="font-semibold text-slate-900">Fast Response</h3>
+        <p class="mt-2 text-sm text-slate-600">Emergency roadside help finds the nearest available mechanic.</p>
+      </div>
+      <div class="trust-card rounded-2xl border border-slate-100 p-6">
+        <h3 class="font-semibold text-slate-900">Chat Before You Book</h3>
+        <p class="mt-2 text-sm text-slate-600">Share photos and details so there's no surprise at your door.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-slate-900 text-slate-300">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 sm:grid-cols-4 gap-8">
+    <div class="col-span-2 sm:col-span-1">
+      <a href="index.html" class="inline-block   px-3 py-1.5">
+        <img src="assets/images/logo/logo.png" alt="RepairKar" class="h-9 w-auto">
+      </a>
+      <p class="mt-3 text-sm text-slate-400">Connecting you with trusted professionals for all your home and vehicle needs.</p>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold text-white">Company</h4>
+      <ul class="mt-3 space-y-2 text-sm">
+        <li><a href="about.html" class="hover:text-white transition-colors">About Us</a></li>
+        <li><a href="careers.html" class="hover:text-white transition-colors">Careers</a></li>
+        <li><a href="contact.html" class="hover:text-white transition-colors">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold text-white">Support</h4>
+      <ul class="mt-3 space-y-2 text-sm">
+        <li><a href="help.html" class="hover:text-white transition-colors">Help Center</a></li>
+        <li><a href="contact.html" class="hover:text-white transition-colors">Contact Support</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold text-white">Legal</h4>
+      <ul class="mt-3 space-y-2 text-sm">
+        <li><a href="terms.html" class="hover:text-white transition-colors">Terms of Service</a></li>
+        <li><a href="privacy.html" class="hover:text-white transition-colors">Privacy Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-xs text-slate-500">
+      <p>&copy; <span id="footer-year"></span> RepairKar. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ================= JS ================= -->
+<script>
+  // Mobile menu toggle — no inline handlers, addEventListener only
+  (function () {
+    const btn = document.getElementById('mobile-menu-btn');
+    const menu = document.getElementById('mobile-menu');
+    const iconOpen = document.getElementById('icon-open');
+    const iconClose = document.getElementById('icon-close');
+
+    btn.addEventListener('click', function () {
+      const isOpen = menu.classList.contains('open');
+      menu.classList.toggle('open');
+      iconOpen.classList.toggle('hidden');
+      iconClose.classList.toggle('hidden');
+      btn.setAttribute('aria-expanded', String(!isOpen));
+    });
+  })();
+
+  // Dynamic copyright year — never hardcode it
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+  // Replace guest navigation with the authenticated user's profile dropdown.
+  (function () {
+    const guestActions = document.getElementById('guest-actions');
+    const accountActions = document.getElementById('account-actions');
+    const accountName = document.getElementById('account-name');
+    const accountIcon = document.getElementById('account-icon');
+    const desktopLogin = document.getElementById('desktop-login');
+    const mobileLogin = document.getElementById('mobile-login');
+    const mobileSignup = document.getElementById('mobile-signup');
+    const mobileAccountSection = document.getElementById('mobile-account-section');
+    const mobileAccountName = document.getElementById('mobile-account-name');
+    const mobileAccountIcon = document.getElementById('mobile-account-icon');
+    const profileToggle = document.getElementById('profile-toggle');
+    const dropdownMenu = document.getElementById('profile-dropdown-menu');
+    const dropdownArrow = document.getElementById('dropdown-arrow');
+    const dashboardLink = document.getElementById('dashboard-link');
+    const viewProfileLink = document.getElementById('view-profile-link');
+    const mobileDashboardLink = document.getElementById('mobile-dashboard-link');
+    const mobileViewProfileLink = document.getElementById('mobile-view-profile-link');
+    const logoutBtn = document.getElementById('logout-btn');
+    const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+
+    // ---- Dropdown toggle ----
+    profileToggle.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const isOpen = dropdownMenu.classList.contains('open');
+      dropdownMenu.classList.toggle('open');
+      dropdownArrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+      profileToggle.setAttribute('aria-expanded', String(!isOpen));
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function () {
+      dropdownMenu.classList.remove('open');
+      dropdownArrow.style.transform = '';
+      profileToggle.setAttribute('aria-expanded', 'false');
+    });
+
+    // Prevent dropdown from closing when clicking inside it
+    dropdownMenu.addEventListener('click', function (e) {
+      e.stopPropagation();
+    });
+
+    // ---- Logout handler (shared) ----
+    function handleLogout() {
+      fetch('api/logout.php', { method: 'POST', credentials: 'same-origin' })
+        .then(function () { window.location.reload(); })
+        .catch(function () { window.location.reload(); });
+    }
+    logoutBtn.addEventListener('click', handleLogout);
+    mobileLogoutBtn.addEventListener('click', handleLogout);
+
+    // ---- Fetch current user ----
+    fetch('api/current-user.php', { credentials: 'same-origin' })
+      .then(function (response) {
+        if (!response.ok) throw new Error('guest');
+        return response.json();
+      })
+      .then(function (data) {
+        if (!['user', 'mechanic'].includes(data.role)) {
+          showGuestNav();
+          return;
+        }
+
+        const isMechanic = data.role === 'mechanic';
+        const dashboardPath = isMechanic ? 'mechanic/dashboard.html' : 'user/dashboard.html';
+        const profilePath = isMechanic ? 'mechanic/profile.html' : 'user/profile.html';
+        const displayName = data.name || (isMechanic ? 'Mechanic' : 'User');
+
+        const defaultPhoto = isMechanic
+          ? 'assets/images/placeholders/default-mechnaic-profile.png'
+          : 'assets/images/placeholders/default-user-profile.png';
+        const userPhoto = (data.photo && typeof data.photo === 'string' && data.photo.trim() !== '')
+          ? data.photo.trim()
+          : defaultPhoto;
+
+        // Render ONE clean circular avatar — removes stale images, clears icon, injects single img
+        function renderAvatarImage(iconEl, imgId) {
+          if (!iconEl) return;
+          // Remove any previously injected avatar with this id (prevents duplicates)
+          var old = document.getElementById(imgId);
+          if (old) old.remove();
+          // Container is the <span> wrapping the <i> icon
+          var container = (iconEl.tagName && iconEl.tagName.toLowerCase() === 'i')
+            ? iconEl.parentElement : iconEl;
+          if (!container) return;
+          // Clear completely (icon + any stale img)
+          container.innerHTML = '';
+          // Fixed-size circle with hard overflow:hidden
+          container.style.cssText = 'width:32px;height:32px;min-width:32px;border-radius:9999px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#f1f5f9;border:1.5px solid #e2e8f0;';
+          // Single avatar img
+          var img = document.createElement('img');
+          img.id = imgId;
+          img.alt = displayName;
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:9999px;';
+          img.src = userPhoto;
+          img.onerror = function () { if (this.src !== defaultPhoto) this.src = defaultPhoto; };
+          container.appendChild(img);
+        }
+
+        // Desktop
+        accountName.textContent = displayName;
+        renderAvatarImage(accountIcon, 'account-avatar');
+        dashboardLink.href = dashboardPath;
+        viewProfileLink.href = profilePath;
+
+        // Mobile
+        mobileAccountName.textContent = displayName;
+        renderAvatarImage(mobileAccountIcon, 'mobile-account-avatar');
+        mobileDashboardLink.href = dashboardPath;
+        mobileViewProfileLink.href = profilePath;
+
+        // Toggle visibility: hide guest, show authenticated
+        guestActions.classList.add('hidden');
+        guestActions.classList.remove('md:flex');
+        accountActions.classList.remove('hidden');
+        accountActions.classList.add('md:flex');
+        desktopLogin.classList.add('hidden');
+        mobileLogin.classList.add('hidden');
+        mobileSignup.classList.add('hidden');
+        mobileAccountSection.classList.remove('hidden');
+      })
+      .catch(function () {
+        // A 401 simply means the visitor should keep seeing guest navigation.
+        showGuestNav();
+      });
+
+    function showGuestNav() {
+      guestActions.classList.remove('hidden');
+      guestActions.classList.add('md:flex');
+      accountActions.classList.add('hidden');
+      accountActions.classList.remove('md:flex', 'flex');
+      desktopLogin.classList.remove('hidden');
+      mobileLogin.classList.remove('hidden');
+      mobileSignup.classList.remove('hidden');
+      mobileAccountSection.classList.add('hidden');
+    }
+  })();
+
+  // Header shadow on scroll
+  (function () {
+    const header = document.getElementById('site-header');
+    const onScroll = () => {
+      header.classList.toggle('is-scrolled', window.scrollY > 8);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+
+  // Scroll-triggered reveal animations
+  (function () {
+    const targets = document.querySelectorAll('.reveal, .reveal-group');
+    if (!('IntersectionObserver' in window) || targets.length === 0) {
+      targets.forEach(el => el.classList.add('is-visible'));
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    targets.forEach(el => observer.observe(el));
+  })();
+</script>
+<script src="assets/js/loader.js"></script>
+</body>
+</html>

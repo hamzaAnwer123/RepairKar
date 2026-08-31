@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>My Profile — RepairKar</title>
+<meta name="description" content="Manage your RepairKar profile, bookings, and account settings.">
+<meta name="robots" content="noindex, follow">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS — compiled via Tailwind CLI. Run `npm run build:css` after adding new classes. -->
+<link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+<link rel="stylesheet" href="../assets/css/navbar.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<style>
+  body { font-family: 'Inter', sans-serif; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .fade-in-up    { animation: fadeInUp 0.4s ease-out both; }
+    .fade-in-up-d1 { animation: fadeInUp 0.4s ease-out 0.08s both; }
+    .fade-in-up-d2 { animation: fadeInUp 0.4s ease-out 0.16s both; }
+    .card-enter    { animation: fadeInUp 0.3s ease-out both; }
+    .row-hover     { transition: background-color 0.12s ease-out; }
+    .btn-tap       { transition: transform 0.12s ease-out; }
+    .btn-tap:active { transform: scale(0.97); }
+    .toggle-thumb  { transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), background-color 0.2s ease-out; }
+    .chevron-hover { transition: transform 0.15s ease-out; }
+    .row-hover:hover .chevron-hover { transform: translateX(2px); }
+    .skeleton      { animation: shimmer 1.4s ease-in-out infinite; }
+    .modal-in      { animation: fadeIn 0.2s ease-out both; }
+    .modal-card-in { animation: fadeInUp 0.25s ease-out both; }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes shimmer { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+</style>
+
+<!--
+  SECURITY NOTE: user name/booking data below is rendered via
+  textContent, never innerHTML. Logout must POST to api/logout.php to
+  destroy the server-side session — clearing client state alone is not
+  sufficient, since the session cookie must be invalidated server-side.
+-->
+
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased pb-20 md:pb-0">
+
+<!-- ================= HEADER ================= -->
+<header id="site-header" class="sticky top-0 z-50 bg-white border-b border-slate-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- Logo -->
+      <a href="../index.html" class="flex items-center gap-2 shrink-0" aria-label="RepairKar home">
+        <img class="text-2xl w-32 font-extrabold text-brand" src="../assets/images/logo/logo.png" alt="RepairKar">
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-8" aria-label="Main navigation">
+        <a href="dashboard.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Dashboard</a>
+        <a href="home.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Find Mechanics</a>
+        <a href="live-map.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Emergency Help</a>
+        <a href="chat.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Chats</a>
+        <a href="profile.html" class="relative text-sm font-semibold text-brand transition-colors">My Profile</a>
+      </nav>
+
+      <!-- Right actions -->
+      <div class="flex items-center gap-3">
+        <a href="notifications.html" aria-label="Notifications" class="relative shrink-0 w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-brand transition-colors">
+          <i class="fa-solid fa-bell text-sm" aria-hidden="true"></i>
+        </a>
+
+        <!-- Guest action -->
+        <div id="guest-actions" class="hidden md:flex items-center gap-3">
+          <a id="desktop-login" href="../login.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Login</a>
+          <a id="guest-signup" href="../signup.html"
+             class="btn-animated inline-flex items-center justify-center rounded-xl bg-accent hover:bg-accent-dark hover:shadow-lg hover:shadow-accent/30 text-white text-sm font-semibold px-5 py-2.5">
+            Sign Up
+          </a>
+        </div>
+
+        <!-- Account action (Profile Dropdown) -->
+        <div id="account-actions" class="hidden items-center gap-3">
+          <div class="profile-dropdown">
+            <button id="profile-toggle" type="button" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-brand transition-colors" aria-haspopup="true" aria-expanded="false">
+              <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
+                <i id="account-icon" class="fa-regular fa-user text-xs" aria-hidden="true"></i>
+              </span>
+              <span id="account-name"></span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="dropdown-arrow"></i>
+            </button>
+            <div id="profile-dropdown-menu" class="profile-dropdown-menu">
+              <a id="dashboard-link" href="dashboard.html">
+                <i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>
+                Dashboard
+              </a>
+              <a id="view-profile-link" href="profile.html">
+                <i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>
+                My Profile
+              </a>
+              <div class="dropdown-divider"></div>
+              <button id="logout-btn" type="button" class="logout-btn">
+                <i class="fa-solid fa-right-from-bracket text-slate-400" aria-hidden="true"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile menu button -->
+        <button id="mobile-menu-btn" type="button"
+                class="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+                aria-label="Open main menu" aria-expanded="false" aria-controls="mobile-menu">
+          <svg id="icon-open" class="w-6 h-6 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <svg id="icon-close" class="w-6 h-6 hidden transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="md:hidden pb-4">
+      <nav class="flex flex-col gap-1" aria-label="Mobile navigation">
+        <a href="dashboard.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Dashboard</a>
+        <a href="home.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Find Mechanics</a>
+        <a href="live-map.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Emergency Help</a>
+        <a href="chat.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Chats</a>
+        <a href="profile.html" class="px-3 py-2 rounded-lg text-sm font-semibold text-brand bg-slate-50">My Profile</a>
+        <a id="mobile-login" href="../login.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Login</a>
+        <a id="mobile-signup" href="../signup.html" class="btn-animated mt-2 inline-flex items-center justify-center rounded-xl bg-accent text-white text-sm font-semibold px-5 py-2.5">Sign Up</a>
+        <div id="mobile-account-section" class="hidden">
+          <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-brand">
+            <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
+              <i id="mobile-account-icon" class="fa-regular fa-user" aria-hidden="true"></i>
+            </span>
+            <span id="mobile-account-name"></span>
+          </div>
+          <a id="mobile-dashboard-link" href="dashboard.html" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+            <i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>
+            Dashboard
+          </a>
+          <a id="mobile-view-profile-link" href="profile.html" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+            <i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>
+            My Profile
+          </a>
+          <button id="mobile-logout-btn" type="button" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 w-full text-left">
+            <i class="fa-solid fa-right-from-bracket text-red-400" aria-hidden="true"></i>
+            Logout
+          </button>
+        </div>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-2xl mx-auto px-4 py-5 space-y-5">
+
+  <!-- ================= PROFILE CARD ================= -->
+  <section class="fade-in-up rounded-2xl bg-white border border-slate-100 p-5 flex items-center gap-4">
+    <div class="relative shrink-0">
+      <div id="avatar-skeleton" class="skeleton w-16 h-16 rounded-2xl bg-slate-200"></div>
+      <img id="profile-photo" src="" alt="" width="64" height="64"
+           class="hidden w-16 h-16 rounded-2xl object-cover bg-slate-100">
+      <button type="button" id="change-photo-btn" aria-label="Change profile photo" title="Change profile photo"
+              class="btn-tap absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-brand hover:bg-brand-dark text-white flex items-center justify-center border-2 border-white shadow-sm">
+        <i class="fa-solid fa-camera text-[10px]" aria-hidden="true"></i>
+      </button>
+      <input type="file" id="photo-input" accept="image/png,image/jpeg,image/webp" class="hidden">
+      <!-- Upload progress ring shown while the photo POST is in flight -->
+      <div id="photo-uploading" class="hidden absolute inset-0 rounded-2xl bg-black/40 items-center justify-center">
+        <i class="fa-solid fa-spinner fa-spin text-white text-lg" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <div class="min-w-0 flex-1">
+      <div id="name-skeleton" class="skeleton h-4 w-32 rounded bg-slate-200"></div>
+      <p id="profile-name" class="hidden font-bold text-slate-900 truncate"></p>
+
+      <div id="phone-skeleton" class="skeleton h-3 w-24 rounded bg-slate-200 mt-2"></div>
+      <p id="profile-phone" class="hidden text-sm text-slate-500 truncate mt-0.5"></p>
+      <p id="profile-email" class="hidden text-sm text-slate-500 truncate mt-0.5"></p>
+      <p id="profile-meta" class="hidden text-xs text-slate-400 truncate mt-1"></p>
+    </div>
+
+    <button type="button" id="edit-profile-btn" aria-label="Edit profile" class="btn-tap w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0">
+      <i class="fa-solid fa-pen text-slate-500 text-sm" aria-hidden="true"></i>
+    </button>
+  </section>
+
+  <!-- ================= PROFILE STATS ================= -->
+  <section id="stats-section" class="card-enter hidden">
+    <div class="grid grid-cols-3 gap-2.5">
+      <div class="rounded-2xl bg-white border border-slate-100 px-3 py-3.5 text-center">
+        <p id="stat-total" class="text-lg font-extrabold text-slate-900 leading-none">0</p>
+        <p class="text-[11px] text-slate-500 mt-1.5">Total Bookings</p>
+      </div>
+      <div class="rounded-2xl bg-white border border-slate-100 px-3 py-3.5 text-center">
+        <p id="stat-completed" class="text-lg font-extrabold text-green-600 leading-none">0</p>
+        <p class="text-[11px] text-slate-500 mt-1.5">Completed</p>
+      </div>
+      <div class="rounded-2xl bg-white border border-slate-100 px-3 py-3.5 text-center">
+        <p id="stat-cancelled" class="text-lg font-extrabold text-slate-500 leading-none">0</p>
+        <p class="text-[11px] text-slate-500 mt-1.5">Cancelled</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MY BOOKINGS ================= -->
+  <section class="fade-in-up-d1">
+    <div class="flex items-center justify-between mb-2 px-1">
+      <h2 class="text-sm font-semibold text-slate-900">My Bookings</h2>
+      <a href="bookings.html" class="text-xs text-brand font-medium hover:underline">View All</a>
+    </div>
+
+    <div id="bookings-skeleton" class="space-y-2">
+      <div class="skeleton h-16 rounded-2xl bg-slate-200"></div>
+      <div class="skeleton h-16 rounded-2xl bg-slate-200"></div>
+    </div>
+
+    <div id="bookings-list" class="hidden space-y-2"></div>
+
+    <div id="bookings-empty" class="hidden rounded-2xl bg-white border border-slate-100 p-6 text-center">
+      <i class="fa-regular fa-calendar text-2xl text-slate-300" aria-hidden="true"></i>
+      <p class="mt-2 text-sm text-slate-500">No bookings yet.</p>
+    </div>
+  </section>
+
+  <!-- ================= SETTINGS ================= -->
+  <section class="fade-in-up-d2 rounded-2xl bg-white border border-slate-100 divide-y divide-slate-100 overflow-hidden">
+
+    <a href="addresses.html" class="row-hover flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50">
+      <span class="w-9 h-9 rounded-xl bg-brand-light flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-location-dot text-brand text-sm" aria-hidden="true"></i>
+      </span>
+      <span class="flex-1 text-sm font-medium text-slate-800">Saved Addresses</span>
+      <i class="fa-solid fa-chevron-right chevron-hover text-xs text-slate-300" aria-hidden="true"></i>
+    </a>
+
+    <a href="my-reviews.html" class="row-hover flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50">
+      <span class="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-star text-amber-500 text-sm" aria-hidden="true"></i>
+      </span>
+      <span class="flex-1 text-sm font-medium text-slate-800">My Reviews</span>
+      <i class="fa-solid fa-chevron-right chevron-hover text-xs text-slate-300" aria-hidden="true"></i>
+    </a>
+
+    <div class="flex items-center gap-3 px-4 py-3.5">
+      <span class="w-9 h-9 rounded-xl bg-brand-light flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-bell text-brand text-sm" aria-hidden="true"></i>
+      </span>
+      <span class="flex-1 text-sm font-medium text-slate-800">Notifications</span>
+      <button type="button" id="notif-toggle" role="switch" aria-checked="true" aria-label="Toggle notifications"
+              class="relative w-11 h-6 rounded-full bg-brand shrink-0">
+        <span class="toggle-thumb absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow translate-x-5"></span>
+      </button>
+    </div>
+
+    <!-- Change Password -->
+    <button type="button" id="change-password-row" class="row-hover w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50">
+      <span class="w-9 h-9 rounded-xl bg-brand-light flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-key text-brand text-sm" aria-hidden="true"></i>
+      </span>
+      <span class="flex-1 text-sm font-medium text-slate-800 text-left">Change Password</span>
+      <i class="fa-solid fa-chevron-right chevron-hover text-xs text-slate-300" aria-hidden="true"></i>
+    </button>
+
+    <a href="help.html" class="row-hover flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50">
+      <span class="w-9 h-9 rounded-xl bg-brand-light flex items-center justify-center shrink-0">
+        <i class="fa-regular fa-circle-question text-brand text-sm" aria-hidden="true"></i>
+      </span>
+      <span class="flex-1 text-sm font-medium text-slate-800">Help &amp; Support</span>
+      <i class="fa-solid fa-chevron-right chevron-hover text-xs text-slate-300" aria-hidden="true"></i>
+    </a>
+
+  </section>
+
+  <!-- ================= DANGER ZONE / ACCOUNT ACTIONS ================= -->
+  <section class="fade-in-up-d2 rounded-2xl bg-white border border-slate-100 p-4 space-y-3">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-sm font-bold text-slate-900">Account Actions</h3>
+        <p class="text-xs text-slate-500">Manage login sessions or permanently delete your account.</p>
+      </div>
+    </div>
+
+    <div class="pt-2 flex flex-col sm:flex-row gap-2.5">
+      <button type="button" id="settings-logout-btn"
+              class="btn-tap flex-1 flex items-center justify-center gap-2 rounded-xl border border-slate-200 text-slate-700 text-xs sm:text-sm font-semibold px-4 py-3 hover:bg-slate-50 transition-colors">
+        <i class="fa-solid fa-arrow-right-from-bracket text-sm" aria-hidden="true"></i>
+        Logout
+      </button>
+
+      <button type="button" id="delete-account-btn"
+              class="btn-tap flex-1 flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50/60 text-red-600 text-xs sm:text-sm font-semibold px-4 py-3 hover:bg-red-100/80 transition-colors">
+        <i class="fa-regular fa-trash-can text-sm" aria-hidden="true"></i>
+        Delete Account
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= STICKY BOTTOM NAV (mobile) ================= -->
+<nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-100" aria-label="Primary">
+  <div class="max-w-2xl mx-auto grid grid-cols-5 text-center">
+    <a href="home.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400">
+      <i class="fa-solid fa-house text-lg" aria-hidden="true"></i>
+      <span class="text-[10px] font-medium">Home</span>
+    </a>
+    <a href="dashboard.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400">
+      <i class="fa-solid fa-table-cells-large text-lg" aria-hidden="true"></i>
+      <span class="text-[10px] font-medium">Dashboard</span>
+    </a>
+    <a href="chat.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400">
+      <i class="fa-regular fa-comment text-lg" aria-hidden="true"></i>
+      <span class="text-[10px] font-medium">Chat</span>
+    </a>
+    <a href="live-map.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400">
+      <i class="fa-solid fa-map-location-dot text-lg" aria-hidden="true"></i>
+      <span class="text-[10px] font-medium">Map</span>
+    </a>
+    <a href="profile.html" class="flex flex-col items-center gap-1 py-2.5 text-brand">
+      <i class="fa-solid fa-user text-lg" aria-hidden="true"></i>
+      <span class="text-[10px] font-medium">Profile</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ================= CHANGE PASSWORD MODAL ================= -->
+<div id="password-modal" class="hidden modal-in fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4">
+  <div class="modal-card-in bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-base font-bold text-slate-900">Change Password</h2>
+      <button type="button" id="password-modal-close" class="text-slate-400 hover:text-slate-600 p-1">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <div id="password-error" class="hidden rounded-xl bg-red-50 border border-red-100 px-3.5 py-2.5 mb-3.5 text-xs text-red-600 flex items-start gap-2">
+      <i class="fa-solid fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>
+      <span id="password-error-text"></span>
+    </div>
+
+    <div id="password-success" class="hidden rounded-xl bg-green-50 border border-green-100 px-3.5 py-2.5 mb-3.5 text-xs text-green-700 flex items-start gap-2">
+      <i class="fa-solid fa-circle-check mt-0.5 shrink-0" aria-hidden="true"></i>
+      <span>Password updated successfully!</span>
+    </div>
+
+    <form id="password-form" class="space-y-3">
+      <div>
+        <label for="current-password-input" class="block text-xs font-semibold text-slate-600 mb-1">Current Password</label>
+        <input type="password" id="current-password-input" required autocomplete="current-password"
+               class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm text-slate-800 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+      </div>
+
+      <div>
+        <label for="new-password-input" class="block text-xs font-semibold text-slate-600 mb-1">New Password (min. 6 chars)</label>
+        <input type="password" id="new-password-input" required minlength="6" autocomplete="new-password"
+               class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm text-slate-800 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+      </div>
+
+      <div>
+        <label for="confirm-password-input" class="block text-xs font-semibold text-slate-600 mb-1">Confirm New Password</label>
+        <input type="password" id="confirm-password-input" required minlength="6" autocomplete="new-password"
+               class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm text-slate-800 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+      </div>
+
+      <div class="flex gap-2.5 pt-2">
+        <button type="button" id="password-cancel-btn" class="btn-tap flex-1 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold py-2.5">
+          Cancel
+        </button>
+        <button type="submit" id="password-submit-btn" class="btn-tap flex-1 rounded-xl bg-brand hover:bg-brand-dark text-white text-xs font-semibold py-2.5 shadow-sm">
+          Update Password
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= DELETE ACCOUNT MODAL ================= -->
+<div id="delete-modal" class="hidden modal-in fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4">
+  <div class="modal-card-in bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl">
+    <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center mx-auto mb-3">
+      <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+    </div>
+
+    <h2 class="text-base font-extrabold text-slate-900 text-center">Delete Account?</h2>
+    <p class="text-xs text-slate-500 text-center mt-1 leading-relaxed">
+      This action is <strong class="text-red-600">permanent</strong>. All your booking records, messages, and profile information will be erased forever.
+    </p>
+
+    <div id="delete-error" class="hidden rounded-xl bg-red-50 border border-red-100 px-3.5 py-2.5 my-3 text-xs text-red-600 flex items-start gap-2">
+      <i class="fa-solid fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>
+      <span id="delete-error-text"></span>
+    </div>
+
+    <div class="mt-4 mb-4">
+      <label for="delete-password-input" class="block text-xs font-semibold text-slate-700 mb-1">Enter your password to confirm:</label>
+      <input type="password" id="delete-password-input" placeholder="Password"
+             class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm text-slate-800 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100">
+    </div>
+
+    <div class="flex gap-2.5">
+      <button type="button" id="delete-modal-cancel" class="btn-tap flex-1 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold py-2.5">
+        Keep Account
+      </button>
+      <button type="button" id="delete-modal-confirm" class="btn-tap flex-1 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2.5 shadow-sm">
+        <span id="delete-confirm-text">Yes, Delete</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= EDIT PROFILE MODAL ================= -->
+<div id="edit-profile-modal" class="hidden modal-in fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4">
+  <div class="modal-card-in bg-white rounded-2xl w-full max-w-sm p-5">
+    <h2 class="text-base font-bold text-slate-900 mb-3">Edit Profile</h2>
+
+    <div id="edit-profile-error" class="hidden rounded-xl bg-red-50 border border-red-100 px-3.5 py-2.5 mb-3 text-sm text-red-600 flex items-start gap-2">
+      <i class="fa-solid fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>
+      <span id="edit-profile-error-text"></span>
+    </div>
+
+    <label for="edit-name-input" class="block text-xs font-semibold text-slate-500 mb-1.5">Full Name</label>
+    <input type="text" id="edit-name-input" autocomplete="name" maxlength="80"
+           class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 mb-3.5">
+
+    <label for="edit-email-input" class="block text-xs font-semibold text-slate-500 mb-1.5">Email <span class="font-normal text-slate-400">(optional)</span></label>
+    <input type="email" id="edit-email-input" autocomplete="email" maxlength="150" placeholder="you@example.com"
+           class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 mb-3.5">
+
+    <label for="edit-city-input" class="block text-xs font-semibold text-slate-500 mb-1.5">City</label>
+    <input type="text" id="edit-city-input" autocomplete="address-level2" maxlength="100" placeholder="e.g. Lahore"
+           class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 mb-3.5">
+
+    <label for="edit-phone-input" class="block text-xs font-semibold text-slate-500 mb-1.5">Phone Number</label>
+    <input type="tel" id="edit-phone-input" disabled
+           class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-400 outline-none cursor-not-allowed mb-1.5">
+    <p class="text-xs text-slate-400 mb-4">Contact support to change your phone number.</p>
+
+    <button type="button" id="remove-photo-btn" class="hidden w-full text-center text-xs font-semibold text-red-500 hover:text-red-600 mb-4">
+      <i class="fa-regular fa-trash-can mr-1" aria-hidden="true"></i>Remove profile photo
+    </button>
+
+    <div class="flex gap-3">
+      <button type="button" id="edit-profile-cancel" class="btn-tap flex-1 rounded-xl border border-slate-200 text-slate-700 text-sm font-medium px-4 py-2.5">
+        Cancel
+      </button>
+      <button type="button" id="edit-profile-save" class="btn-tap flex-1 rounded-xl bg-brand hover:opacity-90 text-white text-sm font-semibold px-4 py-2.5 disabled:opacity-60 disabled:cursor-not-allowed">
+        <span id="edit-profile-save-text">Save Changes</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= LOGOUT CONFIRM MODAL ================= -->
+<div id="logout-modal" class="hidden modal-in fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4">
+  <div class="modal-card-in bg-white rounded-2xl w-full max-w-sm p-5 text-center">
+    <h2 class="text-base font-bold text-slate-900">Log out of RepairKar?</h2>
+    <p class="text-sm text-slate-500 mt-1.5">You'll need to log in again to book or chat with mechanics.</p>
+    <div class="flex gap-3 mt-5">
+      <button type="button" id="logout-modal-cancel" class="btn-tap flex-1 rounded-xl border border-slate-200 text-slate-700 text-sm font-medium px-4 py-2.5">
+        Cancel
+      </button>
+      <button type="button" id="logout-modal-confirm" class="btn-tap flex-1 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2.5">
+        <span id="logout-confirm-text">Yes, Logout</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TOAST (photo/profile feedback) ================= -->
+<div id="toast" class="hidden fixed bottom-20 md:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto sm:min-w-[260px] max-w-sm z-[60] rounded-2xl px-4 py-3 text-sm font-medium shadow-xl flex items-center gap-2" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+
+  const avatarSkeleton = document.getElementById('avatar-skeleton');
+  const profilePhoto    = document.getElementById('profile-photo');
+  const nameSkeleton    = document.getElementById('name-skeleton');
+  const profileName     = document.getElementById('profile-name');
+  const phoneSkeleton   = document.getElementById('phone-skeleton');
+  const profilePhone    = document.getElementById('profile-phone');
+  const profileEmail    = document.getElementById('profile-email');
+  const profileMeta     = document.getElementById('profile-meta');
+
+  const changePhotoBtn  = document.getElementById('change-photo-btn');
+  const photoInput      = document.getElementById('photo-input');
+  const photoUploading  = document.getElementById('photo-uploading');
+  const removePhotoBtn  = document.getElementById('remove-photo-btn');
+  const toast           = document.getElementById('toast');
+
+  const statsSection   = document.getElementById('stats-section');
+  const statTotal      = document.getElementById('stat-total');
+  const statCompleted  = document.getElementById('stat-completed');
+  const statCancelled  = document.getElementById('stat-cancelled');
+
+  const bookingsSkeleton = document.getElementById('bookings-skeleton');
+  const bookingsList      = document.getElementById('bookings-list');
+  const bookingsEmpty     = document.getElementById('bookings-empty');
+
+  const notifToggle    = document.getElementById('notif-toggle');
+
+  const settingsLogoutBtn = document.getElementById('settings-logout-btn');
+  const logoutModal       = document.getElementById('logout-modal');
+  const logoutCancel      = document.getElementById('logout-modal-cancel');
+  const logoutConfirm     = document.getElementById('logout-modal-confirm');
+  const logoutConfirmText = document.getElementById('logout-confirm-text');
+
+  const editProfileBtn      = document.getElementById('edit-profile-btn');
+  const editProfileModal    = document.getElementById('edit-profile-modal');
+  const editProfileCancel   = document.getElementById('edit-profile-cancel');
+  const editProfileSave     = document.getElementById('edit-profile-save');
+  const editProfileSaveText = document.getElementById('edit-profile-save-text');
+  const editNameInput       = document.getElementById('edit-name-input');
+  const editEmailInput      = document.getElementById('edit-email-input');
+  const editCityInput       = document.getElementById('edit-city-input');
+  const editPhoneInput      = document.getElementById('edit-phone-input');
+  const editProfileError     = document.getElementById('edit-profile-error');
+  const editProfileErrorText = document.getElementById('edit-profile-error-text');
+
+  // Holds the most recently loaded profile so the modal can be pre-filled
+  // without a second network round-trip.
+  let currentProfile = { name: '', phone: '', email: '', city: '', createdAt: '', photo: null, hasCustomPhoto: false };
+  let photoFallbackSrc = '../assets/images/placeholders/default-user-profile.png';
+
+  // ---- Toast helper (photo feedback etc.) ----
+  let toastTimer = null;
+  function showToast(message, type) {
+    if (!toast) return;
+    toast.className = 'fixed bottom-20 md:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto sm:min-w-[260px] max-w-sm z-[60] rounded-2xl px-4 py-3 text-sm font-medium shadow-xl flex items-center gap-2 ' +
+      (type === 'error' ? 'bg-red-500 text-white' : 'bg-slate-900 text-white');
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.add('hidden'); }, 3000);
+  }
+
+  function formatMemberSince(rawDate) {
+    if (!rawDate) return '';
+    const d = new Date(String(rawDate).replace(' ', 'T'));
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  }
+
+  function goLogin(reason) {
+    // Intercept redirect and show a visible banner on screen so we can see why it happens
+    const diagDiv = document.createElement('div');
+    diagDiv.style.cssText = 'position:fixed;top:10px;left:10px;right:10px;background:#ef4444;color:white;padding:20px;z-index:99999;font-family:monospace;border-radius:8px;box-shadow:0 10px 15px -3px rgba(0,0,0,0.2);font-size:14px;line-height:1.5;';
+    diagDiv.innerHTML = `<strong><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Auth Redirect Intercepted</strong><br>Reason: ${reason || 'Unknown'}<br>Redirecting to login in 10 seconds...`;
+    document.body.appendChild(diagDiv);
+    
+    console.warn('Redirecting to login because:', reason);
+    
+    setTimeout(function() {
+      window.location.replace('../login.html?redirect=' + encodeURIComponent('user/profile.html'));
+    }, 10000);
+  }
+
+  // Load current user and verify user role
+  fetch('../api/current-user.php', { credentials: 'same-origin' })
+    .then(function (res) {
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          goLogin('current-user.php returned HTTP status ' + res.status);
+        } else {
+          const errDiv = document.createElement('div');
+          errDiv.style.cssText = 'position:fixed;top:10px;left:10px;right:10px;background:#f59e0b;color:white;padding:20px;z-index:99999;font-family:monospace;border-radius:8px;';
+          errDiv.innerHTML = `<strong><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> API Error</strong><br>current-user.php returned non-ok status: ${res.status}`;
+          document.body.appendChild(errDiv);
+        }
+        return;
+      }
+      return res.json();
+    })
+    .then(function (data) {
+      if (!data) return;
+      if (data.role === 'mechanic') {
+        window.location.replace('../mechanic/profile.html');
+        return;
+      }
+      if (data.role === 'admin') {
+        window.location.replace('../admin/index.php');
+        return;
+      }
+      if (data.role !== 'user') {
+        goLogin('Role is not \"user\" (Role in database: \"' + data.role + '\")');
+        return;
+      }
+      renderProfile(data);
+    })
+    .catch(function (err) {
+      console.error('Profile auth check error:', err);
+      const errDiv = document.createElement('div');
+      errDiv.style.cssText = 'position:fixed;top:10px;left:10px;right:10px;background:#ef4444;color:white;padding:20px;z-index:99999;font-family:monospace;border-radius:8px;';
+      errDiv.innerHTML = `<strong><i class="fa-solid fa-bug" aria-hidden="true"></i> JavaScript Error</strong><br>${err.message}<br>${err.stack}`;
+      document.body.appendChild(errDiv);
+    });
+
+  function renderProfile(data) {
+    if (!data) return;
+    currentProfile = {
+      name: data.name || 'RepairKar User',
+      phone: data.phone || '',
+      email: data.email || '',
+      city: data.city || '',
+      createdAt: data.created_at || '',
+      photo: data.photo || null,
+      hasCustomPhoto: Boolean(data.photo) && String(data.photo).indexOf('placeholders/') === -1
+    };
+
+    if (profileName) profileName.textContent = currentProfile.name;
+    if (profilePhone) profilePhone.textContent = currentProfile.phone;
+    if (profilePhoto) {
+      photoFallbackSrc = currentProfile.photo || '../assets/images/placeholders/default-user-profile.png';
+      profilePhoto.src = photoFallbackSrc;
+    }
+
+    // Email line — hidden entirely when no email is on file.
+    if (profileEmail) {
+      if (currentProfile.email) {
+        profileEmail.textContent = currentProfile.email;
+        profileEmail.classList.remove('hidden');
+      } else {
+        profileEmail.classList.add('hidden');
+      }
+    }
+
+    // Meta line — "City  •  Member since Mon YYYY" (either part may be absent).
+    if (profileMeta) {
+      const metaParts = [];
+      if (currentProfile.city) metaParts.push(currentProfile.city);
+      const memberSince = formatMemberSince(currentProfile.createdAt);
+      if (memberSince) metaParts.push('Member since ' + memberSince);
+      if (metaParts.length) {
+        profileMeta.textContent = metaParts.join('  •  ');
+        profileMeta.classList.remove('hidden');
+      } else {
+        profileMeta.classList.add('hidden');
+      }
+    }
+
+    if (removePhotoBtn) removePhotoBtn.classList.toggle('hidden', !currentProfile.hasCustomPhoto);
+
+    if (avatarSkeleton) avatarSkeleton.classList.add('hidden');
+    if (profilePhoto) profilePhoto.classList.remove('hidden');
+    if (nameSkeleton) nameSkeleton.classList.add('hidden');
+    if (profileName) profileName.classList.remove('hidden');
+    if (phoneSkeleton) phoneSkeleton.classList.add('hidden');
+    if (profilePhone) profilePhone.classList.remove('hidden');
+  }
+
+  // ---- Load bookings ----
+  fetch('../api/get-user-bookings.php?limit=3', { credentials: 'same-origin' })
+    .then(function (res) { if (!res.ok) throw new Error('request_failed'); return res.json(); })
+    .then(function (data) { renderBookings(Array.isArray(data.bookings) ? data.bookings : []); })
+    .catch(function () { renderBookings([]); });
+
+  const STATUS_STYLES = {
+    pending:   { label: 'Pending',   classes: 'bg-amber-50 text-amber-600' },
+    accepted:  { label: 'Accepted',  classes: 'bg-blue-50 text-blue-600' },
+    en_route:  { label: 'En Route',  classes: 'bg-blue-50 text-blue-600' },
+    completed: { label: 'Completed', classes: 'bg-green-50 text-green-600' },
+    cancelled: { label: 'Cancelled', classes: 'bg-slate-100 text-slate-500' }
+  };
+
+  function renderBookingRow(booking, index) {
+    if (!booking) return null;
+    const row = document.createElement('a');
+    row.href = 'booking-status.html?booking_id=' + encodeURIComponent(booking.id || '');
+    row.className = 'card-enter row-hover flex items-center gap-3 rounded-2xl bg-white border border-slate-100 p-3.5 hover:bg-slate-50';
+    row.style.animationDelay = (index * 60) + 'ms';
+
+    const img = document.createElement('img');
+    img.src = booking.mechanicPhoto || '../assets/images/placeholders/default-mechnaic-profile.png';
+    img.alt = '';
+    img.width = 44; img.height = 44;
+    img.className = 'w-11 h-11 rounded-xl object-cover bg-slate-100 shrink-0';
+    row.appendChild(img);
+
+    const info = document.createElement('div');
+    info.className = 'min-w-0 flex-1';
+    const title = document.createElement('p');
+    title.className = 'text-sm font-semibold text-slate-900 truncate';
+    title.textContent = booking.serviceTitle || 'Service';
+    info.appendChild(title);
+    const sub = document.createElement('p');
+    sub.className = 'text-xs text-slate-500 truncate';
+    sub.textContent = booking.mechanicName || '';
+    info.appendChild(sub);
+    row.appendChild(info);
+
+    const statusInfo = (STATUS_STYLES && STATUS_STYLES[booking.status]) || STATUS_STYLES.pending;
+    const badge = document.createElement('span');
+    badge.className = 'shrink-0 text-[11px] font-semibold rounded-full px-2.5 py-1 ' + statusInfo.classes;
+    badge.textContent = statusInfo.label;
+    row.appendChild(badge);
+
+    return row;
+  }
+
+  function renderBookings(bookings) {
+    if (bookingsSkeleton) bookingsSkeleton.classList.add('hidden');
+    if (!Array.isArray(bookings) || !bookings.length) {
+      if (bookingsEmpty) bookingsEmpty.classList.remove('hidden');
+      return;
+    }
+    if (bookingsList) {
+      bookingsList.innerHTML = '';
+      bookings.forEach(function (b, i) {
+        const row = renderBookingRow(b, i);
+        if (row) bookingsList.appendChild(row);
+      });
+      bookingsList.classList.remove('hidden');
+    }
+  }
+
+  // ---- Profile photo upload / remove ----
+  if (changePhotoBtn && photoInput) {
+    changePhotoBtn.addEventListener('click', function () { photoInput.click(); });
+
+    photoInput.addEventListener('change', function () {
+      const file = photoInput.files && photoInput.files[0];
+      photoInput.value = ''; // allow re-picking the same file later
+      if (!file) return;
+
+      // Client-side guard rails (the server re-validates everything).
+      if (!file.type || file.type.indexOf('image/') !== 0) {
+        showToast('Please choose an image file (JPG, PNG, or WebP).', 'error');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Photo must be smaller than 5MB.', 'error');
+        return;
+      }
+
+      // Instant optimistic preview so the change feels immediate.
+      const previousSrc = profilePhoto ? profilePhoto.src : '';
+      if (photoUploading) {
+        photoUploading.classList.remove('hidden');
+        photoUploading.classList.add('flex');
+      }
+
+      const formData = new FormData();
+      formData.append('photo', file);
+
+      fetch('../api/upload-profile-photo.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: formData
+      })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            if (!res.ok) throw new Error(data.message || 'Upload failed.');
+            return data;
+          });
+        })
+        .then(function (data) {
+          if (data.photo && profilePhoto) {
+            // Cache-bust so a replaced photo is never served from memory.
+            profilePhoto.src = data.photo + (data.photo.indexOf('?') === -1 ? '?' : '&') + 'v=' + Date.now();
+            photoFallbackSrc = profilePhoto.src;
+          }
+          currentProfile.hasCustomPhoto = true;
+          if (removePhotoBtn) removePhotoBtn.classList.remove('hidden');
+          showToast('Profile photo updated.', 'success');
+        })
+        .catch(function (err) {
+          if (profilePhoto && previousSrc) profilePhoto.src = previousSrc; // revert preview
+          showToast(err.message || 'Could not upload the photo. Please try again.', 'error');
+        })
+        .finally(function () {
+          if (photoUploading) {
+            photoUploading.classList.add('hidden');
+            photoUploading.classList.remove('flex');
+          }
+        });
+    });
+  }
+
+  if (removePhotoBtn) {
+    removePhotoBtn.addEventListener('click', function () {
+      removePhotoBtn.disabled = true;
+
+      fetch('../api/remove-profile-photo.php', { method: 'POST', credentials: 'same-origin' })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            if (!res.ok) throw new Error(data.message || 'Could not remove photo.');
+            return data;
+          });
+        })
+        .then(function (data) {
+          const defaultSrc = '../assets/images/placeholders/default-user-profile.png';
+          if (profilePhoto) {
+            profilePhoto.src = (data.photo || defaultSrc) + '?v=' + Date.now();
+            photoFallbackSrc = defaultSrc;
+          }
+          currentProfile.hasCustomPhoto = false;
+          removePhotoBtn.classList.add('hidden');
+          showToast('Profile photo removed.', 'success');
+        })
+        .catch(function (err) {
+          showToast(err.message || 'Could not remove the photo. Please try again.', 'error');
+        })
+        .finally(function () {
+          removePhotoBtn.disabled = false;
+        });
+    });
+  }
+
+  // ---- Profile stats ----
+  fetch('../api/get-user-stats.php', { credentials: 'same-origin' })
+    .then(function (res) { if (!res.ok) throw new Error('stats_failed'); return res.json(); })
+    .then(function (data) {
+      if (!data) return;
+      if (statTotal) statTotal.textContent = String(data.total_bookings || 0);
+      if (statCompleted) statCompleted.textContent = String(data.completed || 0);
+      if (statCancelled) statCancelled.textContent = String(data.cancelled || 0);
+      // Second source for member-since if current-user.php did not include it.
+      if (data.created_at && !currentProfile.createdAt) {
+        currentProfile.createdAt = data.created_at;
+        if (profileMeta) {
+          const memberSince = formatMemberSince(data.created_at);
+          if (memberSince) {
+            profileMeta.textContent = currentProfile.city
+              ? currentProfile.city + '  •  Member since ' + memberSince
+              : 'Member since ' + memberSince;
+            profileMeta.classList.remove('hidden');
+          }
+        }
+      }
+      if (statsSection) statsSection.classList.remove('hidden');
+    })
+    .catch(function () { /* stats are non-critical — keep the strip hidden */ });
+
+  // ---- Notification toggle ----
+  notifToggle.addEventListener('click', function () {
+    const isOn = notifToggle.getAttribute('aria-checked') === 'true';
+    const next = !isOn;
+    notifToggle.setAttribute('aria-checked', String(next));
+    notifToggle.classList.toggle('bg-brand', next);
+    notifToggle.classList.toggle('bg-slate-300', !next);
+    notifToggle.querySelector('.toggle-thumb').classList.toggle('translate-x-5', next);
+    notifToggle.querySelector('.toggle-thumb').classList.toggle('translate-x-0', !next);
+
+    fetch('../api/update-preferences.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ notifications_enabled: next })
+    }).catch(function () { /* best-effort — UI already reflects the toggle */ });
+  });
+
+  // ---- Edit profile modal ----
+  // Opening the modal never calls the API — it only reads the profile data
+  // already in memory from the initial load. The update POST only fires
+  // from editProfileSave's own handler, and Cancel/backdrop-click close the
+  // modal with no network call at all, same pattern as Logout below.
+  editProfileBtn.addEventListener('click', function () {
+    editNameInput.value = currentProfile.name;
+    editEmailInput.value = currentProfile.email;
+    editCityInput.value = currentProfile.city;
+    editPhoneInput.value = currentProfile.phone;
+    editProfileError.classList.add('hidden');
+    editProfileSave.disabled = false;
+    editProfileSaveText.textContent = 'Save Changes';
+    editProfileModal.classList.remove('hidden');
+    editNameInput.focus();
+  });
+
+  editProfileCancel.addEventListener('click', function () {
+    editProfileModal.classList.add('hidden');
+  });
+
+  editProfileModal.addEventListener('click', function (e) {
+    if (e.target === editProfileModal) editProfileModal.classList.add('hidden');
+  });
+
+  editProfileSave.addEventListener('click', function () {
+    const newName = editNameInput.value.trim();
+    const newEmail = editEmailInput.value.trim();
+    const newCity = editCityInput.value.trim();
+
+    if (!newName) {
+      editProfileErrorText.textContent = 'Please enter your name.';
+      editProfileError.classList.remove('hidden');
+      editNameInput.focus();
+      return;
+    }
+
+    // Mirrors the server rule: optional, but must look like an email when given.
+    if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+      editProfileErrorText.textContent = 'Please enter a valid email address.';
+      editProfileError.classList.remove('hidden');
+      editEmailInput.focus();
+      return;
+    }
+
+    editProfileError.classList.add('hidden');
+    editProfileSave.disabled = true;
+    editProfileSaveText.textContent = 'Saving...';
+
+    fetch('../api/update-profile.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ name: newName, email: newEmail, city: newCity })
+    })
+      .then(function (res) { return res.json().then(function (data) { if (!res.ok) throw new Error(data.message || 'update_failed'); return data; }); })
+      .then(function () {
+        currentProfile.name = newName;
+        currentProfile.email = newEmail;
+        currentProfile.city = newCity;
+        // Update the card — textContent only, per the page's security note.
+        profileName.textContent = currentProfile.name;
+        if (profileEmail) {
+          if (currentProfile.email) {
+            profileEmail.textContent = currentProfile.email;
+            profileEmail.classList.remove('hidden');
+          } else {
+            profileEmail.classList.add('hidden');
+          }
+        }
+        if (profileMeta) {
+          const metaParts = [];
+          if (currentProfile.city) metaParts.push(currentProfile.city);
+          const memberSince = formatMemberSince(currentProfile.createdAt);
+          if (memberSince) metaParts.push('Member since ' + memberSince);
+          if (metaParts.length) {
+            profileMeta.textContent = metaParts.join('  •  ');
+            profileMeta.classList.remove('hidden');
+          } else {
+            profileMeta.classList.add('hidden');
+          }
+        }
+        editProfileModal.classList.add('hidden');
+        showToast('Profile updated successfully.', 'success');
+      })
+      .catch(function (err) {
+        editProfileSave.disabled = false;
+        editProfileSaveText.textContent = 'Save Changes';
+        editProfileErrorText.textContent = err.message || 'Couldn\u2019t save your changes. Please try again.';
+        editProfileError.classList.remove('hidden');
+      });
+  });
+
+  // ---- Change Password Modal & Flow ----
+  const changePasswordRow = document.getElementById('change-password-row');
+  const passwordModal = document.getElementById('password-modal');
+  const passwordModalClose = document.getElementById('password-modal-close');
+  const passwordCancelBtn = document.getElementById('password-cancel-btn');
+  const passwordForm = document.getElementById('password-form');
+  const currentPasswordInput = document.getElementById('current-password-input');
+  const newPasswordInput = document.getElementById('new-password-input');
+  const confirmPasswordInput = document.getElementById('confirm-password-input');
+  const passwordError = document.getElementById('password-error');
+  const passwordErrorText = document.getElementById('password-error-text');
+  const passwordSuccess = document.getElementById('password-success');
+  const passwordSubmitBtn = document.getElementById('password-submit-btn');
+
+  function openPasswordModal() {
+    passwordError.classList.add('hidden');
+    passwordSuccess.classList.add('hidden');
+    passwordForm.reset();
+    passwordSubmitBtn.disabled = false;
+    passwordModal.classList.remove('hidden');
+    currentPasswordInput.focus();
+  }
+  function closePasswordModal() {
+    passwordModal.classList.add('hidden');
+  }
+
+  if (changePasswordRow) changePasswordRow.addEventListener('click', openPasswordModal);
+  if (passwordModalClose) passwordModalClose.addEventListener('click', closePasswordModal);
+  if (passwordCancelBtn) passwordCancelBtn.addEventListener('click', closePasswordModal);
+  if (passwordModal) passwordModal.addEventListener('click', function (e) {
+    if (e.target === passwordModal) closePasswordModal();
+  });
+
+  if (passwordForm) {
+    passwordForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      passwordError.classList.add('hidden');
+      passwordSuccess.classList.add('hidden');
+
+      const currentPass = currentPasswordInput.value;
+      const newPass = newPasswordInput.value;
+      const confirmPass = confirmPasswordInput.value;
+
+      if (newPass.length < 6) {
+        passwordErrorText.textContent = 'New password must be at least 6 characters.';
+        passwordError.classList.remove('hidden');
+        newPasswordInput.focus();
+        return;
+      }
+
+      if (newPass !== confirmPass) {
+        passwordErrorText.textContent = 'New passwords do not match.';
+        passwordError.classList.remove('hidden');
+        confirmPasswordInput.focus();
+        return;
+      }
+
+      passwordSubmitBtn.disabled = true;
+      passwordSubmitBtn.textContent = 'Updating...';
+
+      fetch('../api/change-password.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ current_password: currentPass, new_password: newPass })
+      })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            if (!res.ok) throw new Error(data.message || 'Could not update password.');
+            return data;
+          });
+        })
+        .then(function () {
+          passwordSuccess.classList.remove('hidden');
+          passwordForm.reset();
+          setTimeout(function () {
+            closePasswordModal();
+          }, 1500);
+        })
+        .catch(function (err) {
+          passwordErrorText.textContent = err.message || 'Failed to change password. Please check your current password.';
+          passwordError.classList.remove('hidden');
+        })
+        .finally(function () {
+          passwordSubmitBtn.disabled = false;
+          passwordSubmitBtn.textContent = 'Update Password';
+        });
+    });
+  }
+
+  // ---- Delete Account Modal & Flow ----
+  const deleteAccountBtn = document.getElementById('delete-account-btn');
+  const deleteModal = document.getElementById('delete-modal');
+  const deleteModalCancel = document.getElementById('delete-modal-cancel');
+  const deleteModalConfirm = document.getElementById('delete-modal-confirm');
+  const deleteConfirmText = document.getElementById('delete-confirm-text');
+  const deletePasswordInput = document.getElementById('delete-password-input');
+  const deleteError = document.getElementById('delete-error');
+  const deleteErrorText = document.getElementById('delete-error-text');
+
+  function openDeleteModal() {
+    deleteError.classList.add('hidden');
+    deletePasswordInput.value = '';
+    deleteModalConfirm.disabled = false;
+    deleteConfirmText.textContent = 'Yes, Delete';
+    deleteModal.classList.remove('hidden');
+    deletePasswordInput.focus();
+  }
+  function closeDeleteModal() {
+    deleteModal.classList.add('hidden');
+  }
+
+  if (deleteAccountBtn) deleteAccountBtn.addEventListener('click', openDeleteModal);
+  if (deleteModalCancel) deleteModalCancel.addEventListener('click', closeDeleteModal);
+  if (deleteModal) deleteModal.addEventListener('click', function (e) {
+    if (e.target === deleteModal) closeDeleteModal();
+  });
+
+  if (deleteModalConfirm) {
+    deleteModalConfirm.addEventListener('click', function () {
+      const password = deletePasswordInput.value;
+      if (!password) {
+        deleteErrorText.textContent = 'Please enter your password to confirm deletion.';
+        deleteError.classList.remove('hidden');
+        deletePasswordInput.focus();
+        return;
+      }
+
+      deleteError.classList.add('hidden');
+      deleteModalConfirm.disabled = true;
+      deleteConfirmText.textContent = 'Deleting...';
+
+      fetch('../api/delete-account.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ password: password })
+      })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            if (!res.ok) throw new Error(data.message || 'Could not delete account.');
+            return data;
+          });
+        })
+        .then(function () {
+          window.location.href = '../index.html';
+        })
+        .catch(function (err) {
+          deleteErrorText.textContent = err.message || 'Failed to delete account. Please verify your password.';
+          deleteError.classList.remove('hidden');
+          deleteModalConfirm.disabled = false;
+          deleteConfirmText.textContent = 'Yes, Delete';
+        });
+    });
+  }
+
+  // ---- Logout flow ----
+  if (settingsLogoutBtn) settingsLogoutBtn.addEventListener('click', function () { logoutModal.classList.remove('hidden'); });
+  logoutCancel.addEventListener('click', function () { logoutModal.classList.add('hidden'); });
+  logoutConfirm.addEventListener('click', function () {
+    logoutConfirm.disabled = true;
+    logoutConfirmText.textContent = 'Logging out...';
+
+    fetch('../api/logout.php', { method: 'POST', credentials: 'same-origin' })
+      .then(function () {
+        window.location.href = '../index.html';
+      })
+      .catch(function () {
+        window.location.href = '../login.html';
+      });
+  });
+
+})();
+</script>
+<script src="../assets/js/navbar.js"></script>
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>

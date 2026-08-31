@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Review & Confirm Booking — RepairKar</title>
+<meta name="description" content="Review your service details, share your location, and confirm your booking on RepairKar.">
+<meta name="robots" content="noindex, follow">
+<link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<!-- Leaflet.js -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
+
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #f4f6fb; min-height: 100vh; }
+
+  /* Animations */
+  @media (prefers-reduced-motion: no-preference) {
+    .fade-in-up    { animation: fadeInUp 0.4s ease-out both; }
+    .fade-in-up-d1 { animation: fadeInUp 0.4s ease-out 0.08s both; }
+    .fade-in-up-d2 { animation: fadeInUp 0.4s ease-out 0.16s both; }
+    .btn-tap       { transition: transform 0.12s ease-out, opacity 0.12s ease-out; }
+    .btn-tap:active { transform: scale(0.97); }
+    .skeleton      { animation: shimmer 1.4s ease-in-out infinite; }
+    .price-pop     { animation: pricePop 0.35s ease-out; }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shimmer {
+    0%, 100% { opacity: 0.55; }
+    50%      { opacity: 1; }
+  }
+  @keyframes pricePop {
+    0%   { transform: scale(1); }
+    45%  { transform: scale(1.07); }
+    100% { transform: scale(1); }
+  }
+
+  /* Card */
+  .card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e8ecf1;
+    box-shadow: 0 2px 12px rgba(15,23,42,0.06);
+    padding: 22px 22px;
+  }
+
+  /* Section heading */
+  .section-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 16px;
+  }
+  .section-heading i {
+    color: #0f766e;
+    font-size: 15px;
+  }
+
+  /* Gig pill */
+  .gig-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    color: #c2410c;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 3px 10px;
+  }
+
+  /* Time pill */
+  .time-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #f0fdf4;
+    color: #15803d;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 20px;
+    padding: 3px 9px;
+    margin-top: 4px;
+  }
+
+  /* Review items */
+  .review-item + .review-item { border-top: 1px solid #f1f5f9; padding-top: 12px; }
+
+  /* When button */
+  .when-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 12px 8px;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .when-btn.active {
+    border-color: #0f766e;
+    background: #f0fdfa;
+    color: #0f766e;
+  }
+  .when-btn i { font-size: 15px; }
+
+  /* Address input */
+  .addr-input {
+    width: 100%;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px 14px 10px 38px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    color: #1e293b;
+    outline: none;
+    transition: border-color 0.15s;
+    background: #f8fafc;
+  }
+  .addr-input:focus { border-color: #0f766e; background: #fff; }
+
+  /* Payment summary divider */
+  .pay-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #475569;
+    margin-bottom: 10px;
+  }
+  .pay-row.total {
+    font-size: 15px;
+    font-weight: 800;
+    color: #1e293b;
+    border-top: 1.5px solid #e8ecf1;
+    padding-top: 12px;
+    margin-top: 4px;
+    margin-bottom: 0;
+  }
+  .pay-row.total .val { color: #f59e0b; }
+
+  /* Buttons */
+  .btn-confirm {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #f59e0b;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(245,158,11,0.35);
+    transition: background 0.15s, transform 0.1s, opacity 0.15s;
+  }
+  .btn-confirm:hover { background: #d97706; }
+  .btn-confirm:active { transform: scale(0.98); }
+  .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-chat {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #fff;
+    color: #0f766e;
+    font-size: 13px;
+    font-weight: 700;
+    border: 1.5px solid #0f766e;
+    border-radius: 50px;
+    padding: 12px 20px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .btn-chat:hover { background: #f0fdfa; }
+
+  /* Disabled state shown while the visitor is not logged in */
+  .btn-chat.disabled {
+    background: #f8fafc;
+    color: #94a3b8;
+    border-color: #e2e8f0;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .btn-chat.disabled:hover { background: #f8fafc; }
+
+  .btn-cancel {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #fff;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 50px;
+    padding: 11px 20px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .btn-cancel:hover { background: #f8fafc; }
+
+  /* Mechanic photo ring */
+  .mechanic-photo {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f0fdfa;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    flex-shrink: 0;
+  }
+
+  /* Skeleton */
+  .skel-line { border-radius: 6px; background: #e2e8f0; }
+
+  /* Price info icon */
+  .info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #94a3b8;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    margin-left: 4px;
+    cursor: pointer;
+  }
+
+  #map { border-radius: 12px; overflow: hidden; }
+
+  /* Two-column layout */
+  .booking-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  @media (min-width: 768px) {
+    .booking-grid {
+      grid-template-columns: 1fr 320px;
+      align-items: start;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header style="background:#fff;border-bottom:1px solid #e8ecf1;position:sticky;top:0;z-index:40;">
+  <div style="max-width:960px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:12px;">
+    <a href="javascript:history.back()" style="width:36px;height:36px;border-radius:50%;background:#f8fafc;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0;transition:background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+      <i class="fa-solid fa-arrow-left" style="color:#475569;font-size:14px;"></i>
+    </a>
+    <div>
+      <h1 style="font-size:18px;font-weight:800;color:#0f172a;margin:0;">Review & Confirm Booking</h1>
+      <p style="font-size:12px;color:#0f766e;font-weight:500;margin:2px 0 0;">Please review your service details before confirming.</p>
+    </div>
+  </div>
+</header>
+
+<!-- ===== PAGE CONTENT ===== -->
+<main style="max-width:960px;margin:0 auto;padding:24px 16px 40px;">
+
+  <!-- SKELETON -->
+  <div id="skeleton" class="booking-grid">
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div class="card skeleton">
+        <div class="skel-line" style="height:14px;width:40%;margin-bottom:16px;"></div>
+        <div style="display:flex;gap:14px;">
+          <div class="skel-line" style="width:56px;height:56px;border-radius:50%;flex-shrink:0;"></div>
+          <div style="flex:1;">
+            <div class="skel-line" style="height:14px;width:60%;margin-bottom:8px;"></div>
+            <div class="skel-line" style="height:11px;width:40%;margin-bottom:12px;"></div>
+            <div class="skel-line" style="height:11px;width:70%;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card skeleton" style="height:300px;"></div>
+      <div class="card skeleton" style="height:120px;"></div>
+    </div>
+    <div class="card skeleton" style="height:260px;"></div>
+  </div>
+
+  <!-- BOOKING CONTENT -->
+  <div id="booking-content" style="display:none;" class="booking-grid fade-in-up">
+
+    <!-- ===== LEFT COLUMN ===== -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <!-- Service Details -->
+      <div class="card fade-in-up">
+        <div class="section-heading">
+          <i class="fa-solid fa-user-gear"></i> Service Details
+        </div>
+
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+          <img id="mechanic-photo" src="../assets/images/placeholders/default-mechnaic-profile.png" alt="" class="mechanic-photo">
+          <div style="min-width:0;flex:1;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <p id="mechanic-name" style="font-size:15px;font-weight:800;color:#0f172a;margin:0;"></p>
+              <div style="display:flex;align-items:center;gap:4px;background:#fef9c3;border:1px solid #fde68a;border-radius:20px;padding:3px 10px;flex-shrink:0;">
+                <i class="fa-solid fa-star" style="color:#f59e0b;font-size:11px;"></i>
+                <span id="mechanic-rating" style="font-size:12px;font-weight:800;color:#92400e;"></span>
+              </div>
+            </div>
+            <p id="mechanic-role" style="font-size:12px;color:#64748b;font-weight:500;margin:3px 0 0;"></p>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid #f1f5f9;padding-top:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <div>
+              <span id="gig-pill" class="gig-pill"></span>
+            </div>
+            <p id="gig-price" style="font-size:15px;font-weight:800;color:#0f766e;margin:0;"></p>
+          </div>
+          <p id="gig-desc-wrap" style="display:none;margin-top:12px;border-top:1px solid #f1f5f9;padding-top:12px;">
+            <span style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.4px;margin:0 0 6px;">Service Description</span>
+            <span id="gig-desc" style="display:none;font-size:13px;color:#64748b;line-height:1.6;"></span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Customer Reviews -->
+      <div class="card fade-in-up-d1">
+        <div class="section-heading">
+          <i class="fa-solid fa-comments"></i> Customer Reviews
+          <span id="reviews-heading-count" style="color:#94a3b8;font-weight:600;"></span>
+        </div>
+
+        <div id="reviews-summary" style="display:none;align-items:center;gap:16px;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid #f1f5f9;">
+          <div style="text-align:center;flex-shrink:0;">
+            <p id="reviews-avg" style="font-size:28px;font-weight:800;color:#0f172a;margin:0;line-height:1;"></p>
+            <div id="reviews-avg-stars" style="display:flex;gap:2px;justify-content:center;margin-top:5px;"></div>
+            <p id="reviews-total" style="font-size:11px;color:#94a3b8;margin:5px 0 0;"></p>
+          </div>
+          <p style="font-size:12px;color:#64748b;margin:0;line-height:1.5;">Real feedback from customers who booked this mechanic on RepairKar.</p>
+        </div>
+
+        <div id="reviews-list"></div>
+        <p id="reviews-empty" style="display:none;font-size:12px;color:#94a3b8;text-align:center;margin:4px 0 0;">No reviews yet — be this mechanic's first customer!</p>
+
+        <a id="view-all-reviews" href="#" style="display:none;font-size:12px;color:#0f766e;font-weight:700;text-decoration:none;margin-top:12px;">View all reviews <i class="fa-solid fa-arrow-right" style="font-size:10px;" aria-hidden="true"></i></a>
+      </div>
+
+      <!-- Service Location -->
+      <div class="card fade-in-up-d1">
+        <div class="section-heading">
+          <i class="fa-solid fa-location-dot"></i> Service Location
+        </div>
+
+        <div id="map" style="height:200px;width:100%;background:#e2e8f0;margin-bottom:14px;"></div>
+
+        <div style="position:relative;">
+          <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:13px;"></i>
+          <input type="text" id="address-input" class="addr-input" placeholder="House 45, Street 12, DHA Phase 6, Karachi">
+        </div>
+        <p id="location-error" style="display:none;font-size:12px;color:#dc2626;font-weight:500;margin-top:8px;"></p>
+      </div>
+
+      <!-- When? -->
+      <div class="card fade-in-up-d2">
+        <div class="section-heading">
+          <i class="fa-regular fa-calendar-check"></i> When?
+        </div>
+        <div style="display:flex;gap:12px;">
+          <button type="button" data-when="now" class="when-btn btn-tap active">
+            <i class="fa-solid fa-bolt"></i>
+            Right Now
+          </button>
+          <button type="button" data-when="schedule" class="when-btn btn-tap">
+            <i class="fa-regular fa-calendar"></i>
+            Schedule for later
+          </button>
+        </div>
+
+        <div id="schedule-fields" style="display:none;gap:12px;margin-top:14px;display:none;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
+            <div>
+              <label for="schedule-date" style="font-size:11px;font-weight:600;color:#64748b;margin-bottom:5px;display:block;">Date</label>
+              <input type="date" id="schedule-date" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:9px 12px;font-size:13px;font-family:'Inter',sans-serif;outline:none;">
+            </div>
+            <div>
+              <label for="schedule-time" style="font-size:11px;font-weight:600;color:#64748b;margin-bottom:5px;display:block;">Time</label>
+              <input type="time" id="schedule-time" style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:9px 12px;font-size:13px;font-family:'Inter',sans-serif;outline:none;">
+            </div>
+          </div>
+        </div>
+        <p id="schedule-error" style="display:none;font-size:12px;color:#dc2626;font-weight:500;margin-top:8px;"></p>
+      </div>
+
+    </div>
+
+    <!-- ===== RIGHT COLUMN — Payment Summary ===== -->
+    <div style="position:sticky;top:80px;">
+      <div class="card fade-in-up">
+        <h2 style="font-size:16px;font-weight:800;color:#0f172a;margin:0 0 18px;">Payment Summary</h2>
+
+        <div class="pay-row">
+          <span>Service Fee</span>
+          <span id="pay-service" style="font-weight:600;color:#1e293b;">Rs. —</span>
+        </div>
+
+        <div class="pay-row total">
+          <span>Total</span>
+          <span id="pay-total" class="val price-pop">Rs. —</span>
+        </div>
+        <p id="flexible-price-note" style="display:none;font-size:11px;color:#0f766e;font-weight:600;margin-top:10px;background:#f0fdfa;padding:8px 12px;border-radius:10px;border:1px solid #ccfbf1;"><i class="fa-regular fa-comment-dots"></i> You can discuss and negotiate the price directly on chat.</p>
+
+        <p id="login-notice" style="display:none;margin:0 0 14px;font-size:12px;color:#92400e;font-weight:600;background:#fef9c3;border:1px solid #fde68a;border-radius:12px;padding:10px 14px;line-height:1.5;">
+          <i class="fa-solid fa-lock"></i> Please <a href="#" id="login-notice-link" style="color:#0f766e;font-weight:700;text-decoration:underline;">log in</a> to book or chat with this mechanic.
+        </p>
+
+        <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px;">
+          <button type="button" id="confirm-btn" class="btn-confirm btn-tap" disabled>
+            <i id="confirm-spinner" class="fa-solid fa-spinner fa-spin" style="display:none;"></i>
+            <i class="fa-solid fa-circle-check" id="confirm-icon"></i>
+            <span id="confirm-text">Confirm Booking</span>
+          </button>
+
+          <a id="chat-btn" href="javascript:void(0)" class="btn-chat btn-tap disabled">
+            <i class="fa-regular fa-comment-dots"></i>
+            <span id="chat-btn-text">Chat with Mechanic</span>
+          </a>
+
+          <a href="javascript:history.back()" class="btn-cancel btn-tap">
+            Cancel
+          </a>
+
+          <p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:4px;">
+            By confirming, you agree to our <a href="#" style="color:#0f766e;font-weight:600;">Terms of Service</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-slate-900 text-slate-300">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 sm:grid-cols-4 gap-8">
+    <div class="col-span-2 sm:col-span-1">
+      <a href="../index.html" class="inline-block rounded-lg  px-3 py-1.5">
+        <img src="../assets/images/logo/logo.png" alt="RepairKar" class="h-9 w-auto">
+      </a>
+      <p class="mt-3 text-sm text-slate-400">Connecting you with trusted professionals for all your home and vehicle needs.</p>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold text-white">Company</h4>
+      <ul class="mt-3 space-y-2 text-sm">
+        <li><a href="../about.html" class="hover:text-white transition-colors">About Us</a></li>
+        <li><a href="../careers.html" class="hover:text-white transition-colors">Careers</a></li>
+        <li><a href="../contact.html" class="hover:text-white transition-colors">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold text-white">Support</h4>
+      <ul class="mt-3 space-y-2 text-sm">
+        <li><a href="../help.html" class="hover:text-white transition-colors">Help Center</a></li>
+        <li><a href="../contact.html" class="hover:text-white transition-colors">Contact Support</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold text-white">Legal</h4>
+      <ul class="mt-3 space-y-2 text-sm">
+        <li><a href="../terms.html" class="hover:text-white transition-colors">Terms of Service</a></li>
+        <li><a href="../privacy.html" class="hover:text-white transition-colors">Privacy Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-xs text-slate-500">
+      <p>&copy; <span id="footer-year"></span> RepairKar. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+<script>
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+</script>
+
+<script>
+(function () {
+
+  const params = new URLSearchParams(window.location.search);
+  let mechanicId = params.get('mechanic_id') || params.get('id');
+  let gigId = params.get('gig_id');
+
+  const skeleton        = document.getElementById('skeleton');
+  const bookingContent  = document.getElementById('booking-content');
+  const mechPhoto       = document.getElementById('mechanic-photo');
+  const mechName        = document.getElementById('mechanic-name');
+  const mechRole        = document.getElementById('mechanic-role');
+  const mechRating      = document.getElementById('mechanic-rating');
+  const gigPill         = document.getElementById('gig-pill');
+  const gigPrice        = document.getElementById('gig-price');
+  const gigDesc         = document.getElementById('gig-desc');
+  const gigDescWrap     = document.getElementById('gig-desc-wrap');
+  const timePill        = document.getElementById('time-pill');
+  const addressInput    = document.getElementById('address-input');
+  const locationError   = document.getElementById('location-error');
+  const scheduleFields  = document.getElementById('schedule-fields');
+  const scheduleDate    = document.getElementById('schedule-date');
+  const scheduleTime    = document.getElementById('schedule-time');
+  const scheduleError   = document.getElementById('schedule-error');
+  const payService      = document.getElementById('pay-service');
+  const payTotal        = document.getElementById('pay-total');
+  const confirmBtn      = document.getElementById('confirm-btn');
+  const confirmSpinner  = document.getElementById('confirm-spinner');
+  const confirmIcon     = document.getElementById('confirm-icon');
+  const confirmText     = document.getElementById('confirm-text');
+  const chatBtn         = document.getElementById('chat-btn');
+  const chatBtnText     = document.getElementById('chat-btn-text');
+  const reviewsSummary  = document.getElementById('reviews-summary');
+  const reviewsAvg      = document.getElementById('reviews-avg');
+  const reviewsAvgStars = document.getElementById('reviews-avg-stars');
+  const reviewsTotal    = document.getElementById('reviews-total');
+  const reviewsList     = document.getElementById('reviews-list');
+  const reviewsEmpty    = document.getElementById('reviews-empty');
+  const reviewsViewAll  = document.getElementById('view-all-reviews');
+  const reviewsHeadingCount = document.getElementById('reviews-heading-count');
+  const whenBtns        = document.querySelectorAll('.when-btn');
+
+  let selectedWhen = 'now';
+  let map, marker;
+  let currentLat = 24.8607, currentLng = 67.0011;
+  let priceMin = null, priceMax = null;
+
+  // Guard
+  if (!mechanicId && !gigId) {
+    skeleton.innerHTML = '<div style="text-align:center;padding:60px 20px;"><i class="fa-solid fa-triangle-exclamation" style="font-size:32px;color:#cbd5e1;"></i><p style="margin:12px 0 0;font-size:14px;color:#64748b;">Missing booking reference.</p><a href="home.html" style="display:inline-block;margin-top:14px;font-size:13px;color:#0f766e;font-weight:600;">Back to search</a></div>';
+    return;
+  }
+// ---- Auth guard: guests (not logged in) cannot book or chat ----
+  // If the visitor is not logged in, the Chat and Booking buttons stay
+  // disabled and they are redirected to the login page (with a return URL
+  // so they come back here after logging in).
+  var authenticated = false;
+  var loginUrl = '../login.html?redirect=' + encodeURIComponent('user/booking.html' + window.location.search);
+  var loginNotice = document.getElementById('login-notice');
+  var loginNoticeLink = document.getElementById('login-notice-link');
+  if (loginNoticeLink) loginNoticeLink.href = loginUrl;
+
+  function redirectToLogin() {
+    window.location.replace(loginUrl);
+  }
+
+  function setChatButtonState() {
+    if (!chatBtn) return;
+    if (authenticated) {
+      chatBtn.classList.remove('disabled');
+      chatBtn.href = mechanicId
+        ? 'chat.html?mechanic_id=' + encodeURIComponent(mechanicId)
+        : 'chat.html';
+    } else {
+      // Not logged in: keep the button disabled and route it to login.
+      chatBtn.classList.add('disabled');
+      chatBtn.href = loginUrl;
+      if (chatBtnText) chatBtnText.textContent = 'Log in to Chat with Mechanic';
+    }
+  }
+
+  fetch('../api/current-user.php', { credentials: 'same-origin' })
+    .then(function (res) { if (!res.ok) throw new Error('guest'); return res.json(); })
+    .then(function () {
+      authenticated = true;
+      if (confirmBtn) confirmBtn.disabled = false;
+      setChatButtonState();
+    })
+    .catch(function () {
+      authenticated = false;
+      if (confirmBtn) confirmBtn.disabled = true;
+      setChatButtonState();
+      if (loginNotice) loginNotice.style.display = 'block';
+      redirectToLogin();
+    });
+
+  // When toggle
+  whenBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      selectedWhen = btn.dataset.when;
+      whenBtns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      if (selectedWhen === 'schedule') {
+        scheduleFields.style.display = 'block';
+      } else {
+        scheduleFields.style.display = 'none';
+      }
+      scheduleError.style.display = 'none';
+    });
+  });
+
+  // Map
+  function initMap(lat, lng) {
+    map = L.map('map', { zoomControl: true }).setView([lat, lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
+    }).addTo(map);
+    marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+    marker.on('dragend', function() {
+      var pos = marker.getLatLng();
+      currentLat = pos.lat;
+      currentLng = pos.lng;
+    });
+    setTimeout(function() { map.invalidateSize(); }, 80);
+  }
+
+  function setupLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          currentLat = pos.coords.latitude;
+          currentLng = pos.coords.longitude;
+          initMap(currentLat, currentLng);
+        },
+        function() {
+          initMap(currentLat, currentLng);
+          locationError.textContent = 'Could not detect your location — drag the pin to set it manually.';
+          locationError.style.display = 'block';
+        },
+        { timeout: 6000 }
+      );
+    } else {
+      initMap(currentLat, currentLng);
+    }
+  }
+
+  // ---- Reviews rendering (data comes from get-mechanic-profile.php) ----
+  function makeStars(rating, size) {
+    var wrap = document.createElement('span');
+    wrap.style.cssText = 'display:inline-flex;gap:2px;align-items:center;';
+    var rounded = Math.round(Number(rating) || 0);
+    for (var i = 1; i <= 5; i++) {
+      var star = document.createElement('i');
+      star.className = 'fa-solid fa-star';
+      star.setAttribute('aria-hidden', 'true');
+      star.style.cssText = 'font-size:' + (size || 11) + 'px;color:' + (i <= rounded ? '#f59e0b' : '#e2e8f0') + ';';
+      wrap.appendChild(star);
+    }
+    return wrap;
+  }
+
+  function renderReviewItem(review) {
+    var wrap = document.createElement('div');
+    wrap.className = 'review-item';
+
+    var header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;';
+    header.appendChild(makeStars(review.rating, 11));
+    var date = document.createElement('span');
+    date.style.cssText = 'font-size:11px;color:#94a3b8;flex-shrink:0;';
+    date.textContent = review.date || '';
+    header.appendChild(date);
+    wrap.appendChild(header);
+
+    // Optional customer-uploaded photo (thumbnail, opens full size in a new tab).
+    if (review.photo) {
+      var photoLink = document.createElement('a');
+      photoLink.href = review.photo;
+      photoLink.target = '_blank';
+      photoLink.rel = 'noopener';
+      photoLink.style.cssText = 'display:inline-block;margin-top:8px;';
+      var img = document.createElement('img');
+      img.src = review.photo;
+      img.alt = 'Review photo';
+      img.loading = 'lazy';
+      img.width = 64;
+      img.height = 64;
+      img.style.cssText = 'width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid #e2e8f0;display:block;';
+      photoLink.appendChild(img);
+      wrap.appendChild(photoLink);
+    }
+
+    if (review.comment) {
+      var comment = document.createElement('p');
+      comment.style.cssText = 'font-size:12px;color:#475569;margin:6px 0 0;line-height:1.5;font-style:italic;';
+      comment.textContent = '"' + review.comment + '"';   // untrusted — textContent only
+      wrap.appendChild(comment);
+    }
+
+    var author = document.createElement('p');
+    author.style.cssText = 'font-size:11px;color:#94a3b8;margin:5px 0 0;font-weight:500;';
+    author.textContent = '— ' + (review.reviewerName || 'Customer');   // untrusted — textContent only
+    wrap.appendChild(author);
+
+    return wrap;
+  }
+
+  function renderBookingReviews(data) {
+    var reviews = Array.isArray(data.reviews) ? data.reviews : [];
+    var count = data.reviewCount !== undefined ? data.reviewCount : (data.review_count || 0);
+
+    reviewsList.innerHTML = '';
+    reviewsEmpty.style.display = reviews.length ? 'none' : 'block';
+    if (reviewsHeadingCount) reviewsHeadingCount.textContent = reviews.length ? '(' + count + ')' : '';
+
+    // Summary block (average + total)
+    if (count > 0 && data.rating) {
+      reviewsSummary.style.display = 'flex';
+      reviewsAvg.textContent = Number(data.rating).toFixed(1);
+      reviewsAvgStars.innerHTML = '';
+      reviewsAvgStars.appendChild(makeStars(data.rating, 12));
+      reviewsTotal.textContent = count + (count === 1 ? ' review' : ' reviews');
+    } else {
+      reviewsSummary.style.display = 'none';
+    }
+
+    // Individual review items
+    reviews.forEach(function (r) { reviewsList.appendChild(renderReviewItem(r)); });
+
+    // "View all" jumps to the mechanic's full profile
+    if (reviewsViewAll) {
+      if (reviews.length && mechanicId) {
+        reviewsViewAll.href = 'mechanic-profile.html?id=' + encodeURIComponent(mechanicId);
+        reviewsViewAll.style.display = 'block';
+      } else {
+        reviewsViewAll.style.display = 'none';
+      }
+    }
+  }
+
+  // Load data
+  var queryParams = new URLSearchParams();
+  if (mechanicId) queryParams.set('id', mechanicId);
+  if (gigId) queryParams.set('gig_id', gigId);
+
+  fetch('../api/get-mechanic-profile.php?' + queryParams.toString(), { credentials: 'same-origin' })
+    .then(function(res) {
+      if (!res.ok) throw new Error('not found');
+      return res.json();
+    })
+    .then(function(data) { renderSummary(data); })
+    .catch(function() {
+      renderSummary({ shopName: 'Mechanic', photo: null, rating: null, reviewCount: 0, category: 'General Repair', gigs: [] });
+    });
+
+  function renderSummary(data) {
+    if (data.id) mechanicId = data.id;
+
+    // Photo
+    mechPhoto.src = data.photo || '../assets/images/placeholders/default-mechnaic-profile.png';
+    mechPhoto.onerror = function() {
+      mechPhoto.src = '../assets/images/placeholders/default-mechnaic-profile.png';
+    };
+
+    mechName.textContent = data.shopName || data.shop_name || 'Verified Workshop';
+    mechRole.textContent = (data.category ? data.category.replace(/-/g, ' ') + ' Specialist' : 'Master Mechanic');
+    
+    var revCount = data.reviewCount !== undefined ? data.reviewCount : (data.review_count || 0);
+    if (revCount > 0 && data.rating) {
+      mechRating.textContent = data.rating;
+    } else {
+      mechRating.textContent = 'New';
+    }
+
+    renderBookingReviews(data);
+
+    // Chat button (auth-aware: guests keep it disabled & routed to login)
+    if (authenticated && chatBtnText) {
+      chatBtnText.textContent = 'Chat with ' + (data.shopName || 'Mechanic');
+    }
+    setChatButtonState();
+
+    // Gig
+    var gig = null;
+    if (Array.isArray(data.gigs) && data.gigs.length > 0) {
+      if (gigId) { gig = data.gigs.find(function(g) { return String(g.id) === String(gigId); }); }
+      if (!gig) { gig = data.gigs[0]; gigId = gig.id; }
+    }
+
+    if (gig) {
+      gigPill.textContent = gig.title;
+      priceMin = gig.priceMin !== undefined ? gig.priceMin : (gig.price_min || 0);
+      priceMax = gig.priceMax !== undefined ? gig.priceMax : (gig.price_max || priceMin);
+      if (gig.description && gigDesc && gigDescWrap) {
+        gigDesc.textContent = gig.description;   // untrusted — textContent only
+        gigDesc.style.display = 'inline';
+        gigDescWrap.style.display = 'block';
+      } else if (gigDescWrap) {
+        gigDescWrap.style.display = 'none';
+      }
+    } else {
+      gigPill.textContent = (data.category || 'General Repair').replace(/-/g, ' ') + ' Service';
+      priceMin = (data.startingPrice !== undefined && data.startingPrice !== null && data.startingPrice > 0)
+        ? data.startingPrice
+        : (data.starting_price || 500);
+      priceMax = priceMin;
+      if (gigDesc) {
+        gigDesc.style.display = 'none';
+      }
+    }
+
+    var numMin = Number(priceMin) || 500;
+    var numMax = priceMax !== null && priceMax !== undefined ? Number(priceMax) : numMin;
+
+    gigPrice.textContent = 'Rs. ' + numMin.toLocaleString() + (!isNaN(numMax) && numMax > numMin ? ' – ' + numMax.toLocaleString() : '');
+    updatePaymentSummary();
+
+    skeleton.style.display = 'none';
+    bookingContent.style.display = 'grid';
+    confirmBtn.disabled = !authenticated;
+    setupLocation();
+  }
+
+  function updatePaymentSummary() {
+    const flexNote = document.getElementById('flexible-price-note');
+    var numMin = Number(priceMin) || 500;
+    var numMax = priceMax !== null && priceMax !== undefined ? Number(priceMax) : numMin;
+
+    var serviceAmt = numMin;
+    var serviceMaxAmt = !isNaN(numMax) && numMax > numMin ? numMax : serviceAmt;
+
+    // Total is the service fee only — no platform fee or taxes.
+    payService.textContent = 'Rs. ' + serviceAmt.toLocaleString() + (serviceMaxAmt > serviceAmt ? ' – ' + serviceMaxAmt.toLocaleString() : '');
+    payTotal.textContent = 'Rs. ' + serviceAmt.toLocaleString() + (serviceMaxAmt > serviceAmt ? ' – ' + serviceMaxAmt.toLocaleString() : '');
+    if (flexNote) flexNote.style.display = 'none';
+    payTotal.classList.remove('price-pop');
+    void payTotal.offsetWidth;
+    payTotal.classList.add('price-pop');
+  }
+
+  // Confirm booking
+  confirmBtn.addEventListener('click', function() {
+    // Never allow a guest to book — send them to the login page instead.
+    if (!authenticated) { redirectToLogin(); return; }
+
+    locationError.style.display = 'none';
+    scheduleError.style.display = 'none';
+
+    var address = addressInput.value.trim();
+    if (address.length < 5) {
+      locationError.textContent = 'Enter your full address so the mechanic can find you.';
+      locationError.style.display = 'block';
+      addressInput.focus();
+      return;
+    }
+
+    var scheduledTime = null;
+    if (selectedWhen === 'schedule') {
+      if (!scheduleDate.value || !scheduleTime.value) {
+        scheduleError.textContent = 'Please pick a date and time for your scheduled booking.';
+        scheduleError.style.display = 'block';
+        return;
+      }
+      scheduledTime = scheduleDate.value + 'T' + scheduleTime.value + ':00';
+    }
+
+    confirmBtn.disabled = true;
+    confirmSpinner.style.display = 'inline-block';
+    confirmIcon.style.display = 'none';
+    confirmText.textContent = 'Confirming…';
+
+    fetch('../api/create-booking.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({
+        mechanic_id: mechanicId,
+        gig_id: gigId,
+        lat: currentLat,
+        lng: currentLng,
+        address: address,
+        scheduled_time: scheduledTime
+      })
+    })
+    .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+    .then(function(result) {
+      if (!result.ok) throw new Error(result.data && result.data.message ? result.data.message : 'Could not confirm booking.');
+      window.location.href = 'booking-status.html?booking_id=' + encodeURIComponent(result.data.booking_id);
+    })
+    .catch(function(err) {
+      locationError.textContent = err.message || 'Could not confirm booking. Please try again.';
+      locationError.style.display = 'block';
+      confirmBtn.disabled = false;
+      confirmSpinner.style.display = 'none';
+      confirmIcon.style.display = 'inline-block';
+      confirmText.textContent = 'Confirm Booking';
+    });
+  });
+
+})();
+</script>
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>

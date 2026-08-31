@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Booking Status — RepairKar</title>
+<meta name="description" content="Track the status of your RepairKar booking in real time.">
+<meta name="robots" content="noindex, follow">
+
+<link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS — compiled via Tailwind CLI. Run `npm run build:css` after adding new classes. -->
+<link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+
+<style>
+  body { font-family: 'Inter', sans-serif; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .fade-in-up    { animation: fadeInUp 0.4s ease-out both; }
+    .fade-in-up-d1 { animation: fadeInUp 0.4s ease-out 0.08s both; }
+    .fade-in-up-d2 { animation: fadeInUp 0.4s ease-out 0.16s both; }
+    .step-fill     { transition: background-color 0.4s ease-out, border-color 0.4s ease-out; }
+    .step-line     { transition: background-color 0.4s ease-out; }
+    .check-pop     { animation: checkPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .pulse-dot     { animation: pulseDot 1.6s ease-in-out infinite; }
+    .btn-tap       { transition: transform 0.12s ease-out; }
+    .btn-tap:active { transform: scale(0.96); }
+    .skeleton      { animation: shimmer 1.4s ease-in-out infinite; }
+    .status-flash  { animation: statusFlash 0.6s ease-out; }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes checkPop {
+    from { opacity: 0; transform: scale(0.5); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @keyframes pulseDot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.35); }
+    50%      { box-shadow: 0 0 0 8px rgba(15, 118, 110, 0); }
+  }
+  @keyframes shimmer {
+    0%, 100% { opacity: 0.6; }
+    50%      { opacity: 1; }
+  }
+  @keyframes statusFlash {
+    0%   { background-color: rgb(230 244 242); }
+    100% { background-color: transparent; }
+  }
+</style>
+
+<!--
+  SECURITY NOTE: mechanic name shown below is untrusted database
+  content — rendered via textContent only. Cancelling a booking must
+  be re-verified server-side that the logged-in user actually owns
+  this booking, never trust the booking_id from the URL alone.
+-->
+
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+<!-- ================= HEADER ================= -->
+<header class="sticky top-0 z-40 bg-white border-b border-slate-100">
+  <div class="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+    <a href="home.html" aria-label="Back to home" class="w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0">
+      <i class="fa-solid fa-arrow-left text-slate-600" aria-hidden="true"></i>
+    </a>
+    <h1 class="text-base font-bold text-slate-900">Booking Status</h1>
+  </div>
+</header>
+
+<main class="max-w-2xl mx-auto px-4 py-6 space-y-5">
+
+  <!-- ================= SKELETON ================= -->
+  <div id="skeleton" class="space-y-4">
+    <div class="skeleton rounded-2xl bg-white border border-slate-100 h-28"></div>
+    <div class="skeleton rounded-2xl bg-white border border-slate-100 h-40"></div>
+    <div class="skeleton rounded-2xl bg-white border border-slate-100 h-20"></div>
+  </div>
+
+  <!-- ================= CONTENT ================= -->
+  <div id="status-content" class="hidden space-y-5">
+
+    <!-- ---- Progress tracker ---- -->
+    <section id="tracker-card" class="fade-in-up rounded-2xl bg-white border border-slate-100 p-5">
+      <ol class="relative">
+
+        <li class="flex items-start gap-3 pb-6" data-step="pending">
+          <span class="step-line absolute left-[15px] top-8 w-0.5 h-full bg-slate-200"></span>
+          <span class="step-fill relative z-10 w-8 h-8 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-check text-white text-xs hidden check-icon" aria-hidden="true"></i>
+          </span>
+          <div class="pt-1">
+            <p class="step-label text-sm font-semibold text-slate-400">Requested</p>
+            <p class="text-xs text-slate-400">Waiting for the mechanic to respond.</p>
+          </div>
+        </li>
+
+        <li class="flex items-start gap-3 pb-6" data-step="accepted">
+          <span class="step-line absolute left-[15px] top-[calc(8px+64px)] w-0.5 h-full bg-slate-200"></span>
+          <span class="step-fill relative z-10 w-8 h-8 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-check text-white text-xs hidden check-icon" aria-hidden="true"></i>
+          </span>
+          <div class="pt-1">
+            <p class="step-label text-sm font-semibold text-slate-400">Accepted</p>
+            <p class="text-xs text-slate-400">The mechanic has confirmed your booking.</p>
+          </div>
+        </li>
+
+        <li class="flex items-start gap-3 pb-6" data-step="en_route">
+          <span class="step-line absolute left-[15px] top-[calc(8px+128px)] w-0.5 h-full bg-slate-200"></span>
+          <span class="step-fill relative z-10 w-8 h-8 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-check text-white text-xs hidden check-icon" aria-hidden="true"></i>
+          </span>
+          <div class="pt-1">
+            <p class="step-label text-sm font-semibold text-slate-400">Mechanic En Route</p>
+            <p class="text-xs text-slate-400">On the way to your location.</p>
+          </div>
+        </li>
+
+        <li class="flex items-start gap-3" data-step="completed">
+          <span class="step-fill relative z-10 w-8 h-8 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-check text-white text-xs hidden check-icon" aria-hidden="true"></i>
+          </span>
+          <div class="pt-1">
+            <p class="step-label text-sm font-semibold text-slate-400">Job Completed</p>
+            <p class="text-xs text-slate-400">Service finished — rate your experience.</p>
+          </div>
+        </li>
+
+      </ol>
+    </section>
+
+    <!-- ---- Mini map ---- -->
+    <section class="fade-in-up-d1 rounded-2xl bg-white border border-slate-100 p-4">
+      <h2 class="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-3">
+        <i class="fa-solid fa-location-dot text-brand" aria-hidden="true"></i> Live Location
+      </h2>
+      <div id="map" class="h-40 rounded-xl overflow-hidden bg-slate-100"></div>
+    </section>
+
+    <!-- ---- Mechanic contact card ---- -->
+    <section class="fade-in-up-d2 rounded-2xl bg-white border border-slate-100 p-4 flex items-center gap-3">
+      <span class="relative shrink-0">
+        <img id="mechanic-photo" src="../assets/images/placeholders/default-mechnaic-profile.png" alt="" width="48" height="48"
+             class="w-12 h-12 rounded-xl object-cover bg-slate-100">
+        <span id="online-dot" class="pulse-dot absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-white"></span>
+      </span>
+      <div class="min-w-0 flex-1">
+        <p id="mechanic-name" class="font-semibold text-sm text-slate-900 truncate"></p>
+        <p id="booking-ref" class="text-xs text-slate-500"></p>
+      </div>
+      <a id="call-btn" href="tel:" aria-label="Call mechanic" class="btn-tap w-10 h-10 rounded-full bg-brand-light text-brand flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-phone text-sm" aria-hidden="true"></i>
+      </a>
+      <a id="chat-btn" href="chat.html" aria-label="Chat with mechanic" class="btn-tap w-10 h-10 rounded-full bg-brand-light text-brand flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-comment text-sm" aria-hidden="true"></i>
+      </a>
+    </section>
+
+    <!-- ---- Cancel ---- -->
+    <div id="cancel-wrap" class="text-center pt-1">
+      <button type="button" id="cancel-btn" class="text-sm text-red-500 font-medium hover:underline">
+        Cancel Booking
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ================= NOT FOUND STATE ================= -->
+  <div id="not-found-state" class="hidden text-center py-16">
+    <i class="fa-solid fa-triangle-exclamation text-3xl text-slate-300" aria-hidden="true"></i>
+    <p class="mt-3 text-sm font-medium text-slate-600">Booking not found.</p>
+    <a href="home.html" class="inline-block mt-4 text-sm text-brand font-medium hover:underline">Back to search</a>
+  </div>
+
+</main>
+
+<!-- ================= CANCEL CONFIRM MODAL ================= -->
+<div id="cancel-modal" class="hidden fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4">
+  <div class="fade-in-up bg-white rounded-2xl w-full max-w-sm p-5">
+    <h2 class="text-base font-bold text-slate-900">Cancel this booking?</h2>
+    <p class="text-sm text-slate-500 mt-1.5">This can't be undone. The mechanic will be notified.</p>
+    <div class="flex gap-3 mt-5">
+      <button type="button" id="cancel-modal-back" class="btn-tap flex-1 rounded-xl border border-slate-200 text-slate-700 text-sm font-medium px-4 py-2.5">
+        Go Back
+      </button>
+      <button type="button" id="cancel-modal-confirm" class="btn-tap flex-1 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2.5">
+        Yes, Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+
+  const STEP_ORDER = ['pending', 'accepted', 'en_route', 'completed'];
+  const POLL_INTERVAL_MS = 7000;
+
+  // ---- Styled toast (replaces native alert()) ----
+  let toastTimer = null;
+  function showToast(message, type) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    const isError = (type === 'error' || type === true);
+    toast.className = 'hidden fixed bottom-20 md:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto sm:min-w-[260px] max-w-sm z-[60] rounded-2xl px-4 py-3 text-sm font-medium shadow-xl flex items-center gap-2 ' +
+      (isError ? 'bg-red-500 text-white' : 'bg-slate-900 text-white');
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.add('hidden'); }, 3200);
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const bookingId = params.get('booking_id');
+
+  const skeleton       = document.getElementById('skeleton');
+  const statusContent  = document.getElementById('status-content');
+  const notFoundState  = document.getElementById('not-found-state');
+  const trackerCard    = document.getElementById('tracker-card');
+  const mechanicPhoto  = document.getElementById('mechanic-photo');
+  const mechanicName   = document.getElementById('mechanic-name');
+  const bookingRef     = document.getElementById('booking-ref');
+  const callBtn        = document.getElementById('call-btn');
+  const chatBtn        = document.getElementById('chat-btn');
+  const onlineDot      = document.getElementById('online-dot');
+  const cancelWrap      = document.getElementById('cancel-wrap');
+  const cancelBtn       = document.getElementById('cancel-btn');
+  const cancelModal     = document.getElementById('cancel-modal');
+  const cancelModalBack = document.getElementById('cancel-modal-back');
+  const cancelModalConfirm = document.getElementById('cancel-modal-confirm');
+
+  let pollTimer = null;
+  let map, userMarker, mechanicMarker;
+  let lastRenderedStatus = null;
+
+  // ---- Guard: missing booking_id ----
+  if (!bookingId || isNaN(Number(bookingId))) {
+    skeleton.classList.add('hidden');
+    notFoundState.classList.remove('hidden');
+    return;
+  }
+
+  function initMap(userLat, userLng, mechLat, mechLng) {
+    map = L.map('map', { zoomControl: false, dragging: true }).setView([userLat, userLng], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
+    }).addTo(map);
+    userMarker = L.marker([userLat, userLng]).addTo(map);
+    if (mechLat != null && mechLng != null) {
+      mechanicMarker = L.marker([mechLat, mechLng]).addTo(map);
+    }
+    setTimeout(function () { map.invalidateSize(); }, 50);
+  }
+
+  function updateMechanicMarker(lat, lng) {
+    if (!map || lat == null || lng == null) return;
+    if (mechanicMarker) {
+      mechanicMarker.setLatLng([lat, lng]);
+    } else {
+      mechanicMarker = L.marker([lat, lng]).addTo(map);
+    }
+  }
+
+  // ---- Render tracker steps up to and including currentStatus ----
+  function renderTracker(currentStatus) {
+    const currentIndex = STEP_ORDER.indexOf(currentStatus);
+    document.querySelectorAll('[data-step]').forEach(function (li) {
+      const step = li.dataset.step;
+      const stepIndex = STEP_ORDER.indexOf(step);
+      const circle = li.querySelector('.step-fill');
+      const checkIcon = li.querySelector('.check-icon');
+      const label = li.querySelector('.step-label');
+      const line = li.querySelector('.step-line');
+
+      const isDone = stepIndex < currentIndex;
+      const isCurrent = stepIndex === currentIndex;
+
+      if (isDone || isCurrent) {
+        circle.classList.remove('border-slate-300', 'bg-white');
+        circle.classList.add('border-brand', 'bg-brand');
+        label.classList.remove('text-slate-400');
+        label.classList.add('text-slate-900');
+        if (isDone) {
+          checkIcon.classList.remove('hidden');
+          checkIcon.classList.add('check-pop');
+        }
+      } else {
+        circle.classList.add('border-slate-300', 'bg-white');
+        circle.classList.remove('border-brand', 'bg-brand');
+        label.classList.add('text-slate-400');
+        label.classList.remove('text-slate-900');
+        checkIcon.classList.add('hidden');
+      }
+
+      if (line) {
+        line.classList.toggle('bg-brand', stepIndex < currentIndex);
+        line.classList.toggle('bg-slate-200', !(stepIndex < currentIndex));
+      }
+    });
+
+    // Hide cancel option once a job is out of the cancellable window
+    cancelWrap.classList.toggle('hidden', currentStatus === 'completed' || currentStatus === 'cancelled' || currentStatus === 'en_route');
+  }
+
+  function renderStatus(data) {
+    if (data.status !== lastRenderedStatus) {
+      trackerCard.classList.add('status-flash');
+      setTimeout(function () { trackerCard.classList.remove('status-flash'); }, 600);
+    }
+    lastRenderedStatus = data.status;
+
+    mechanicName.textContent = data.mechanicName || 'Mechanic';   // untrusted — textContent only
+    bookingRef.textContent = 'Booking #' + bookingId;
+    if (data.mechanicPhoto) mechanicPhoto.src = data.mechanicPhoto;
+    if (data.mechanicPhone) callBtn.setAttribute('href', 'tel:' + data.mechanicPhone);
+    chatBtn.setAttribute('href', 'chat.html?booking_id=' + encodeURIComponent(bookingId));
+    onlineDot.classList.toggle('hidden', !data.mechanicOnline);
+
+    renderTracker(data.status);
+
+    if (!map) {
+      initMap(data.userLat, data.userLng, data.mechanicLat, data.mechanicLng);
+    } else {
+      updateMechanicMarker(data.mechanicLat, data.mechanicLng);
+    }
+
+    if (data.status === 'completed') {
+      stopPolling();
+      setTimeout(function () {
+        window.location.href = 'rate-review.html?booking_id=' + encodeURIComponent(bookingId);
+      }, 1200);
+    } else if (data.status === 'cancelled') {
+      stopPolling();
+    }
+
+    skeleton.classList.add('hidden');
+    notFoundState.classList.add('hidden');
+    statusContent.classList.remove('hidden');
+  }
+
+  function fetchStatus() {
+    fetch('../api/get-booking-status.php?booking_id=' + encodeURIComponent(bookingId), { credentials: 'same-origin' })
+      .then(function (res) {
+        if (res.status === 404) throw new Error('not_found');
+        if (!res.ok) throw new Error('request_failed');
+        return res.json();
+      })
+      .then(function (data) { renderStatus(data); })
+      .catch(function (err) {
+        if (err.message === 'not_found') {
+          stopPolling();
+          skeleton.classList.add('hidden');
+          statusContent.classList.add('hidden');
+          notFoundState.classList.remove('hidden');
+          return;
+        }
+        // No backend running yet in this environment — render a
+        // placeholder so the tracker UI remains visually testable.
+        renderStatus({
+          status: 'pending',
+          mechanicName: 'Mechanic data unavailable',
+          mechanicPhoto: null,
+          mechanicPhone: null,
+          mechanicOnline: false,
+          userLat: 24.8607, userLng: 67.0011,
+          mechanicLat: null, mechanicLng: null
+        });
+      });
+  }
+
+  function startPolling() {
+    fetchStatus();
+    pollTimer = setInterval(fetchStatus, POLL_INTERVAL_MS);
+  }
+  function stopPolling() {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  }
+
+  // ---- Cancel booking flow ----
+  cancelBtn.addEventListener('click', function () {
+    cancelModal.classList.remove('hidden');
+  });
+  cancelModalBack.addEventListener('click', function () {
+    cancelModal.classList.add('hidden');
+  });
+  cancelModalConfirm.addEventListener('click', function () {
+    cancelModalConfirm.disabled = true;
+    cancelModalConfirm.textContent = 'Cancelling...';
+
+    fetch('../api/update-booking-status.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ booking_id: bookingId, status: 'cancelled' })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) throw new Error(result.data && result.data.message ? result.data.message : 'Could not cancel booking.');
+        cancelModal.classList.add('hidden');
+        fetchStatus();
+      })
+      .catch(function (err) {
+        cancelModal.classList.add('hidden');
+        showToast(err.message, true);
+      })
+      .finally(function () {
+        cancelModalConfirm.disabled = false;
+        cancelModalConfirm.textContent = 'Yes, Cancel';
+      });
+  });
+
+  // Stop polling when the tab isn't visible, resume when it is — avoids
+  // wasting requests/battery while the user has switched away
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      stopPolling();
+    } else if (lastRenderedStatus !== 'completed' && lastRenderedStatus !== 'cancelled') {
+      startPolling();
+    }
+  });
+
+  startPolling();
+})();
+</script>
+
+<!-- Styled toast notification (no native alert boxes) -->
+<div id="toast" class="hidden fixed bottom-20 md:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto sm:min-w-[260px] max-w-sm z-[60] rounded-2xl px-4 py-3 text-sm font-medium shadow-xl flex items-center gap-2" role="status" aria-live="polite"></div>
+
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>

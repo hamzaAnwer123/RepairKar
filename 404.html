@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- ===== SEO: Title & Meta ===== -->
+<title>404 — Page Not Found | RepairKar</title>
+<meta name="description" content="Oops! The page you are looking for does not exist or has been moved. Explore RepairKar to find verified mechanics and repair services across Pakistan.">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://repairkar.site.je/404.html">
+
+<!-- ===== Favicon ===== -->
+<link rel="icon" type="image/x-icon" href="assets/images/logo/favicon.ico">
+
+<!-- ===== Fonts & Styles ===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/tailwind.min.css">
+<link rel="stylesheet" href="assets/css/loader.css">
+<link rel="stylesheet" href="assets/css/navbar.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<style>
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #FAFAF9;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #0F766E 0%, #14B8A6 50%, #F97316 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .glow-card {
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 10px 30px -10px rgba(15, 118, 110, 0.08), 0 20px 25px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  /* 404 Floating Animation */
+  @keyframes floatUpDown {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-12px) rotate(2deg); }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.08); }
+  }
+
+  .floating-gear {
+    animation: floatUpDown 4s ease-in-out infinite;
+  }
+
+  .pulse-backdrop {
+    animation: pulseGlow 5s ease-in-out infinite;
+  }
+
+  .service-pill {
+    transition: all 0.2s cubic-bezier(0.16, 0.8, 0.32, 1);
+  }
+
+  .service-pill:hover {
+    transform: translateY(-2px);
+    border-color: #0F766E;
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.12);
+  }
+</style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-800 antialiased">
+
+<!-- ================= HEADER ================= -->
+<header id="site-header" class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- Logo -->
+      <a href="index.html" class="flex items-center gap-2 shrink-0" aria-label="RepairKar home">
+        <img class="text-2xl w-32 font-extrabold text-brand" src="assets/images/logo/logo.png" alt="RepairKar">
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-8" aria-label="Main navigation">
+        <a href="user/home.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Find Mechanics</a>
+        <a href="index.html#how-it-works" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">How it Works</a>
+        <a href="signup.html?role=mechanic" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">For Mechanics</a>
+        <a id="desktop-login" href="login.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Login</a>
+      </nav>
+
+      <!-- Desktop CTA / Profile Dropdown -->
+      <div id="guest-actions" class="hidden md:flex items-center gap-3">
+        <a id="guest-signup" href="signup.html"
+           class="inline-flex items-center justify-center rounded-xl bg-accent hover:bg-accent-dark hover:shadow-lg hover:shadow-accent/30 text-white text-sm font-semibold px-5 py-2.5 transition-all">
+          Sign Up
+        </a>
+      </div>
+
+      <div id="account-actions" class="hidden items-center gap-3">
+        <div class="profile-dropdown">
+          <button id="profile-toggle" type="button" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-brand transition-colors" aria-haspopup="true" aria-expanded="false">
+            <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
+              <i id="account-icon" class="fa-regular fa-user text-xs" aria-hidden="true"></i>
+            </span>
+            <span id="account-name"></span>
+            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="dropdown-arrow"></i>
+          </button>
+
+          <div id="profile-dropdown-menu" class="profile-dropdown-menu" role="menu" aria-labelledby="profile-toggle">
+            <a id="dashboard-link" href="#" role="menuitem">
+              <i class="fa-solid fa-table-columns" aria-hidden="true"></i>
+              Dashboard
+            </a>
+            <a id="view-profile-link" href="#" role="menuitem">
+              <i class="fa-regular fa-user" aria-hidden="true"></i>
+              My Profile
+            </a>
+            <div class="dropdown-divider"></div>
+            <button id="logout-btn" type="button" class="logout-btn" role="menuitem">
+              <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile menu button -->
+      <button id="mobile-menu-btn" type="button"
+              class="md:hidden p-2 rounded-lg text-slate-600 hover:text-brand hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand"
+              aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+        <i class="fa-solid fa-bars text-xl" id="icon-open"></i>
+        <i class="fa-solid fa-xmark text-xl hidden" id="icon-close"></i>
+      </button>
+
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="md:hidden border-t border-slate-100 pt-3 pb-4">
+      <nav class="flex flex-col gap-1" aria-label="Mobile navigation">
+        <a href="user/home.html" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-brand hover:bg-slate-50 rounded-lg">Find Mechanics</a>
+        <a href="index.html#how-it-works" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-brand hover:bg-slate-50 rounded-lg">How it Works</a>
+        <a href="signup.html?role=mechanic" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-brand hover:bg-slate-50 rounded-lg">For Mechanics</a>
+        <a id="mobile-login" href="login.html" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-brand hover:bg-slate-50 rounded-lg">Login</a>
+        <a id="mobile-signup" href="signup.html" class="mt-2 inline-flex items-center justify-center rounded-xl bg-accent text-white text-sm font-semibold px-4 py-2.5">Sign Up</a>
+
+        <div id="mobile-account-section" class="hidden pt-2 mt-2 border-t border-slate-100">
+          <p class="px-3 py-1 text-sm font-semibold text-brand flex items-center gap-2">
+            <i id="mobile-account-icon" class="fa-regular fa-user text-xs"></i>
+            <span id="mobile-account-name"></span>
+          </p>
+          <a id="mobile-dashboard-link" href="#" class="block px-3 py-2 text-sm text-slate-600 hover:text-brand rounded-lg">Dashboard</a>
+          <a id="mobile-view-profile-link" href="#" class="block px-3 py-2 text-sm text-slate-600 hover:text-brand rounded-lg">My Profile</a>
+          <button id="mobile-logout-btn" type="button" class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg">Logout</button>
+        </div>
+      </nav>
+    </div>
+
+  </div>
+</header>
+
+<!-- ================= MAIN CONTENT ================= -->
+<main class="flex-1 flex items-center justify-center px-4 py-12 sm:py-16 relative overflow-hidden">
+  
+  <!-- Subtle Background Glow Elements -->
+  <div class="pulse-backdrop absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-teal-100/60 to-orange-100/50 rounded-full blur-3xl pointer-events-none -z-10"></div>
+
+  <div class="w-full max-w-2xl text-center">
+
+    <!-- 404 Illustration Badge -->
+    <div class="floating-gear inline-flex items-center justify-center w-28 h-28 sm:w-36 sm:h-36 rounded-3xl bg-white shadow-xl shadow-teal-900/5 border border-teal-100/80 mb-6 relative">
+      <div class="absolute inset-0 bg-gradient-to-br from-teal-500/10 to-orange-500/10 rounded-3xl"></div>
+      <div class="relative flex items-center justify-center">
+        <i class="fa-solid fa-wrench text-4xl sm:text-5xl text-brand"></i>
+        <i class="fa-solid fa-triangle-exclamation text-xl sm:text-2xl text-accent absolute -top-1 -right-3"></i>
+      </div>
+    </div>
+
+    <!-- Error Code & Headings -->
+    <div class="space-y-3">
+      <p class="text-xs sm:text-sm font-bold uppercase tracking-widest text-accent">Error 404</p>
+      <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-slate-900">
+        Engine Stalled! <span class="gradient-text">Page Not Found</span>
+      </h1>
+      <p class="text-slate-500 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
+        The link you followed might be broken, or the page may have been relocated. Don't worry, our repair team is already on standby.
+      </p>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+      <a href="index.html" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-brand hover:bg-brand-dark text-white font-semibold text-sm px-6 py-3.5 shadow-lg shadow-teal-900/15 transition-all">
+        <i class="fa-solid fa-house text-xs"></i>
+        Back to Home
+      </a>
+      <a href="user/home.html" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm px-6 py-3.5 border border-slate-200 shadow-sm hover:border-brand transition-all">
+        <i class="fa-solid fa-magnifying-glass text-xs text-brand"></i>
+        Find Mechanics
+      </a>
+      <a href="contact.html" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm px-6 py-3.5 border border-slate-200 shadow-sm hover:border-accent transition-all">
+        <i class="fa-regular fa-envelope text-xs text-accent"></i>
+        Contact Support
+      </a>
+    </div>
+
+    <!-- Popular Service Shortcuts -->
+    <div class="mt-12 pt-8 border-t border-slate-200/80">
+      <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Or explore popular services:</p>
+      <div class="flex flex-wrap items-center justify-center gap-2">
+        <a href="user/home.html?category=car" class="service-pill inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700 hover:text-brand">
+          <i class="fa-solid fa-car text-brand"></i> Car Repair
+        </a>
+        <a href="user/home.html?category=bike" class="service-pill inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700 hover:text-brand">
+          <i class="fa-solid fa-motorcycle text-brand"></i> Bike Service
+        </a>
+        <a href="user/home.html?category=ac" class="service-pill inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700 hover:text-brand">
+          <i class="fa-solid fa-snowflake text-brand"></i> AC Repair
+        </a>
+        <a href="user/home.html?category=electrician" class="service-pill inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700 hover:text-brand">
+          <i class="fa-solid fa-bolt text-brand"></i> Electrician
+        </a>
+        <a href="user/live-map.html" class="service-pill inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/30 text-xs font-medium text-accent hover:bg-accent hover:text-white">
+          <i class="fa-solid fa-triangle-exclamation"></i> Roadside SOS
+        </a>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-white border-t border-slate-100 py-6 text-center text-xs text-slate-400">
+  <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+    <p>&copy; 2026 RepairKar. All rights reserved.</p>
+    <div class="flex items-center gap-4">
+      <a href="help.html" class="hover:text-brand transition-colors">Help Center</a>
+      <a href="privacy.html" class="hover:text-brand transition-colors">Privacy Policy</a>
+      <a href="terms.html" class="hover:text-brand transition-colors">Terms of Service</a>
+      <a href="contact.html" class="hover:text-brand transition-colors">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<!-- Scripts -->
+<script src="assets/js/loader.js"></script>
+<script src="assets/js/navbar.js"></script>
+</body>
+</html>

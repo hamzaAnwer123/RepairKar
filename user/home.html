@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Find Mechanics Near You — RepairKar</title>
+  <meta name="description"
+    content="Browse verified mechanics near you on RepairKar — filter by category, rating, and distance.">
+  <meta name="robots" content="noindex, follow">
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS — compiled via Tailwind CLI. Run `npm run build:css` after adding new classes.
+     Path is relative to this file's location inside /user/, hence ../assets/... -->
+  <link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+  <link rel="stylesheet" href="../assets/css/navbar.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+    crossorigin="anonymous" referrerpolicy="no-referrer">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Hide scrollbar for Chrome, Safari, Opera, Edge, and Firefox */
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+      height: 0;
+      width: 0;
+    }
+
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      /* IE and Edge */
+      scrollbar-width: none;
+      /* Firefox */
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .fade-in-up {
+        animation: fadeInUp 0.4s ease-out both;
+      }
+
+      .card-enter {
+        animation: fadeInUp 0.35s ease-out both;
+      }
+
+      .chip-pop {
+        animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      }
+
+      .banner-slide {
+        animation: fadeInUp 0.4s ease-out 0.1s both;
+      }
+
+      .card-hover {
+        transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+      }
+
+      .card-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -6px rgb(0 0 0 / 0.12);
+      }
+
+      .chip-hover {
+        transition: transform 0.12s ease-out, background-color 0.12s ease-out;
+      }
+
+      .chip-hover:active {
+        transform: scale(0.96);
+      }
+
+      .skeleton {
+        animation: shimmer 1.4s ease-in-out infinite;
+      }
+
+      .bell-ring {
+        animation: bellRing 0.5s ease-in-out;
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .popover-enter {
+        animation: popoverIn 0.18s ease-out both;
+      }
+    }
+
+    @keyframes popoverIn {
+      from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: scale(0.85);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes shimmer {
+
+      0%,
+      100% {
+        opacity: 0.6;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes bellRing {
+
+      0%,
+      100% {
+        transform: rotate(0deg);
+      }
+
+      20% {
+        transform: rotate(12deg);
+      }
+
+      40% {
+        transform: rotate(-10deg);
+      }
+
+      60% {
+        transform: rotate(6deg);
+      }
+
+      80% {
+        transform: rotate(-4deg);
+      }
+    }
+  </style>
+
+  <!--
+  SECURITY NOTE: all mechanic data below is rendered via textContent,
+  never innerHTML, since it comes from the database (mechanic-supplied
+  shop names, etc.) and must be treated as untrusted user input.
+-->
+
+</head>
+
+<body class="bg-slate-50 text-slate-800 antialiased pb-20 md:pb-0">
+
+  <!-- ================= HEADER ================= -->
+  <header id="site-header" class="sticky top-0 z-40 bg-white border-b border-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-4">
+
+        <!-- Logo -->
+        <a href="../index.html" class="flex items-center gap-2 shrink-0" aria-label="RepairKar home">
+          <img class="text-2xl w-32 font-extrabold text-brand" src="../assets/images/logo/logo.png" alt="RepairKar">
+        </a>
+
+        <!-- Desktop nav -->
+        <nav class="hidden md:flex items-center gap-6" aria-label="Main navigation">
+          <a href="dashboard.html"
+            class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Dashboard</a>
+          <a href="home.html" class="relative text-sm font-semibold text-brand transition-colors">Find Mechanics</a>
+          <a href="live-map.html"
+            class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Emergency Help</a>
+          <a href="chat.html"
+            class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Chats</a>
+        </nav>
+
+        <!-- Location search bar (compact) -->
+        <div class="hidden lg:block flex-1 max-w-xs relative">
+          <button type="button" id="location-btn" aria-haspopup="true" aria-expanded="false"
+            class="w-full flex items-center gap-2 bg-slate-100 hover:bg-slate-200 rounded-xl px-3 py-2 transition-colors">
+            <i class="fa-solid fa-location-dot text-brand text-sm" aria-hidden="true"></i>
+            <span id="location-label" class="text-sm text-slate-600 font-medium truncate">Set your location</span>
+            <i class="fa-solid fa-chevron-down text-xs ml-auto text-slate-400" aria-hidden="true"></i>
+          </button>
+
+          <!-- Location picker popover -->
+          <div id="location-popover"
+            class="hidden absolute top-[calc(100%+8px)] left-0 z-50 w-72 rounded-2xl bg-white shadow-lg border border-slate-100 p-4">
+            <button type="button" id="use-current-location-btn"
+              class="w-full flex items-center gap-2.5 rounded-xl border border-brand text-brand text-sm font-medium px-3.5 py-2.5 hover:bg-brand-light transition-colors">
+              <i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>
+              Use my current location
+            </button>
+
+            <div class="flex items-center gap-2 my-3">
+              <span class="flex-1 h-px bg-slate-100"></span>
+              <span class="text-[11px] text-slate-400">OR</span>
+              <span class="flex-1 h-px bg-slate-100"></span>
+            </div>
+
+            <form id="manual-location-form">
+              <label for="manual-location-input" class="sr-only">Enter your city or area</label>
+              <div class="flex gap-2">
+                <input type="text" id="manual-location-input" placeholder="Enter city or area"
+                  class="flex-1 rounded-xl border border-slate-200 text-sm px-3 py-2 focus:ring-2 focus:ring-brand focus:border-brand focus:outline-none">
+                <button type="submit"
+                  class="rounded-xl bg-accent hover:bg-accent-dark text-white text-sm font-semibold px-3.5">
+                  <i class="fa-solid fa-check" aria-hidden="true"></i>
+                </button>
+              </div>
+            </form>
+
+            <p id="location-error" class="hidden text-xs text-red-600 mt-2"></p>
+          </div>
+        </div>
+
+        <!-- Right actions -->
+        <div class="flex items-center gap-3">
+          <a href="notifications.html" aria-label="Notifications"
+            class="relative shrink-0 w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-brand transition-colors">
+            <i id="notif-bell" class="fa-solid fa-bell text-sm" aria-hidden="true"></i>
+            <span id="notif-badge" class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-accent"></span>
+          </a>
+
+          <!-- Guest action -->
+          <div id="guest-actions" class="hidden md:flex items-center gap-3">
+            <a id="desktop-login" href="../login.html"
+              class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Login</a>
+            <a id="guest-signup" href="../signup.html"
+              class="btn-animated inline-flex items-center justify-center rounded-xl bg-accent hover:bg-accent-dark hover:shadow-lg hover:shadow-accent/30 text-white text-sm font-semibold px-5 py-2.5">
+              Sign Up
+            </a>
+          </div>
+
+          <!-- Account action (Profile with Dropdown) -->
+          <div id="account-actions" class="hidden items-center gap-3">
+            <div class="profile-dropdown">
+              <button id="profile-toggle" type="button"
+                class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-brand transition-colors"
+                aria-haspopup="true" aria-expanded="false">
+                <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
+                  <i id="account-icon" class="fa-regular fa-user text-xs" aria-hidden="true"></i>
+                </span>
+                <span id="account-name"></span>
+                <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200"
+                  id="dropdown-arrow"></i>
+              </button>
+              <div id="profile-dropdown-menu" class="profile-dropdown-menu">
+                <a id="dashboard-link" href="dashboard.html">
+                  <i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>
+                  Dashboard
+                </a>
+                <a id="view-profile-link" href="profile.html">
+                  <i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>
+                  My Profile
+                </a>
+                <div class="dropdown-divider"></div>
+                <button id="logout-btn" type="button" class="logout-btn">
+                  <i class="fa-solid fa-right-from-bracket text-slate-400" aria-hidden="true"></i>
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mobile menu button -->
+          <button id="mobile-menu-btn" type="button"
+            class="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+            aria-label="Open main menu" aria-expanded="false" aria-controls="mobile-menu">
+            <svg id="icon-open" class="w-6 h-6 transition-transform duration-300" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <svg id="icon-close" class="w-6 h-6 hidden transition-transform duration-300" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile menu -->
+      <div id="mobile-menu" class="md:hidden pb-4">
+        <nav class="flex flex-col gap-1" aria-label="Mobile navigation">
+          <a href="dashboard.html"
+            class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Dashboard</a>
+          <a href="home.html" class="px-3 py-2 rounded-lg text-sm font-semibold text-brand bg-slate-50">Find
+            Mechanics</a>
+          <a href="live-map.html"
+            class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Emergency Help</a>
+          <a href="chat.html"
+            class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Chats</a>
+          <a id="mobile-login" href="../login.html"
+            class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Login</a>
+          <a id="mobile-signup" href="../signup.html"
+            class="btn-animated mt-2 inline-flex items-center justify-center rounded-xl bg-accent text-white text-sm font-semibold px-5 py-2.5">Sign
+            Up</a>
+          <div id="mobile-account-section" class="hidden">
+            <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-brand">
+              <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
+                <i id="mobile-account-icon" class="fa-regular fa-user" aria-hidden="true"></i>
+              </span>
+              <span id="mobile-account-name"></span>
+            </div>
+            <a id="mobile-dashboard-link" href="dashboard.html"
+              class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+              <i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>
+              Dashboard
+            </a>
+            <a id="mobile-view-profile-link" href="profile.html"
+              class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+              <i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>
+              My Profile
+            </a>
+            <button id="mobile-logout-btn" type="button"
+              class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 w-full text-left">
+              <i class="fa-solid fa-right-from-bracket text-red-400" aria-hidden="true"></i>
+              Logout
+            </button>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-5">
+
+    <!-- ================= EMERGENCY BANNER ================= -->
+    <a href="live-map.html"
+      class="banner-slide flex items-center gap-3 rounded-2xl bg-gradient-to-r from-brand to-brand-dark text-white px-4 py-3.5 mb-5">
+      <span class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+      </span>
+      <span class="flex-1">
+        <span class="block text-sm font-semibold">Car or bike broken down?</span>
+        <span class="block text-xs text-white/80">Get a verified mechanic in minutes</span>
+      </span>
+      <i class="fa-solid fa-chevron-right text-sm text-white/70" aria-hidden="true"></i>
+    </a>
+
+    <!-- ================= CATEGORY CHIPS (FILTER PILLS) ================= -->
+    <section aria-label="Categories" class="mb-5">
+      <div class="flex items-center justify-between mb-2.5">
+        <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Select Category</h2>
+      </div>
+      <div id="category-chips" class="flex flex-wrap gap-2">
+        <button type="button" data-category=""
+          class="cat-chip chip-hover inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold bg-brand text-white shadow-sm">
+          <i class="fa-solid fa-border-all text-[11px]" aria-hidden="true"></i> All Services
+        </button>
+        <button type="button" data-category="car"
+          class="cat-chip chip-hover inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:border-brand transition-colors">
+          <i class="fa-solid fa-car text-[11px] text-teal-600" aria-hidden="true"></i> Car Mechanic
+        </button>
+        <button type="button" data-category="bike"
+          class="cat-chip chip-hover inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:border-brand transition-colors">
+          <i class="fa-solid fa-motorcycle text-[11px] text-teal-600" aria-hidden="true"></i> Bike Repair
+        </button>
+        <button type="button" data-category="ac"
+          class="cat-chip chip-hover inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:border-brand transition-colors">
+          <i class="fa-solid fa-snowflake text-[11px] text-teal-600" aria-hidden="true"></i> AC Service
+        </button>
+        <button type="button" data-category="fridge"
+          class="cat-chip chip-hover inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:border-brand transition-colors">
+          <i class="fa-solid fa-temperature-low text-[11px] text-teal-600" aria-hidden="true"></i> Fridge Repair
+        </button>
+        <button type="button" data-category="washing-machine"
+          class="cat-chip chip-hover inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:border-brand transition-colors">
+          <i class="fa-solid fa-soap text-[11px] text-teal-600" aria-hidden="true"></i> Washing Machine
+        </button>
+        <button type="button" data-category="electrician"
+          class="cat-chip chip-hover inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:border-brand transition-colors">
+          <i class="fa-solid fa-bolt text-[11px] text-teal-600" aria-hidden="true"></i> Electrician
+        </button>
+        <button type="button" data-category="plumber"
+          class="cat-chip chip-hover inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:border-brand transition-colors">
+          <i class="fa-solid fa-faucet-drip text-[11px] text-teal-600" aria-hidden="true"></i> Plumber
+        </button>
+        <button type="button" data-category="generator"
+          class="cat-chip chip-hover inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:border-brand transition-colors">
+          <i class="fa-solid fa-gears text-[11px] text-teal-600" aria-hidden="true"></i> Generator / UPS
+        </button>
+        <button type="button" data-category="towing"
+          class="cat-chip chip-hover inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:border-brand transition-colors">
+          <i class="fa-solid fa-truck-pickup text-[11px] text-teal-600" aria-hidden="true"></i> Towing &amp; Recovery
+        </button>
+        <button type="button" data-category="tire"
+          class="cat-chip chip-hover inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:border-brand transition-colors">
+          <i class="fa-solid fa-circle-dot text-[11px] text-teal-600" aria-hidden="true"></i> Tire &amp; Puncture
+        </button>
+        <button type="button" data-category="battery"
+          class="cat-chip chip-hover inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:border-brand transition-colors">
+          <i class="fa-solid fa-car-battery text-[11px] text-teal-600" aria-hidden="true"></i> Battery Jumpstart
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= SORT / FILTER BAR ================= -->
+    <div class="flex flex-wrap items-center gap-2 mt-3 mb-5" role="group" aria-label="Sort and filter">
+      <button type="button" data-sort="distance"
+        class="sort-btn chip-hover text-xs font-medium rounded-full border border-brand bg-brand-light text-brand px-3.5 py-1.5">
+        <i class="fa-solid fa-arrow-up-short-wide text-[10px] mr-1" aria-hidden="true"></i>Distance
+      </button>
+      <button type="button" data-sort="rating"
+        class="sort-btn chip-hover text-xs font-medium rounded-full border border-slate-200 px-3.5 py-1.5 bg-white text-slate-600">
+        <i class="fa-solid fa-star text-[10px] mr-1" aria-hidden="true"></i>Rating
+      </button>
+      <button type="button" data-sort="price"
+        class="sort-btn chip-hover text-xs font-medium rounded-full border border-slate-200 px-3.5 py-1.5 bg-white text-slate-600">
+        <i class="fa-solid fa-tag text-[10px] mr-1" aria-hidden="true"></i>Price
+      </button>
+      <button type="button" data-sort="available"
+        class="sort-btn chip-hover text-xs font-medium rounded-full border border-slate-200 px-3.5 py-1.5 bg-white text-slate-600">
+        <i class="fa-solid fa-circle text-[10px] mr-1 text-green-500" aria-hidden="true"></i>Available Now
+      </button>
+    </div>
+
+    <!-- ================= RESULTS ================= -->
+    <div class="flex items-center justify-between mt-5 mb-3">
+      <h1 id="results-title" class="text-lg font-bold text-slate-900">Nearby Mechanics &amp; Specialists</h1>
+      <span id="results-count" class="text-xs font-medium text-slate-400">Showing all</span>
+    </div>
+
+    <div id="skeleton-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" aria-hidden="true">
+      <!-- populated by JS -->
+    </div>
+
+    <div id="mechanic-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 hidden"></div>
+
+    <div id="empty-state" class="hidden text-center py-12">
+      <i class="fa-solid fa-magnifying-glass text-3xl text-slate-300" aria-hidden="true"></i>
+      <p class="mt-3 text-sm font-medium text-slate-600">No mechanics found nearby</p>
+      <p class="text-xs text-slate-400 mt-1">Try a different category or widen your search area.</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="hidden text-center py-12">
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-50 text-red-500 mb-3">
+        <i class="fa-solid fa-triangle-exclamation text-xl" aria-hidden="true"></i>
+      </div>
+      <p id="error-message" class="text-sm font-semibold text-slate-800">Failed to load mechanics</p>
+      <p class="text-xs text-slate-400 mt-1">Something went wrong while connecting to the server.</p>
+      <button type="button" id="retry-btn" class="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand text-white text-xs font-semibold px-4 py-2 hover:bg-brand-dark transition-all">
+        <i class="fa-solid fa-rotate-right text-xs"></i> Try Again
+      </button>
+    </div>
+
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-slate-900 text-slate-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 sm:grid-cols-4 gap-8">
+      <div class="col-span-2 sm:col-span-1">
+        <a href="../index.html" class="inline-block rounded-lg px-3 py-1.5">
+          <img src="../assets/images/logo/logo.png" alt="RepairKar" class="h-9 w-auto">
+        </a>
+        <p class="mt-3 text-sm text-slate-400">Connecting you with trusted professionals for all your home and vehicle needs.</p>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold text-white">Company</h4>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li><a href="../about.html" class="hover:text-white transition-colors">About Us</a></li>
+          <li><a href="../careers.html" class="hover:text-white transition-colors">Careers</a></li>
+          <li><a href="../contact.html" class="hover:text-white transition-colors">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold text-white">Support</h4>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li><a href="../help.html" class="hover:text-white transition-colors">Help Center</a></li>
+          <li><a href="../contact.html" class="hover:text-white transition-colors">Contact Support</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold text-white">Legal</h4>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li><a href="../terms.html" class="hover:text-white transition-colors">Terms of Service</a></li>
+          <li><a href="../privacy.html" class="hover:text-white transition-colors">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-slate-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-xs text-slate-500">
+        <p>&copy; <span id="footer-year"></span> RepairKar. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+  <script>
+    document.getElementById('footer-year').textContent = new Date().getFullYear();
+  </script>
+
+  <!-- ================= STICKY BOTTOM NAV (mobile) ================= -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-100" aria-label="Primary">
+    <div class="max-w-5xl mx-auto grid grid-cols-5 text-center">
+      <a href="home.html" class="flex flex-col items-center gap-1 py-2.5 text-brand">
+        <i class="fa-solid fa-house text-lg" aria-hidden="true"></i>
+        <span class="text-[10px] font-medium">Home</span>
+      </a>
+      <a href="bookings.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400">
+        <i class="fa-regular fa-calendar text-lg" aria-hidden="true"></i>
+        <span class="text-[10px] font-medium">Bookings</span>
+      </a>
+      <a href="chat.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400">
+        <i class="fa-regular fa-comment text-lg" aria-hidden="true"></i>
+        <span class="text-[10px] font-medium">Chat</span>
+      </a>
+      <a href="live-map.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400">
+        <i class="fa-solid fa-map-location-dot text-lg" aria-hidden="true"></i>
+        <span class="text-[10px] font-medium">Map</span>
+      </a>
+      <a href="profile.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400">
+        <i class="fa-regular fa-user text-lg" aria-hidden="true"></i>
+        <span class="text-[10px] font-medium">Profile</span>
+      </a>
+    </div>
+  </nav>
+
+  <script>
+    (function () {
+
+      const CATEGORIES = [
+        { id: 'car', label: 'Car Mechanic', icon: 'fa-car' },
+        { id: 'bike', label: 'Bike Repair', icon: 'fa-motorcycle' },
+        { id: 'ac', label: 'AC Service', icon: 'fa-snowflake' },
+        { id: 'fridge', label: 'Fridge Repair', icon: 'fa-temperature-low' },
+        { id: 'washing-machine', label: 'Washing Machine', icon: 'fa-soap' },
+        { id: 'electrician', label: 'Electrician', icon: 'fa-bolt' },
+        { id: 'plumber', label: 'Plumber', icon: 'fa-faucet-drip' },
+        { id: 'generator', label: 'Generator / UPS', icon: 'fa-gears' },
+        { id: 'towing', label: 'Towing & Recovery', icon: 'fa-truck-pickup' },
+        { id: 'tire', label: 'Tire & Puncture', icon: 'fa-circle-dot' },
+        { id: 'battery', label: 'Battery & Jumpstart', icon: 'fa-car-battery' }
+      ];
+
+      const chipsContainer = document.getElementById('category-chips');
+      const skeletonList = document.getElementById('skeleton-list');
+      const mechanicList = document.getElementById('mechanic-list');
+      const emptyState = document.getElementById('empty-state');
+      const errorState = document.getElementById('error-state');
+      const errorMessage = document.getElementById('error-message');
+      const retryBtn = document.getElementById('retry-btn');
+      const resultsCount = document.getElementById('results-count');
+      const notifBtn = document.getElementById('notif-btn');
+      const notifBell = document.getElementById('notif-bell');
+      const locationLabel = document.getElementById('location-label');
+      const locationBtn = document.getElementById('location-btn');
+      const locationPopover = document.getElementById('location-popover');
+      const useCurrentBtn = document.getElementById('use-current-location-btn');
+      const manualForm = document.getElementById('manual-location-form');
+      const manualInput = document.getElementById('manual-location-input');
+      const locationError = document.getElementById('location-error');
+      const sortButtons = document.querySelectorAll('.sort-btn');
+
+      // ---- Location popover open/close ----
+      function openLocationPopover() {
+        locationPopover.classList.remove('hidden');
+        locationPopover.classList.add('popover-enter');
+        locationBtn.setAttribute('aria-expanded', 'true');
+        manualInput.focus();
+      }
+      function closeLocationPopover() {
+        locationPopover.classList.add('hidden');
+        locationBtn.setAttribute('aria-expanded', 'false');
+      }
+
+      locationBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const isOpen = !locationPopover.classList.contains('hidden');
+        isOpen ? closeLocationPopover() : openLocationPopover();
+      });
+
+      // Close popover when clicking outside it
+      document.addEventListener('click', function (e) {
+        if (!locationPopover.contains(e.target) && e.target !== locationBtn) {
+          closeLocationPopover();
+        }
+      });
+      // Close on Escape
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeLocationPopover();
+      });
+
+      function setLocationLabel(text) {
+        locationLabel.textContent = text; // always textContent — never trust manual input as HTML
+      }
+
+      function showLocationError(message) {
+        locationError.textContent = message;
+        locationError.classList.remove('hidden');
+      }
+      function clearLocationError() {
+        locationError.classList.add('hidden');
+        locationError.textContent = '';
+      }
+
+      // ---- "Use my current location" ----
+      useCurrentBtn.addEventListener('click', function () {
+        clearLocationError();
+        if (!navigator.geolocation) {
+          showLocationError('Location services are not supported on this device.');
+          return;
+        }
+        const originalHtml = useCurrentBtn.innerHTML;
+        useCurrentBtn.disabled = true;
+        useCurrentBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin" aria-hidden="true"></i> Locating…';
+
+        navigator.geolocation.getCurrentPosition(
+          function (position) {
+            setLocationLabel('Current location');
+            // Real reverse-geocoding (lat/lng -> readable address) happens once
+            // this page is wired to the backend/map API — for now we store the
+            // coordinates for the nearby-mechanics query.
+            window.__userLat = position.coords.latitude;
+            window.__userLng = position.coords.longitude;
+            useCurrentBtn.disabled = false;
+            useCurrentBtn.innerHTML = originalHtml;
+            closeLocationPopover();
+            loadMechanics();
+          },
+          function () {
+            useCurrentBtn.disabled = false;
+            useCurrentBtn.innerHTML = originalHtml;
+            showLocationError('Could not access your location. Check your browser permissions, or enter it manually below.');
+          },
+          { timeout: 8000 }
+        );
+      });
+
+      // ---- Manual location entry ----
+      manualForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const value = manualInput.value.trim();
+        if (value.length < 2) {
+          showLocationError('Enter a city or area name.');
+          return;
+        }
+        clearLocationError();
+        setLocationLabel(value);
+        window.__userLat = null;
+        window.__userLng = null;
+        window.__userLocationText = value;
+        closeLocationPopover();
+        loadMechanics();
+      });
+
+      let activeCategory = null;
+      let activeSort = 'distance';
+
+      // ---- Category chips interaction ----
+      function initCategoryChips() {
+        const chips = chipsContainer.querySelectorAll('.cat-chip');
+
+        function selectCategory(catId, shouldLoad) {
+          activeCategory = catId || null;
+          chips.forEach(function (c) {
+            if ((c.dataset.category || '') === (catId || '')) {
+              c.classList.remove('bg-white', 'border', 'border-slate-200', 'text-slate-600');
+              c.classList.add('bg-brand', 'text-white', 'shadow-sm');
+            } else {
+              c.classList.remove('bg-brand', 'text-white', 'shadow-sm');
+              c.classList.add('bg-white', 'border', 'border-slate-200', 'text-slate-600');
+            }
+          });
+          if (shouldLoad) {
+            loadMechanics();
+          }
+        }
+
+        chips.forEach(function (chip) {
+          chip.addEventListener('click', function () {
+            selectCategory(chip.dataset.category || '', true);
+          });
+        });
+
+        // Check if category or location was passed in URL query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialCategory = urlParams.get('category');
+        const initialLocation = urlParams.get('location');
+
+        if (initialLocation && initialLocation.trim()) {
+          setLocationLabel(initialLocation.trim());
+        }
+
+        selectCategory(initialCategory || '', true);
+      }
+
+      // ---- Sort buttons ----
+      sortButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          activeSort = btn.dataset.sort;
+          sortButtons.forEach(function (b) {
+            b.classList.remove('bg-brand-light', 'text-brand', 'border-brand');
+            b.classList.add('bg-white', 'text-slate-600', 'border-slate-200');
+          });
+          btn.classList.remove('bg-white', 'text-slate-600', 'border-slate-200');
+          btn.classList.add('bg-brand-light', 'text-brand', 'border-brand');
+          loadMechanics();
+        });
+      });
+
+      // ---- Skeleton loading cards ----
+      function showSkeleton() {
+        skeletonList.innerHTML = '';
+        for (let i = 0; i < 6; i++) {
+          const card = document.createElement('div');
+          card.className = 'skeleton rounded-3xl border border-slate-100 bg-white p-5 shadow-sm flex flex-col justify-between';
+          card.innerHTML =
+            '<div>' +
+            '  <div class="flex items-start justify-between gap-3">' +
+            '    <div class="flex items-center gap-3.5">' +
+            '      <div class="w-14 h-14 rounded-full bg-slate-200 shrink-0"></div>' +
+            '      <div class="space-y-2">' +
+            '        <div class="h-4 w-28 rounded bg-slate-200"></div>' +
+            '        <div class="h-3 w-20 rounded bg-slate-200"></div>' +
+            '        <div class="h-3 w-24 rounded bg-slate-200"></div>' +
+            '      </div>' +
+            '    </div>' +
+            '    <div class="h-6 w-16 rounded-full bg-slate-200"></div>' +
+            '  </div>' +
+            '  <div class="flex gap-2 mt-4">' +
+            '    <div class="h-7 w-20 rounded-xl bg-slate-200"></div>' +
+            '    <div class="h-7 w-16 rounded-xl bg-slate-200"></div>' +
+            '  </div>' +
+            '</div>' +
+            '<div class="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">' +
+            '  <div class="space-y-1">' +
+            '    <div class="h-3 w-16 rounded bg-slate-200"></div>' +
+            '    <div class="h-5 w-20 rounded bg-slate-200"></div>' +
+            '  </div>' +
+            '  <div class="h-10 w-28 rounded-2xl bg-slate-200"></div>' +
+            '</div>';
+          skeletonList.appendChild(card);
+        }
+        skeletonList.classList.remove('hidden');
+        mechanicList.classList.add('hidden');
+        emptyState.classList.add('hidden');
+        if (errorState) errorState.classList.add('hidden');
+      }
+
+      // ---- Render one gig/mechanic card matching reference design ----
+      function renderMechanicCard(mech, index) {
+        const card = document.createElement('a');
+        card.href = 'booking.html?mechanic_id=' + encodeURIComponent(mech.id) + (mech.gigId ? '&gig_id=' + encodeURIComponent(mech.gigId) : '');
+        card.className = 'card-hover card-enter rounded-3xl border border-slate-100 bg-white p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between block text-left';
+        card.style.animationDelay = (index * 60) + 'ms';
+
+        const topSection = document.createElement('div');
+
+        // Header Row: Avatar + Info (with generous spacing)
+        const headerRow = document.createElement('div');
+        headerRow.className = 'flex items-center gap-5';
+
+        // Circular Avatar Wrap
+        const avatarWrap = document.createElement('div');
+        avatarWrap.className = 'relative shrink-0 mr-1';
+
+        const fallbackAvatar = document.createElement('div');
+        fallbackAvatar.className = 'w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-lg shadow-sm';
+        fallbackAvatar.innerHTML = '<i class="fa-solid fa-user"></i>';
+
+        const photoSrc = mech.photo || mech.mechanicPhoto;
+        if (photoSrc) {
+          const img = document.createElement('img');
+          img.src = photoSrc;
+          img.alt = '';
+          img.className = 'w-12 h-12 rounded-full object-cover border border-slate-100 shadow-sm';
+          img.onerror = function () {
+            img.style.display = 'none';
+            fallbackAvatar.style.display = 'flex';
+          };
+          fallbackAvatar.style.display = 'none';
+          avatarWrap.appendChild(img);
+        }
+        avatarWrap.appendChild(fallbackAvatar);
+        headerRow.appendChild(avatarWrap);
+
+        // Name & Subtitle & Rating
+        const nameBlock = document.createElement('div');
+        nameBlock.className = 'min-w-0 flex-1 pl-1';
+
+        const nameText = document.createElement('h3');
+        nameText.className = 'font-bold text-slate-900 text-base leading-tight truncate';
+        nameText.textContent = mech.shopName || mech.shop_name || 'Mechanic';
+        nameBlock.appendChild(nameText);
+
+        const subTitle = document.createElement('p');
+        subTitle.className = 'text-xs text-emerald-600 font-semibold mt-0.5 truncate';
+        subTitle.textContent = (mech.category ? mech.category.replace(/-/g, ' ') + ' Specialist' : 'Specialist');
+        nameBlock.appendChild(subTitle);
+
+        // Star Rating
+        const ratingRow = document.createElement('div');
+        ratingRow.className = 'flex items-center gap-1.5 text-xs text-slate-500 mt-1';
+        const ratingVal = mech.rating !== undefined && mech.rating !== null ? mech.rating : (mech.avg_rating || null);
+        const reviewCountVal = mech.reviewCount !== undefined && mech.reviewCount !== null ? mech.reviewCount : (mech.review_count || 0);
+
+        if (reviewCountVal > 0 && ratingVal) {
+          ratingRow.innerHTML = '<i class="fa-solid fa-star text-amber-400 text-xs"></i> <span class="font-bold text-slate-800">' + ratingVal + '</span> <span class="text-slate-400">(' + reviewCountVal + ' ' + (reviewCountVal === 1 ? 'review' : 'reviews') + ')</span>';
+        } else {
+          ratingRow.innerHTML = '<span class="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700"><i class="fa-solid fa-star text-amber-400 text-xs"></i> New</span>';
+        }
+        nameBlock.appendChild(ratingRow);
+
+        headerRow.appendChild(nameBlock);
+        topSection.appendChild(headerRow);
+
+        // Description snippet if available
+        const descText = mech.gigDescription || mech.gig_description || mech.bio;
+        if (descText) {
+          const gigDesc = document.createElement('p');
+          gigDesc.className = 'text-xs text-slate-500 mt-2.5 line-clamp-2 leading-relaxed';
+          gigDesc.textContent = descText;
+          topSection.appendChild(gigDesc);
+        }
+
+        // Tags Row: Category Pill + Distance Pill
+        const tagsRow = document.createElement('div');
+        tagsRow.className = 'flex items-center gap-2 mt-3.5 flex-wrap';
+
+        const catPill = document.createElement('span');
+        catPill.className = 'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-slate-100 text-slate-700 text-xs font-medium capitalize';
+        catPill.innerHTML = '<i class="fa-solid fa-wrench text-slate-500 text-[11px]"></i> ' + (mech.category || 'General Repair').replace(/-/g, ' ');
+        tagsRow.appendChild(catPill);
+
+        const distanceVal = (mech.distanceKm !== undefined && mech.distanceKm !== null) ? mech.distanceKm : (mech.distance_km !== undefined ? mech.distance_km : null);
+        if (distanceVal !== null && distanceVal !== undefined) {
+          const distPill = document.createElement('span');
+          distPill.className = 'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-slate-100 text-slate-700 text-xs font-medium';
+          distPill.innerHTML = '<i class="fa-solid fa-map-location-dot text-slate-500 text-[11px]"></i> ' + distanceVal + ' km';
+          tagsRow.appendChild(distPill);
+        }
+
+        topSection.appendChild(tagsRow);
+        card.appendChild(topSection);
+
+        // Bottom Section: Starting price on left, #F59E0B "Book Now ->" button on right
+        const bottomSection = document.createElement('div');
+        bottomSection.className = 'mt-5 pt-4 border-t border-slate-100 flex items-center justify-between gap-3 shrink-0';
+
+        const priceMinVal = (mech.priceMin !== undefined && mech.priceMin !== null) ? mech.priceMin : (mech.startingPrice || 500);
+        const priceMaxVal = (mech.priceMax !== undefined && mech.priceMax !== null) ? mech.priceMax : priceMinVal;
+
+        const priceBlock = document.createElement('div');
+        const priceMinFmt = Number(priceMinVal).toLocaleString();
+        const priceMaxFmt = (priceMaxVal && Number(priceMaxVal) > Number(priceMinVal)) ? Number(priceMaxVal).toLocaleString() : null;
+        priceBlock.innerHTML = '<span class="block text-[10px] font-bold tracking-wider text-slate-400 uppercase">STARTING FROM</span><span class="text-lg sm:text-xl font-bold text-amber-500 mt-0.5 block leading-tight">Rs. ' + priceMinFmt + (priceMaxFmt ? ' – ' + priceMaxFmt : '') + '</span>';
+        bottomSection.appendChild(priceBlock);
+
+        const bookBtn = document.createElement('span');
+        bookBtn.className = 'btn-tap inline-flex items-center justify-center gap-2 text-white font-bold text-xs px-4 py-2.5 rounded-2xl shadow-md text-center leading-tight transition-all shrink-0';
+        bookBtn.style.backgroundColor = '#F59E0B';
+        bookBtn.style.color = '#ffffff';
+        bookBtn.innerHTML = '<span>Book Now</span> <i class="fa-solid fa-arrow-right text-xs ml-0.5"></i>';
+        bottomSection.appendChild(bookBtn);
+
+        card.appendChild(bottomSection);
+        return card;
+      }
+
+      function renderMechanics(list) {
+        mechanicList.innerHTML = '';
+        if (errorState) errorState.classList.add('hidden');
+        if (resultsCount) {
+          resultsCount.textContent = list.length === 1 ? '1 available' : list.length + ' available';
+        }
+        if (!list.length) {
+          skeletonList.classList.add('hidden');
+          mechanicList.classList.add('hidden');
+          emptyState.classList.remove('hidden');
+          return;
+        }
+        const frag = document.createDocumentFragment();
+        list.forEach(function (mech, i) {
+          frag.appendChild(renderMechanicCard(mech, i));
+        });
+        mechanicList.appendChild(frag);
+        skeletonList.classList.add('hidden');
+        emptyState.classList.add('hidden');
+        mechanicList.classList.remove('hidden');
+      }
+
+      function showLoadError(message) {
+        skeletonList.classList.add('hidden');
+        mechanicList.classList.add('hidden');
+        emptyState.classList.add('hidden');
+        if (resultsCount) resultsCount.textContent = '0 available';
+        if (errorState) {
+          if (errorMessage && message) {
+            errorMessage.textContent = message;
+          }
+          errorState.classList.remove('hidden');
+        } else {
+          emptyState.classList.remove('hidden');
+        }
+      }
+
+      if (retryBtn) {
+        retryBtn.addEventListener('click', function () {
+          loadMechanics();
+        });
+      }
+
+      // ---- Load mechanics from the API ----
+      function loadMechanics() {
+        showSkeleton();
+
+        const params = new URLSearchParams();
+        if (activeCategory) params.set('category', activeCategory);
+        params.set('sort', activeSort);
+        if (window.__userLat != null && window.__userLng != null) {
+          params.set('lat', window.__userLat);
+          params.set('lng', window.__userLng);
+        }
+
+        fetch('../api/get-mechanics.php?' + params.toString(), { credentials: 'same-origin' })
+          .then(function (res) {
+            if (!res.ok) throw new Error('Request failed with status ' + res.status);
+            return res.json();
+          })
+          .then(function (data) {
+            if (data && data.status === 'error') {
+              throw new Error(data.message || 'Failed to load mechanics.');
+            }
+            renderMechanics(Array.isArray(data.mechanics) ? data.mechanics : []);
+          })
+          .catch(function (err) {
+            console.error('Error loading mechanics:', err);
+            showLoadError(err.message || 'Failed to load mechanics. Please check your connection and try again.');
+          });
+      }
+
+      // ---- Notification bell (visual only here — real data wiring later) ----
+      if (notifBtn && notifBell) {
+        notifBtn.addEventListener('click', function () {
+          notifBell.classList.remove('bell-ring');
+          void notifBell.offsetWidth; // restart animation
+          notifBell.classList.add('bell-ring');
+          window.location.href = 'notifications.html';
+        });
+      }
+
+      initCategoryChips();
+
+      // ---- Quiet auto-detect on page load (no popover, no error shown) ----
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function (position) {
+            setLocationLabel('Current location');
+            window.__userLat = position.coords.latitude;
+            window.__userLng = position.coords.longitude;
+            loadMechanics();
+          },
+          function (err) {
+            // Permission denied or unavailable — leave the default
+            // "Set your location" label, user can pick manually via the popover.
+            console.warn('Geolocation auto-detect failed:', err ? err.message : 'Unavailable');
+          },
+          { timeout: 5000 }
+        );
+      }
+    })();
+  </script>
+  <script src="../assets/js/navbar.js"></script>
+<script src="../assets/js/loader.js"></script>
+</body>
+
+</html>

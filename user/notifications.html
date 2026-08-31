@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Notifications — RepairKar</title>
+<meta name="description" content="Stay updated on your RepairKar bookings, messages, and account activity.">
+<meta name="robots" content="noindex, follow">
+
+<link rel="icon" type="image/x-icon" href="../assets/images/logo/favicon.ico">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS — compiled via Tailwind CLI. Run `npm run build:css` after adding new classes. -->
+<link rel="stylesheet" href="../assets/css/tailwind.min.css">
+<link rel="stylesheet" href="../assets/css/loader.css">
+<link rel="stylesheet" href="../assets/css/navbar.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<style>
+  body { font-family: 'Inter', sans-serif; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .fade-in-up    { animation: fadeInUp 0.4s ease-out both; }
+    .row-enter     { animation: fadeInUp 0.3s ease-out both; }
+    .filter-underline { transition: transform 0.25s cubic-bezier(0.65,0,0.35,1), width 0.25s ease-out; }
+    .btn-tap       { transition: transform 0.12s ease-out; }
+    .btn-tap:active { transform: scale(0.96); }
+    .unread-dot    { animation: dotPulse 1.8s ease-in-out infinite; }
+    .skeleton      { animation: shimmer 1.4s ease-in-out infinite; }
+    .row-clear     { transition: opacity 0.25s ease-out, transform 0.25s ease-out, max-height 0.3s ease-out, margin 0.3s ease-out, padding 0.3s ease-out; }
+  }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes dotPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
+    50%      { box-shadow: 0 0 0 5px rgba(249, 115, 22, 0); }
+  }
+  @keyframes shimmer { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+</style>
+
+<!--
+  SECURITY NOTE: notification titles/messages below may reference
+  user-generated content (e.g. a chat preview, a mechanic's name) —
+  every dynamic value is rendered via textContent, never innerHTML.
+-->
+
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased pb-20 md:pb-0">
+
+<!-- ================= HEADER ================= -->
+<header id="site-header" class="sticky top-0 z-50 bg-white border-b border-slate-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- Logo -->
+      <a href="../index.html" class="flex items-center gap-2 shrink-0" aria-label="RepairKar home">
+        <img class="text-2xl w-32 font-extrabold text-brand" src="../assets/images/logo/logo.png" alt="RepairKar">
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-8" aria-label="Main navigation">
+        <a href="dashboard.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Dashboard</a>
+        <a href="home.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Find Mechanics</a>
+        <a href="live-map.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Emergency Help</a>
+        <a href="chat.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Chats</a>
+      </nav>
+
+      <!-- Right actions -->
+      <div class="flex items-center gap-3">
+        <button type="button" id="mark-all-read-btn" class="btn-tap text-xs font-semibold text-brand hover:underline">
+          Mark all read
+        </button>
+
+        <a href="notifications.html" aria-label="Notifications" class="relative shrink-0 w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-brand transition-colors">
+          <i class="fa-solid fa-bell text-sm" aria-hidden="true"></i>
+        </a>
+
+        <!-- Guest action -->
+        <div id="guest-actions" class="hidden md:flex items-center gap-3">
+          <a id="desktop-login" href="../login.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Login</a>
+          <a id="guest-signup" href="../signup.html"
+             class="btn-animated inline-flex items-center justify-center rounded-xl bg-accent hover:bg-accent-dark hover:shadow-lg hover:shadow-accent/30 text-white text-sm font-semibold px-5 py-2.5">
+            Sign Up
+          </a>
+        </div>
+
+        <!-- Account action (Profile Dropdown) -->
+        <div id="account-actions" class="hidden items-center gap-3">
+          <div class="profile-dropdown">
+            <button id="profile-toggle" type="button" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-brand transition-colors" aria-haspopup="true" aria-expanded="false">
+              <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
+                <i id="account-icon" class="fa-regular fa-user text-xs" aria-hidden="true"></i>
+              </span>
+              <span id="account-name"></span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="dropdown-arrow"></i>
+            </button>
+            <div id="profile-dropdown-menu" class="profile-dropdown-menu">
+              <a id="dashboard-link" href="dashboard.html">
+                <i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>
+                Dashboard
+              </a>
+              <a id="view-profile-link" href="profile.html">
+                <i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>
+                My Profile
+              </a>
+              <div class="dropdown-divider"></div>
+              <button id="logout-btn" type="button" class="logout-btn">
+                <i class="fa-solid fa-right-from-bracket text-slate-400" aria-hidden="true"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile menu button -->
+        <button id="mobile-menu-btn" type="button"
+                class="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+                aria-label="Open main menu" aria-expanded="false" aria-controls="mobile-menu">
+          <svg id="icon-open" class="w-6 h-6 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <svg id="icon-close" class="w-6 h-6 hidden transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="md:hidden pb-4">
+      <nav class="flex flex-col gap-1" aria-label="Mobile navigation">
+        <a href="dashboard.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Dashboard</a>
+        <a href="home.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Find Mechanics</a>
+        <a href="live-map.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Emergency Help</a>
+        <a href="chat.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Chats</a>
+        <a href="notifications.html" class="px-3 py-2 rounded-lg text-sm font-semibold text-brand bg-slate-50">Notifications</a>
+        <a id="mobile-login" href="../login.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Login</a>
+        <a id="mobile-signup" href="../signup.html" class="btn-animated mt-2 inline-flex items-center justify-center rounded-xl bg-accent text-white text-sm font-semibold px-5 py-2.5">Sign Up</a>
+        <div id="mobile-account-section" class="hidden">
+          <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-brand">
+            <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
+              <i id="mobile-account-icon" class="fa-regular fa-user" aria-hidden="true"></i>
+            </span>
+            <span id="mobile-account-name"></span>
+          </div>
+          <a id="mobile-dashboard-link" href="dashboard.html" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+            <i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>
+            Dashboard
+          </a>
+          <a id="mobile-view-profile-link" href="profile.html" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+            <i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>
+            My Profile
+          </a>
+          <button id="mobile-logout-btn" type="button" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 w-full text-left">
+            <i class="fa-solid fa-right-from-bracket text-red-400" aria-hidden="true"></i>
+            Logout
+          </button>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Filter tabs -->
+    <nav class="relative flex border-t border-slate-100 max-w-2xl mx-auto" role="tablist" aria-label="Notification filters">
+      <button type="button" data-filter="all" role="tab" aria-selected="true" class="filter-btn flex-1 text-xs font-semibold py-3 text-brand">All</button>
+      <button type="button" data-filter="booking" role="tab" aria-selected="false" class="filter-btn flex-1 text-xs font-medium py-3 text-slate-500">Bookings</button>
+      <button type="button" data-filter="message" role="tab" aria-selected="false" class="filter-btn flex-1 text-xs font-medium py-3 text-slate-500">Messages</button>
+      <button type="button" data-filter="system" role="tab" aria-selected="false" class="filter-btn flex-1 text-xs font-medium py-3 text-slate-500">System</button>
+      <span id="filter-underline" class="filter-underline absolute bottom-0 left-0 w-1/4 h-0.5 bg-brand"></span>
+    </nav>
+  </div>
+</header>
+
+<main class="max-w-2xl mx-auto px-4 py-4">
+
+  <!-- ================= SKELETON ================= -->
+  <div id="skeleton" class="space-y-2.5">
+    <div class="skeleton h-16 rounded-2xl bg-slate-200"></div>
+    <div class="skeleton h-16 rounded-2xl bg-slate-200"></div>
+    <div class="skeleton h-16 rounded-2xl bg-slate-200"></div>
+  </div>
+
+  <!-- ================= GROUPED LIST ================= -->
+  <div id="notif-groups" class="hidden space-y-5"></div>
+
+  <!-- ================= EMPTY STATE ================= -->
+  <div id="empty-state" class="hidden text-center py-16">
+    <i class="fa-regular fa-bell-slash text-3xl text-slate-300" aria-hidden="true"></i>
+    <p class="mt-3 text-sm font-medium text-slate-600">No notifications</p>
+    <p class="text-xs text-slate-400 mt-1">You're all caught up.</p>
+  </div>
+
+</main>
+
+<!-- ================= STICKY BOTTOM NAV (mobile) ================= -->
+<nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-100" aria-label="Primary">
+  <div class="max-w-2xl mx-auto grid grid-cols-5 text-center">
+    <a href="home.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400">
+      <i class="fa-solid fa-house text-lg" aria-hidden="true"></i>
+      <span class="text-[10px] font-medium">Home</span>
+    </a>
+    <a href="bookings.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400">
+      <i class="fa-regular fa-calendar text-lg" aria-hidden="true"></i>
+      <span class="text-[10px] font-medium">Bookings</span>
+    </a>
+    <a href="chat.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400">
+      <i class="fa-regular fa-comment text-lg" aria-hidden="true"></i>
+      <span class="text-[10px] font-medium">Chat</span>
+    </a>
+    <a href="live-map.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400">
+      <i class="fa-solid fa-map-location-dot text-lg" aria-hidden="true"></i>
+      <span class="text-[10px] font-medium">Map</span>
+    </a>
+    <a href="profile.html" class="flex flex-col items-center gap-1 py-2.5 text-slate-400">
+      <i class="fa-regular fa-user text-lg" aria-hidden="true"></i>
+      <span class="text-[10px] font-medium">Profile</span>
+    </a>
+  </div>
+</nav>
+
+<script>
+(function () {
+
+  const skeleton      = document.getElementById('skeleton');
+  const notifGroups    = document.getElementById('notif-groups');
+  const emptyState     = document.getElementById('empty-state');
+  const filterButtons  = document.querySelectorAll('.filter-btn');
+  const filterUnderline = document.getElementById('filter-underline');
+  const markAllReadBtn = document.getElementById('mark-all-read-btn');
+
+  const FILTER_ORDER = ['all', 'booking', 'message', 'system'];
+  let activeFilter = 'all';
+  let allNotifications = [];
+
+  const TYPE_ICON = {
+    booking: { icon: 'fa-calendar-check', bg: 'bg-brand-light', color: 'text-brand' },
+    message: { icon: 'fa-comment', bg: 'bg-blue-50', color: 'text-blue-500' },
+    system:  { icon: 'fa-shield-halved', bg: 'bg-amber-50', color: 'text-amber-500' },
+    promo:   { icon: 'fa-tag', bg: 'bg-purple-50', color: 'text-purple-500' }
+  };
+
+  // ---- Filter tab switching ----
+  function setActiveFilter(filter) {
+    activeFilter = filter;
+    const index = FILTER_ORDER.indexOf(filter);
+    filterButtons.forEach(function (btn) {
+      const isActive = btn.dataset.filter === filter;
+      btn.classList.toggle('text-brand', isActive);
+      btn.classList.toggle('font-semibold', isActive);
+      btn.classList.toggle('text-slate-500', !isActive);
+      btn.classList.toggle('font-medium', !isActive);
+      btn.setAttribute('aria-selected', String(isActive));
+    });
+    filterUnderline.style.transform = 'translateX(' + (index * 100) + '%)';
+    renderNotifications();
+  }
+  filterButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () { setActiveFilter(btn.dataset.filter); });
+  });
+
+  function timeGroupLabel(iso) {
+    const date = new Date(iso);
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfYesterday = new Date(startOfToday);
+    startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+
+    if (date >= startOfToday) return 'Today';
+    if (date >= startOfYesterday) return 'Yesterday';
+    return 'Earlier';
+  }
+
+  function relativeTime(iso) {
+    const date = new Date(iso);
+    const diffMs = Date.now() - date.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return 'Just now';
+    if (diffMin < 60) return diffMin + 'm ago';
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return diffHr + 'h ago';
+    const diffDay = Math.floor(diffHr / 24);
+    if (diffDay < 7) return diffDay + 'd ago';
+    return date.toLocaleDateString();
+  }
+
+  // ---- Render one notification row (untrusted content -> textContent) ----
+  function renderNotifRow(notif, index) {
+    const style = TYPE_ICON[notif.type] || TYPE_ICON.system;
+
+    const row = document.createElement(notif.href ? 'a' : 'div');
+    if (notif.href) row.href = notif.href;
+    row.dataset.notifId = notif.id;
+    row.className = 'row-enter row-clear flex items-start gap-3 rounded-2xl p-3.5 ' +
+      (notif.isRead ? 'bg-white border border-slate-100' : 'bg-brand-light/40 border border-brand-light');
+    row.style.animationDelay = (index * 40) + 'ms';
+
+    const iconWrap = document.createElement('span');
+    iconWrap.className = 'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ' + style.bg;
+    const icon = document.createElement('i');
+    icon.className = 'fa-solid ' + style.icon + ' text-sm ' + style.color;
+    icon.setAttribute('aria-hidden', 'true');
+    iconWrap.appendChild(icon);
+    row.appendChild(iconWrap);
+
+    const info = document.createElement('div');
+    info.className = 'min-w-0 flex-1';
+
+    const titleRow = document.createElement('div');
+    titleRow.className = 'flex items-center gap-1.5';
+    const title = document.createElement('p');
+    title.className = 'text-sm font-semibold text-slate-900 truncate';
+    title.textContent = notif.title;   // untrusted — textContent only
+    titleRow.appendChild(title);
+    if (!notif.isRead) {
+      const dot = document.createElement('span');
+      dot.className = 'unread-dot w-1.5 h-1.5 rounded-full bg-accent shrink-0';
+      titleRow.appendChild(dot);
+    }
+    info.appendChild(titleRow);
+
+    const message = document.createElement('p');
+    message.className = 'text-xs text-slate-500 mt-0.5 line-clamp-2';
+    message.textContent = notif.message;   // untrusted — textContent only
+    info.appendChild(message);
+
+    if (notif.actionLabel) {
+      const actionBtn = document.createElement('button');
+      actionBtn.type = 'button';
+      actionBtn.className = 'btn-tap mt-2 inline-flex items-center gap-1.5 rounded-lg bg-brand text-white text-xs font-semibold px-3 py-1.5';
+      actionBtn.textContent = notif.actionLabel;   // untrusted — textContent only
+      actionBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (notif.actionHref) window.location.href = notif.actionHref;
+      });
+      info.appendChild(actionBtn);
+    }
+
+    row.appendChild(info);
+
+    const time = document.createElement('span');
+    time.className = 'text-[11px] text-slate-400 shrink-0 whitespace-nowrap';
+    time.textContent = relativeTime(notif.createdAt);
+    row.appendChild(time);
+
+    if (!notif.isRead) {
+      row.addEventListener('click', function () { markAsRead(notif.id, row); }, { once: true });
+    }
+
+    return row;
+  }
+
+  function markAsRead(id, rowEl) {
+    const notif = allNotifications.find(function (n) { return n.id === id; });
+    if (notif) notif.isRead = true;
+    if (rowEl) {
+      rowEl.classList.remove('bg-brand-light/40', 'border-brand-light');
+      rowEl.classList.add('bg-white', 'border-slate-100');
+      const dot = rowEl.querySelector('.unread-dot');
+      if (dot) dot.remove();
+    }
+    fetch('../api/mark-notification-read.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ notification_id: id })
+    }).catch(function () { /* best-effort — UI already reflects read state */ });
+  }
+
+  function renderNotifications() {
+    const filtered = activeFilter === 'all'
+      ? allNotifications
+      : allNotifications.filter(function (n) { return n.type === activeFilter; });
+
+    notifGroups.innerHTML = '';
+
+    if (!filtered.length) {
+      notifGroups.classList.add('hidden');
+      emptyState.classList.remove('hidden');
+      return;
+    }
+    emptyState.classList.add('hidden');
+
+    const groups = {};
+    const groupOrder = [];
+    filtered.forEach(function (notif) {
+      const label = timeGroupLabel(notif.createdAt);
+      if (!groups[label]) { groups[label] = []; groupOrder.push(label); }
+      groups[label].push(notif);
+    });
+
+    let rowIndex = 0;
+    groupOrder.forEach(function (label) {
+      const section = document.createElement('section');
+      const heading = document.createElement('h2');
+      heading.className = 'text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2 px-1';
+      heading.textContent = label;
+      section.appendChild(heading);
+
+      const rowsWrap = document.createElement('div');
+      rowsWrap.className = 'space-y-2';
+      groups[label].forEach(function (notif) {
+        rowsWrap.appendChild(renderNotifRow(notif, rowIndex));
+        rowIndex++;
+      });
+      section.appendChild(rowsWrap);
+      notifGroups.appendChild(section);
+    });
+
+    notifGroups.classList.remove('hidden');
+  }
+
+  // ---- Mark all as read ----
+  markAllReadBtn.addEventListener('click', function () {
+    const unreadIds = allNotifications.filter(function (n) { return !n.isRead; }).map(function (n) { return n.id; });
+    if (!unreadIds.length) return;
+    allNotifications.forEach(function (n) { n.isRead = true; });
+    renderNotifications();
+
+    fetch('../api/mark-all-notifications-read.php', {
+      method: 'POST',
+      credentials: 'same-origin'
+    }).catch(function () { /* best-effort */ });
+  });
+
+  // ---- Load notifications ----
+  fetch('../api/get-notifications.php', { credentials: 'same-origin' })
+    .then(function (res) { if (!res.ok) throw new Error('request_failed'); return res.json(); })
+    .then(function (data) {
+      allNotifications = Array.isArray(data.notifications) ? data.notifications : [];
+      skeleton.classList.add('hidden');
+      renderNotifications();
+    })
+    .catch(function () {
+      // No backend running yet in this environment.
+      allNotifications = [];
+      skeleton.classList.add('hidden');
+      renderNotifications();
+    });
+
+})();
+</script>
+<script src="../assets/js/navbar.js"></script>
+<script src="../assets/js/loader.js"></script>
+</body>
+</html>
