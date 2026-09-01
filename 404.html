@@ -2,6 +2,26 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>
+  /* -------------------------------------------------------------------------
+   * Error-page path fix (works with ErrorDocument in .htaccess).
+   *
+   * Apache serves this 404 page for ANY missing URL while the browser URL
+   * stays on the missing page, e.g. /mechanic/chat.html. Relative URLs such
+   * as "assets/css/tailwind.min.css" would then resolve to
+   * /mechanic/assets/css/tailwind.min.css which does not exist - that is why
+   * the CSS/JS of this page failed to load.
+   *
+   * This script inserts a <base> tag pointing back to the site root BEFORE
+   * any stylesheet, script or link is fetched, so every relative URL on this
+   * page resolves correctly no matter how deep the broken URL was.
+   * ---------------------------------------------------------------------- */
+  (function () {
+    var segments = window.location.pathname.split('/').filter(Boolean);
+    var prefix = '../'.repeat(Math.max(segments.length - 1, 0));
+    if (prefix) document.write('<base href="' + prefix + '">');
+  })();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- ===== SEO: Title & Meta ===== -->

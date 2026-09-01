@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_users_identifier CHECK (phone IS NOT NULL OR email IS NOT NULL),
     INDEX idx_users_role (role)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =========================================================
 -- MECHANICS — extends a 'mechanic'-role user with shop info
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS mechanics (
     INDEX idx_mechanics_category (category),
     INDEX idx_mechanics_verified (verified),
     INDEX idx_mechanics_location (lat, lng)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =========================================================
 -- GIGS — services a mechanic offers, Fiverr-style listings
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS gigs (
     CONSTRAINT chk_gigs_price CHECK (price_max >= price_min),
     INDEX idx_gigs_mechanic (mechanic_id),
     INDEX idx_gigs_active (active)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =========================================================
 -- BOOKINGS — a user's request for a mechanic's service
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     INDEX idx_bookings_user (user_id),
     INDEX idx_bookings_mechanic (mechanic_id),
     INDEX idx_bookings_status (status)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =========================================================
 -- MESSAGES — chat between a user and mechanic on a booking
@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS messages (
         FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_messages_booking (booking_id, id),
     INDEX idx_messages_read (read_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =========================================================
 -- CALL SIGNALS — short-lived WebRTC negotiation messages
@@ -139,7 +139,7 @@ CREATE TABLE IF NOT EXISTS call_signals (
     CONSTRAINT fk_call_signal_booking
         FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
     INDEX idx_call_signals (booking_id, id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS calls (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS calls (
     duration_seconds INT UNSIGNED DEFAULT NULL,
     CONSTRAINT fk_calls_booking FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
     CONSTRAINT fk_calls_caller FOREIGN KEY (caller_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =========================================================
 -- CONTACT MESSAGES - public support/contact submissions
@@ -169,7 +169,7 @@ CREATE TABLE IF NOT EXISTS contact_messages (
     CONSTRAINT fk_contact_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
     INDEX idx_contact_status (status),
     INDEX idx_contact_created (created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =========================================================
 -- REVIEWS — one review per completed booking
@@ -185,6 +185,6 @@ CREATE TABLE IF NOT EXISTS reviews (
         FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
     CONSTRAINT chk_reviews_rating CHECK (rating BETWEEN 1 AND 5),
     UNIQUE KEY uq_reviews_booking (booking_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

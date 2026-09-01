@@ -178,4 +178,4 @@ This project is private and proprietary. © RepairKar — All rights reserved.
 
 ---
 
-<p align="center">Made with 💚 in Pakistan</p>
+<p align="center">Made Hamza Anwar</p>
