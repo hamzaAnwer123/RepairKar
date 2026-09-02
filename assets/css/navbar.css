@@ -1,6 +1,32 @@
 /* ===================================================
-   RepairKar — Shared Navbar Styles
+   RepairKar — Shared Navbar Styles & Mobile Viewport Guard
    =================================================== */
+
+/* ---- Global viewport overflow protection ---- */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Strictly hide desktop navbar action containers on mobile (< 768px) */
+@media (max-width: 767px) {
+  #site-header #guest-actions,
+  #site-header #account-actions,
+  header #guest-actions,
+  header #account-actions,
+  .career-nav,
+  .contact-header-nav,
+  .help-header-nav,
+  .about-nav {
+    display: none !important;
+  }
+}
 
 /* ---- Profile dropdown ---- */
 .profile-dropdown {

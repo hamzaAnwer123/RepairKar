@@ -12,31 +12,129 @@
 <link rel="stylesheet" href="assets/css/navbar.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 <style>
+  html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw;
+    width: 100%;
+  }
   body { font-family: Inter, ui-sans-serif, sans-serif; }
+  .terms-content { word-break: break-word; overflow-wrap: break-word; }
   .terms-content h2 { margin-top: 2rem; font-size: 1.125rem; font-weight: 700; color: #0f172a; }
   .terms-content h2:first-child { margin-top: 0; }
   .terms-content p, .terms-content li { margin-top: .75rem; font-size: .875rem; line-height: 1.75; color: #64748b; }
   .terms-content ul { list-style: disc; padding-left: 1.25rem; }
-  .career-nav { display: flex; align-items: center; gap: 28px; white-space: nowrap; }
-  .career-nav a { color: #475569; text-decoration: none; }
-  .career-nav a:hover { color: #0f766e; }
-  .profile-dropdown { position: relative; }
-  .profile-dropdown-menu { position: absolute; right: 0; top: calc(100% + 8px); min-width: 200px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 10px 40px -12px rgba(15,23,42,.18); opacity: 0; visibility: hidden; transform: translateY(-8px); transition: opacity .2s ease, transform .2s ease, visibility .2s ease; z-index: 100; overflow: hidden; }
-  .profile-dropdown-menu.open { opacity: 1; visibility: visible; transform: translateY(0); }
-  .profile-dropdown-menu a, .profile-dropdown-menu button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 16px; font-size: 14px; color: #334155; background: none; border: 0; text-align: left; text-decoration: none; }
-  .profile-dropdown-menu a:hover, .profile-dropdown-menu button:hover { background: #f1f5f9; color: #0f766e; }
-  .dropdown-divider { height: 1px; background: #e2e8f0; }
+  
+  @media (max-width: 767px) {
+    #site-header #guest-actions,
+    #site-header #account-actions,
+    header #guest-actions,
+    header #account-actions,
+    #site-header nav.md\:flex,
+    header nav.md\:flex {
+      display: none !important;
+    }
+  }
 </style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-800 antialiased">
-<header id="site-header" class="sticky top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur">
-  <div class="mx-auto max-w-7xl px-4 py-3 sm:px-6 sm:py-4 lg:px-8"><div class="flex min-h-16 items-center justify-between gap-4">
-    <a href="index.html" aria-label="RepairKar home"><img src="assets/images/logo/logo.png" alt="RepairKar" class="w-32"></a>
-    <nav class="career-nav hidden text-sm font-medium md:flex" aria-label="Main navigation"><a href="index.html">Home</a><a href="user/home.html">Find Mechanics</a><a href="help.html">Help</a><a href="contact.html">Contact</a><a id="desktop-login" href="login.html">Login</a></nav>
-    <div id="guest-actions" class="hidden items-center gap-3 md:flex"><a id="guest-signup" href="signup.html" class="rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white">Sign Up</a></div>
-    <div id="account-actions" class="hidden items-center gap-3"><div class="profile-dropdown"><button id="profile-toggle" type="button" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700" aria-haspopup="true" aria-expanded="false"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-light text-brand"><i id="account-icon" class="fa-regular fa-user text-xs" aria-hidden="true"></i></span><span id="account-name"></span><i id="dropdown-arrow" class="fa-solid fa-chevron-down text-[10px] text-slate-400" aria-hidden="true"></i></button><div id="profile-dropdown-menu" class="profile-dropdown-menu"><a id="dashboard-link" href="#"><i class="fa-solid fa-table-columns" aria-hidden="true"></i>Dashboard</a><a id="view-profile-link" href="#"><i class="fa-regular fa-user" aria-hidden="true"></i>My Profile</a><div class="dropdown-divider"></div><button id="logout-btn" type="button"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>Logout</button></div></div></div>
-    <button id="mobile-menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu" class="md:hidden"><i class="fa-solid fa-bars text-slate-600" aria-hidden="true"></i></button>
-  </div><div id="mobile-menu" class="border-t border-slate-100 pb-4 pt-3 md:hidden"><nav class="flex flex-col gap-1"><a href="index.html" class="rounded-lg px-3 py-2 text-sm text-slate-600">Home</a><a href="user/home.html" class="rounded-lg px-3 py-2 text-sm text-slate-600">Find Mechanics</a><a href="help.html" class="rounded-lg px-3 py-2 text-sm text-slate-600">Help</a><a href="contact.html" class="rounded-lg px-3 py-2 text-sm text-slate-600">Contact</a><a id="mobile-login" href="login.html" class="rounded-lg px-3 py-2 text-sm text-slate-600">Login</a><a id="mobile-signup" href="signup.html" class="rounded-xl bg-accent px-4 py-2 text-center text-sm font-semibold text-white">Sign Up</a><div id="mobile-account-section" class="hidden"><p class="px-3 py-2 text-sm font-semibold text-brand"><i id="mobile-account-icon" class="fa-regular fa-user mr-2" aria-hidden="true"></i><span id="mobile-account-name"></span></p><a id="mobile-dashboard-link" href="#" class="block px-3 py-2 text-sm text-slate-600">Dashboard</a><a id="mobile-view-profile-link" href="#" class="block px-3 py-2 text-sm text-slate-600">My Profile</a><button id="mobile-logout-btn" type="button" class="w-full px-3 py-2 text-left text-sm text-red-500">Logout</button></div></nav></div></div>
+
+<!-- ================= HEADER ================= -->
+<header id="site-header" class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- Logo -->
+      <a href="index.html" class="flex items-center gap-2 shrink-0" aria-label="RepairKar home">
+        <img class="text-2xl w-32 font-extrabold text-brand" src="assets/images/logo/logo.png" alt="RepairKar">
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-8" aria-label="Main navigation">
+        <a href="index.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Home</a>
+        <a href="user/home.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Find Mechanics</a>
+        <a href="help.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Help</a>
+        <a href="contact.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Contact</a>
+        <a id="desktop-login" href="login.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Login</a>
+      </nav>
+
+      <div id="guest-actions" class="hidden md:flex items-center gap-3">
+        <a id="guest-signup" href="signup.html"
+           class="btn-animated inline-flex items-center justify-center rounded-xl bg-accent hover:bg-accent-dark hover:shadow-lg hover:shadow-accent/30 text-white text-sm font-semibold px-5 py-2.5">
+          Sign Up
+        </a>
+      </div>
+      <div id="account-actions" class="hidden md:flex items-center gap-3">
+        <div class="profile-dropdown">
+          <button id="profile-toggle" type="button" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-brand transition-colors" aria-haspopup="true" aria-expanded="false">
+            <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
+              <i id="account-icon" class="fa-regular fa-user text-xs" aria-hidden="true"></i>
+            </span>
+            <span id="account-name"></span>
+            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="dropdown-arrow"></i>
+          </button>
+          <div id="profile-dropdown-menu" class="profile-dropdown-menu">
+            <a id="dashboard-link" href="#">
+              <i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>
+              Dashboard
+            </a>
+            <a id="view-profile-link" href="#">
+              <i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>
+              My Profile
+            </a>
+            <div class="dropdown-divider"></div>
+            <button id="logout-btn" type="button" class="logout-btn">
+              <i class="fa-solid fa-right-from-bracket text-slate-400" aria-hidden="true"></i>
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile menu button -->
+      <button id="mobile-menu-btn" type="button"
+              class="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+              aria-label="Open main menu" aria-expanded="false" aria-controls="mobile-menu">
+        <svg id="icon-open" class="w-6 h-6 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <svg id="icon-close" class="w-6 h-6 hidden transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="md:hidden pb-4">
+      <nav class="flex flex-col gap-1" aria-label="Mobile navigation">
+        <a href="index.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Home</a>
+        <a href="user/home.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Find Mechanics</a>
+        <a href="help.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Help</a>
+        <a href="contact.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Contact</a>
+        <a id="mobile-login" href="login.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Login</a>
+        <a id="mobile-signup" href="signup.html" class="btn-animated mt-2 inline-flex items-center justify-center rounded-xl bg-accent text-white text-sm font-semibold px-5 py-2.5">Sign Up</a>
+        <div id="mobile-account-section" class="hidden">
+          <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-brand">
+            <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
+              <i id="mobile-account-icon" class="fa-regular fa-user" aria-hidden="true"></i>
+            </span>
+            <span id="mobile-account-name"></span>
+          </div>
+          <a id="mobile-dashboard-link" href="#" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+            <i class="fa-solid fa-table-columns text-slate-400" aria-hidden="true"></i>
+            Dashboard
+          </a>
+          <a id="mobile-view-profile-link" href="#" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+            <i class="fa-regular fa-user text-slate-400" aria-hidden="true"></i>
+            My Profile
+          </a>
+          <button id="mobile-logout-btn" type="button" class="flex items-center gap-2 px-3 py-2 ml-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 w-full text-left">
+            <i class="fa-solid fa-right-from-bracket text-red-400" aria-hidden="true"></i>
+            Logout
+          </button>
+        </div>
+      </nav>
+    </div>
+  </div>
 </header>
 <main>
   <section class="bg-brand"><div class="mx-auto max-w-4xl px-4 py-24 sm:px-6 sm:py-20"><p class="text-xs font-bold uppercase tracking-widest text-white/70">RepairKar policies</p><h1 class="mt-3 text-3xl font-extrabold text-white sm:text-5xl">Terms of Service</h1><p class="mt-4 text-sm text-white/80">Last updated: August 24, 2026</p></div></section>

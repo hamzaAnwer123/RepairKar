@@ -2,6 +2,22 @@
    RepairKar — Global Page Loading Screen & Transition Styles
    ========================================================================== */
 
+/* ---- Global: prevent horizontal scroll on all pages ---- */
+html,
+body {
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+
 /* Top Slim Progress Bar */
 #rk-page-progress {
   position: fixed;

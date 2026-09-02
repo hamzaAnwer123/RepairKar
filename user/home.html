@@ -25,6 +25,13 @@
     crossorigin="anonymous" referrerpolicy="no-referrer">
 
   <style>
+    html,
+    body {
+      overflow-x: hidden;
+      max-width: 100%;
+      width: 100%;
+    }
+
     body {
       font-family: 'Inter', sans-serif;
     }
@@ -255,7 +262,7 @@
           </div>
 
           <!-- Account action (Profile with Dropdown) -->
-          <div id="account-actions" class="hidden items-center gap-3">
+          <div id="account-actions" class="hidden md:flex items-center gap-3">
             <div class="profile-dropdown">
               <button id="profile-toggle" type="button"
                 class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-brand transition-colors"
