@@ -586,8 +586,8 @@
     if (authenticated) {
       chatBtn.classList.remove('disabled');
       chatBtn.href = mechanicId
-        ? 'chat.html?mechanic_id=' + encodeURIComponent(mechanicId)
-        : 'chat.html';
+        ? 'messages.html?mechanic_id=' + encodeURIComponent(mechanicId)
+        : 'messages.html';
     } else {
       // Not logged in: keep the button disabled and route it to login.
       chatBtn.classList.add('disabled');

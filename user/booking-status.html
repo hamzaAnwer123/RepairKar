@@ -163,7 +163,7 @@
       <a id="call-btn" href="tel:" aria-label="Call mechanic" class="btn-tap w-10 h-10 rounded-full bg-brand-light text-brand flex items-center justify-center shrink-0">
         <i class="fa-solid fa-phone text-sm" aria-hidden="true"></i>
       </a>
-      <a id="chat-btn" href="chat.html" aria-label="Chat with mechanic" class="btn-tap w-10 h-10 rounded-full bg-brand-light text-brand flex items-center justify-center shrink-0">
+      <a id="chat-btn" href="messages.html" aria-label="Chat with mechanic" class="btn-tap w-10 h-10 rounded-full bg-brand-light text-brand flex items-center justify-center shrink-0">
         <i class="fa-solid fa-comment text-sm" aria-hidden="true"></i>
       </a>
     </section>
@@ -325,7 +325,7 @@
     bookingRef.textContent = 'Booking #' + bookingId;
     if (data.mechanicPhoto) mechanicPhoto.src = data.mechanicPhoto;
     if (data.mechanicPhone) callBtn.setAttribute('href', 'tel:' + data.mechanicPhone);
-    chatBtn.setAttribute('href', 'chat.html?booking_id=' + encodeURIComponent(bookingId));
+    chatBtn.setAttribute('href', 'messages.html?booking_id=' + encodeURIComponent(bookingId));
     onlineDot.classList.toggle('hidden', !data.mechanicOnline);
 
     renderTracker(data.status);

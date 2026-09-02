@@ -86,7 +86,7 @@
         <a href="dashboard.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Dashboard</a>
         <a href="home.html" class="relative text-sm font-semibold text-brand transition-colors">Find Mechanics</a>
         <a href="live-map.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Emergency Help</a>
-        <a href="chat.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Chats</a>
+        <a href="messages.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Chats</a>
       </nav>
 
       <!-- Right actions -->
@@ -156,7 +156,7 @@
         <a href="dashboard.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Dashboard</a>
         <a href="home.html" class="px-3 py-2 rounded-lg text-sm font-semibold text-brand bg-slate-50">Find Mechanics</a>
         <a href="live-map.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Emergency Help</a>
-        <a href="chat.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Chats</a>
+        <a href="messages.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Chats</a>
         <a id="mobile-login" href="../login.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Login</a>
         <a id="mobile-signup" href="../signup.html" class="btn-animated mt-2 inline-flex items-center justify-center rounded-xl bg-accent text-white text-sm font-semibold px-5 py-2.5">Sign Up</a>
         <div id="mobile-account-section" class="hidden">
@@ -357,7 +357,7 @@
     return;
   }
 
-  function goToChat() { window.location.href = 'chat.html?mechanic_id=' + encodeURIComponent(mechanicId); }
+  function goToChat() { window.location.href = 'messages.html?mechanic_id=' + encodeURIComponent(mechanicId); }
   function goToBook(gigId) {
     window.location.href = 'booking.html?mechanic_id=' + encodeURIComponent(mechanicId) + (gigId ? '&gig_id=' + encodeURIComponent(gigId) : '');
   }

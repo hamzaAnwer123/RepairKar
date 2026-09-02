@@ -241,7 +241,7 @@
       <a href="my-gigs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
         <i class="fa-solid fa-wrench w-4 text-center" aria-hidden="true"></i> My Gigs
       </a>
-      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
+      <a href="messages.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
         <i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats
       </a>
       <a href="earnings.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
@@ -277,7 +277,7 @@
       <a href="my-gigs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
         <i class="fa-solid fa-wrench w-4 text-center" aria-hidden="true"></i> My Gigs
       </a>
-      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
+      <a href="messages.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
         <i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats
       </a>
       <a href="earnings.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
@@ -486,7 +486,7 @@
   // Guests are redirected to the login page (with a return URL so they come
   // back here after logging in). Users/admins are routed to their own area.
   var isAuthenticated = false;
-  var mechanicChatLoginUrl = '../login.html?redirect=' + encodeURIComponent('mechanic/chat.html' + window.location.search);
+  var mechanicChatLoginUrl = '../login.html?redirect=' + encodeURIComponent('mechanic/messages.html' + window.location.search);
 
   fetch('../api/current-user.php', { credentials: 'same-origin' })
     .then(function (res) { if (!res.ok) throw new Error('guest'); return res.json(); })

@@ -104,7 +104,7 @@
         <a href="dashboard.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Dashboard</a>
         <a href="home.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Find Mechanics</a>
         <a href="live-map.html" class="relative text-sm font-semibold text-brand transition-colors">Emergency Help</a>
-        <a href="chat.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Chats</a>
+        <a href="messages.html" class="relative text-sm font-medium text-slate-600 hover:text-brand transition-colors">Chats</a>
       </nav>
 
       <!-- Right actions -->
@@ -170,7 +170,7 @@
         <a href="dashboard.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Dashboard</a>
         <a href="home.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Find Mechanics</a>
         <a href="live-map.html" class="px-3 py-2 rounded-lg text-sm font-semibold text-brand bg-slate-50">Emergency Help</a>
-        <a href="chat.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Chats</a>
+        <a href="messages.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Chats</a>
         <a id="mobile-login" href="../login.html" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Login</a>
         <a id="mobile-signup" href="../signup.html" class="btn-animated mt-2 inline-flex items-center justify-center rounded-xl bg-accent text-white text-sm font-semibold px-5 py-2.5">Sign Up</a>
         <div id="mobile-account-section" class="hidden">
@@ -565,7 +565,7 @@
     call.textContent = 'Call';
     actions.appendChild(call);
     const msg = document.createElement('a');
-    msg.href = 'chat.html?mechanic_id=' + encodeURIComponent(m.id);
+    msg.href = 'messages.html?mechanic_id=' + encodeURIComponent(m.id);
     msg.className = 'flex-1 text-center rounded-lg border border-brand text-brand hover:bg-brand-light text-xs font-semibold px-3 py-2';
     msg.textContent = 'Message';
     actions.appendChild(msg);
@@ -641,7 +641,7 @@
     // Primary action alternates Call / Message, matching the design's mix
     const actionBtn = document.createElement('a');
     const isMessageStyle = index % 3 === 2;
-    actionBtn.href = isMessageStyle ? ('chat.html?mechanic_id=' + encodeURIComponent(m.id)) : ('tel:' + m.phone);
+    actionBtn.href = isMessageStyle ? ('messages.html?mechanic_id=' + encodeURIComponent(m.id)) : ('tel:' + m.phone);
     // The card itself opens the map popup — don't let the action buttons
     // trigger that too (and don't swallow the navigation).
     actionBtn.addEventListener('click', function (e) { e.stopPropagation(); });

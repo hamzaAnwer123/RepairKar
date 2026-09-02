@@ -54,7 +54,7 @@
       <a href="my-gigs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
         <i class="fa-solid fa-wrench w-4 text-center" aria-hidden="true"></i> My Gigs
       </a>
-      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+      <a href="messages.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
         <i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats
       </a>
       <a href="earnings.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
@@ -94,7 +94,7 @@
       <a href="my-gigs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-600">
         <i class="fa-solid fa-wrench w-4 text-center" aria-hidden="true"></i> My Gigs
       </a>
-      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-600">
+      <a href="messages.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-600">
         <i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats
       </a>
       <a href="earnings.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-600">
@@ -482,7 +482,7 @@
       actions.appendChild(completeBtn);
 
       var chatBtn = document.createElement('a');
-      chatBtn.href = 'chat.html?booking_id=' + encodeURIComponent(job.id);
+      chatBtn.href = 'messages.html?booking_id=' + encodeURIComponent(job.id);
       chatBtn.className = 'btn-tap rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold px-2.5 py-2';
       chatBtn.innerHTML = '<i class="fa-solid fa-comment text-brand"></i>';
       actions.appendChild(chatBtn);
@@ -495,13 +495,13 @@
       actions.appendChild(completeBtn2);
 
       var chatBtn2 = document.createElement('a');
-      chatBtn2.href = 'chat.html?booking_id=' + encodeURIComponent(job.id);
+      chatBtn2.href = 'messages.html?booking_id=' + encodeURIComponent(job.id);
       chatBtn2.className = 'btn-tap rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold px-2.5 py-2';
       chatBtn2.innerHTML = '<i class="fa-solid fa-comment text-brand"></i>';
       actions.appendChild(chatBtn2);
     } else if (job.status === 'completed') {
       var chatBtn3 = document.createElement('a');
-      chatBtn3.href = 'chat.html?booking_id=' + encodeURIComponent(job.id);
+      chatBtn3.href = 'messages.html?booking_id=' + encodeURIComponent(job.id);
       chatBtn3.className = 'btn-tap rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold px-3 py-2 inline-flex items-center gap-1.5';
       chatBtn3.innerHTML = '<i class="fa-solid fa-comment text-brand"></i> Chat';
       actions.appendChild(chatBtn3);

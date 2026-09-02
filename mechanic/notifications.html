@@ -29,7 +29,7 @@
     <nav class="flex-1 space-y-1 px-3 py-4" aria-label="Mechanic navigation">
       <a href="dashboard.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"><i class="fa-solid fa-table-cells-large w-4 text-center" aria-hidden="true"></i>Dashboard</a>
       <a href="my-gigs.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"><i class="fa-solid fa-wrench w-4 text-center" aria-hidden="true"></i>My Gigs</a>
-      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"><i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i>Chats</a>
+      <a href="messages.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"><i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i>Chats</a>
       <a href="notifications.html" class="flex items-center gap-3 rounded-xl bg-brand-light px-3 py-2.5 text-sm font-semibold text-brand"><i class="fa-regular fa-bell w-4 text-center" aria-hidden="true"></i>Notifications</a>
       <a href="profile.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"><i class="fa-regular fa-user w-4 text-center" aria-hidden="true"></i>Profile</a>
     </nav>
@@ -142,7 +142,7 @@
         const requests = Array.isArray(results[0].requests) ? results[0].requests : [];
         const conversations = Array.isArray(results[1].conversations) ? results[1].conversations : [];
         requests.forEach(function (request) { addNotification('booking-' + request.id, 'booking', 'New booking request', (request.userName || 'A customer') + ' requested ' + (request.description || 'a repair service') + '.', request.createdAt, 'dashboard.html', 'fa-calendar-check', 'bg-brand-light text-brand'); });
-        conversations.forEach(function (conversation) { if (conversation.unreadCount > 0) addNotification('message-' + conversation.bookingId, 'message', 'Unread customer messages', (conversation.userName || 'Customer') + ' sent ' + conversation.unreadCount + ' unread message' + (conversation.unreadCount === 1 ? '' : 's') + '.', new Date().toISOString(), 'chat.html?booking_id=' + encodeURIComponent(conversation.bookingId), 'fa-comment', 'bg-blue-50 text-blue-500'); });
+        conversations.forEach(function (conversation) { if (conversation.unreadCount > 0) addNotification('message-' + conversation.bookingId, 'message', 'Unread customer messages', (conversation.userName || 'Customer') + ' sent ' + conversation.unreadCount + ' unread message' + (conversation.unreadCount === 1 ? '' : 's') + '.', new Date().toISOString(), 'messages.html?booking_id=' + encodeURIComponent(conversation.bookingId), 'fa-comment', 'bg-blue-50 text-blue-500'); });
         loading.classList.add('hidden'); render();
       });
     })

@@ -242,7 +242,7 @@
       <a href="live-map.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
         <i class="fa-solid fa-triangle-exclamation w-4 text-center text-amber-500" aria-hidden="true"></i> Emergency Help
       </a>
-      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
+      <a href="messages.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
         <i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats
       </a>
       <a href="notifications.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
@@ -278,7 +278,7 @@
       <a href="live-map.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
         <i class="fa-solid fa-triangle-exclamation w-4 text-center text-amber-500" aria-hidden="true"></i> Emergency Help
       </a>
-      <a href="chat.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
+      <a href="messages.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold bg-brand-light text-brand">
         <i class="fa-regular fa-comment w-4 text-center" aria-hidden="true"></i> Chats
       </a>
       <a href="notifications.html" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600">
@@ -493,12 +493,12 @@
   // come back here after logging in). Mechanics/admins are routed to their
   // own chat/dashboard pages.
   var isAuthenticated = false;
-  var userChatLoginUrl = '../login.html?redirect=' + encodeURIComponent('user/chat.html' + window.location.search);
+  var userChatLoginUrl = '../login.html?redirect=' + encodeURIComponent('user/messages.html' + window.location.search);
 
   fetch('../api/current-user.php', { credentials: 'same-origin' })
     .then(function (res) { if (!res.ok) throw new Error('guest'); return res.json(); })
     .then(function (data) {
-      if (data.role === 'mechanic') { window.location.replace('../mechanic/chat.html'); return; }
+      if (data.role === 'mechanic') { window.location.replace('../mechanic/messages.html'); return; }
       if (data.role === 'admin') { window.location.replace('../admin/index.php'); return; }
 
       isAuthenticated = true;

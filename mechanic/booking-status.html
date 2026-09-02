@@ -353,7 +353,7 @@
       document.getElementById('description-row').classList.add('hidden');
     }
 
-    btnChat.href = 'chat.html?booking_id=' + encodeURIComponent(b.id);
+    btnChat.href = 'messages.html?booking_id=' + encodeURIComponent(b.id);
 
     // Event listeners
     btnEnRoute.onclick = function () { updateStatus('en_route', btnEnRoute); };
