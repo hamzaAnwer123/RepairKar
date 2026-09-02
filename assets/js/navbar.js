@@ -170,11 +170,11 @@ document.addEventListener('DOMContentLoaded', function () {
       // Show authenticated state
       if (guestActions) {
         guestActions.classList.add('hidden');
-        guestActions.classList.remove('md:flex');
+        guestActions.classList.remove('md:flex', 'flex');
       }
       if (accountActions) {
-        accountActions.classList.remove('hidden');
-        accountActions.classList.add('md:flex');
+        accountActions.classList.add('hidden', 'md:flex');
+        accountActions.classList.remove('flex');
       }
       if (desktopLogin) desktopLogin.classList.add('hidden');
       if (mobileLogin) mobileLogin.classList.add('hidden');
@@ -187,8 +187,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function showGuestState() {
     if (guestActions) {
-      guestActions.classList.remove('hidden');
-      guestActions.classList.add('md:flex');
+      guestActions.classList.add('hidden', 'md:flex');
+      guestActions.classList.remove('flex');
     }
     if (accountActions) {
       accountActions.classList.add('hidden');

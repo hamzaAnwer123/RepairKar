@@ -45,20 +45,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/tailwind.min.css">
 <link rel="stylesheet" href="assets/css/loader.css">
+<link rel="stylesheet" href="assets/css/navbar.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
 
-<!--
-  SECURITY NOTE (for future backend integration):
-  When this page is served through PHP/includes/header.php, any dynamic
-  value inserted here (user name, city, etc.) MUST be escaped with
-  htmlspecialchars() before being echoed into the HTML to prevent XSS.
-  A Content-Security-Policy header should also be added at the server
-  level once inline <script> blocks above are moved into external files,
-  e.g.: Content-Security-Policy: default-src 'self'; img-src 'self' data: https:;
--->
-
-<!-- ===== Animation styles ===== -->
+<!-- ===== Animation & Overflow styles ===== -->
 <style>
+  html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+    width: 100%;
+  }
   /* ---- Page-load hero sequence ---- */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(18px); }
@@ -241,7 +237,7 @@
           Sign Up
         </a>
       </div>
-      <div id="account-actions" class="hidden items-center gap-3">
+      <div id="account-actions" class="hidden md:flex items-center gap-3">
         <div class="profile-dropdown">
           <button id="profile-toggle" type="button" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-brand transition-colors" aria-haspopup="true" aria-expanded="false">
             <span class="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center">
@@ -317,7 +313,7 @@
 <main>
 
   <!-- ================= HERO ================= -->
-  <section class="bg-brand">
+  <section class="bg-brand overflow-hidden">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 text-center">
       <h1 class="hero-anim text-3xl sm:text-5xl font-extrabold text-white leading-tight">
         Find Trusted Mechanics<br class="hidden sm:block"> Near You in Minutes
@@ -501,168 +497,15 @@
 </footer>
 
 <!-- ================= JS ================= -->
+<script src="assets/js/navbar.js"></script>
 <script>
-  // Mobile menu toggle — no inline handlers, addEventListener only
-  (function () {
-    const btn = document.getElementById('mobile-menu-btn');
-    const menu = document.getElementById('mobile-menu');
-    const iconOpen = document.getElementById('icon-open');
-    const iconClose = document.getElementById('icon-close');
-
-    btn.addEventListener('click', function () {
-      const isOpen = menu.classList.contains('open');
-      menu.classList.toggle('open');
-      iconOpen.classList.toggle('hidden');
-      iconClose.classList.toggle('hidden');
-      btn.setAttribute('aria-expanded', String(!isOpen));
-    });
-  })();
-
-  // Dynamic copyright year — never hardcode it
+  // Dynamic copyright year
   document.getElementById('footer-year').textContent = new Date().getFullYear();
-
-  // Replace guest navigation with the authenticated user's profile dropdown.
-  (function () {
-    const guestActions = document.getElementById('guest-actions');
-    const accountActions = document.getElementById('account-actions');
-    const accountName = document.getElementById('account-name');
-    const accountIcon = document.getElementById('account-icon');
-    const desktopLogin = document.getElementById('desktop-login');
-    const mobileLogin = document.getElementById('mobile-login');
-    const mobileSignup = document.getElementById('mobile-signup');
-    const mobileAccountSection = document.getElementById('mobile-account-section');
-    const mobileAccountName = document.getElementById('mobile-account-name');
-    const mobileAccountIcon = document.getElementById('mobile-account-icon');
-    const profileToggle = document.getElementById('profile-toggle');
-    const dropdownMenu = document.getElementById('profile-dropdown-menu');
-    const dropdownArrow = document.getElementById('dropdown-arrow');
-    const dashboardLink = document.getElementById('dashboard-link');
-    const viewProfileLink = document.getElementById('view-profile-link');
-    const mobileDashboardLink = document.getElementById('mobile-dashboard-link');
-    const mobileViewProfileLink = document.getElementById('mobile-view-profile-link');
-    const logoutBtn = document.getElementById('logout-btn');
-    const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
-
-    // ---- Dropdown toggle ----
-    profileToggle.addEventListener('click', function (e) {
-      e.stopPropagation();
-      const isOpen = dropdownMenu.classList.contains('open');
-      dropdownMenu.classList.toggle('open');
-      dropdownArrow.style.transform = isOpen ? '' : 'rotate(180deg)';
-      profileToggle.setAttribute('aria-expanded', String(!isOpen));
-    });
-
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function () {
-      dropdownMenu.classList.remove('open');
-      dropdownArrow.style.transform = '';
-      profileToggle.setAttribute('aria-expanded', 'false');
-    });
-
-    // Prevent dropdown from closing when clicking inside it
-    dropdownMenu.addEventListener('click', function (e) {
-      e.stopPropagation();
-    });
-
-    // ---- Logout handler (shared) ----
-    function handleLogout() {
-      fetch('api/logout.php', { method: 'POST', credentials: 'same-origin' })
-        .then(function () { window.location.reload(); })
-        .catch(function () { window.location.reload(); });
-    }
-    logoutBtn.addEventListener('click', handleLogout);
-    mobileLogoutBtn.addEventListener('click', handleLogout);
-
-    // ---- Fetch current user ----
-    fetch('api/current-user.php', { credentials: 'same-origin' })
-      .then(function (response) {
-        if (!response.ok) throw new Error('guest');
-        return response.json();
-      })
-      .then(function (data) {
-        if (!['user', 'mechanic'].includes(data.role)) {
-          showGuestNav();
-          return;
-        }
-
-        const isMechanic = data.role === 'mechanic';
-        const dashboardPath = isMechanic ? 'mechanic/dashboard.html' : 'user/dashboard.html';
-        const profilePath = isMechanic ? 'mechanic/profile.html' : 'user/profile.html';
-        const displayName = data.name || (isMechanic ? 'Mechanic' : 'User');
-
-        const defaultPhoto = isMechanic
-          ? 'assets/images/placeholders/default-mechnaic-profile.png'
-          : 'assets/images/placeholders/default-user-profile.png';
-        const userPhoto = (data.photo && typeof data.photo === 'string' && data.photo.trim() !== '')
-          ? data.photo.trim()
-          : defaultPhoto;
-
-        // Render ONE clean circular avatar — removes stale images, clears icon, injects single img
-        function renderAvatarImage(iconEl, imgId) {
-          if (!iconEl) return;
-          // Remove any previously injected avatar with this id (prevents duplicates)
-          var old = document.getElementById(imgId);
-          if (old) old.remove();
-          // Container is the <span> wrapping the <i> icon
-          var container = (iconEl.tagName && iconEl.tagName.toLowerCase() === 'i')
-            ? iconEl.parentElement : iconEl;
-          if (!container) return;
-          // Clear completely (icon + any stale img)
-          container.innerHTML = '';
-          // Fixed-size circle with hard overflow:hidden
-          container.style.cssText = 'width:32px;height:32px;min-width:32px;border-radius:9999px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#f1f5f9;border:1.5px solid #e2e8f0;';
-          // Single avatar img
-          var img = document.createElement('img');
-          img.id = imgId;
-          img.alt = displayName;
-          img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:9999px;';
-          img.src = userPhoto;
-          img.onerror = function () { if (this.src !== defaultPhoto) this.src = defaultPhoto; };
-          container.appendChild(img);
-        }
-
-        // Desktop
-        accountName.textContent = displayName;
-        renderAvatarImage(accountIcon, 'account-avatar');
-        dashboardLink.href = dashboardPath;
-        viewProfileLink.href = profilePath;
-
-        // Mobile
-        mobileAccountName.textContent = displayName;
-        renderAvatarImage(mobileAccountIcon, 'mobile-account-avatar');
-        mobileDashboardLink.href = dashboardPath;
-        mobileViewProfileLink.href = profilePath;
-
-        // Toggle visibility: hide guest, show authenticated
-        guestActions.classList.add('hidden');
-        guestActions.classList.remove('md:flex');
-        accountActions.classList.remove('hidden');
-        accountActions.classList.add('md:flex');
-        desktopLogin.classList.add('hidden');
-        mobileLogin.classList.add('hidden');
-        mobileSignup.classList.add('hidden');
-        mobileAccountSection.classList.remove('hidden');
-      })
-      .catch(function () {
-        // A 401 simply means the visitor should keep seeing guest navigation.
-        showGuestNav();
-      });
-
-    function showGuestNav() {
-      guestActions.classList.remove('hidden');
-      guestActions.classList.add('md:flex');
-      accountActions.classList.add('hidden');
-      accountActions.classList.remove('md:flex', 'flex');
-      desktopLogin.classList.remove('hidden');
-      mobileLogin.classList.remove('hidden');
-      mobileSignup.classList.remove('hidden');
-      mobileAccountSection.classList.add('hidden');
-    }
-  })();
 
   // Header shadow on scroll
   (function () {
     const header = document.getElementById('site-header');
+    if (!header) return;
     const onScroll = () => {
       header.classList.toggle('is-scrolled', window.scrollY > 8);
     };
